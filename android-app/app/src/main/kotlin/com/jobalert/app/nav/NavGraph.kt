@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
+import com.jobalert.app.ui.screens.calendar.CalendarScreen
 import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
 import com.jobalert.app.ui.screens.favorites.FavoritesScreen
@@ -189,6 +190,13 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.Calendar) {
+            CalendarScreen(
+                onBack = { nav.popBackStack() },
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+            )
+        }
+
         composable(Routes.Search) {
             SearchScreen(
                 onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
@@ -217,7 +225,6 @@ fun JobAlertNavHost() {
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
             Routes.Discover to "찾아보기",
-            Routes.Calendar to "마감 캘린더",
             Routes.ShareSheet to "공유",
             Routes.Similar to "비슷한 공고",
         ).forEach { (route, label) ->
