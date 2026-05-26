@@ -13,6 +13,8 @@ import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
+import com.jobalert.app.ui.screens.search.SearchResultsScreen
+import com.jobalert.app.ui.screens.search.SearchScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingJobCategoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingWidgetScreen
@@ -31,8 +33,11 @@ object Routes {
     const val Detail = "detail/{jobId}"
     fun detail(jobId: String) = "detail/$jobId"
 
-    // Placeholders (다음 세션에서 구현)
     const val Search = "search"
+    const val SearchResults = "searchResults?q={q}"
+    fun searchResults(q: String) = "searchResults?q=$q"
+
+    // Placeholders (다음 세션에서 구현)
     const val Discover = "discover"
     const val Favorites = "favorites"
     const val Mypage = "mypage"
@@ -135,9 +140,33 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.Search) {
+            SearchScreen(
+                onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
+                onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Search) },
+            )
+        }
+
+        composable(
+            route = Routes.SearchResults,
+            arguments = listOf(navArgument("q") {
+                type = NavType.StringType
+                defaultValue = ""
+                nullable = true
+            }),
+        ) { backStackEntry ->
+            val q = backStackEntry.arguments?.getString("q").orEmpty()
+            SearchResultsScreen(
+                query = q,
+                onBack = { nav.popBackStack() },
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+                onCompanyClick = { /* TODO: 회사 상세 (Phase 2.B) */ },
+                onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.SearchResults) },
+            )
+        }
+
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
-            Routes.Search to "검색",
             Routes.Discover to "찾아보기",
             Routes.Favorites to "관심기업",
             Routes.Mypage to "마이페이지",
@@ -148,6 +177,22 @@ fun JobAlertNavHost() {
             composable(route) { Placeholder(label) }
         }
     }
+}
+
+private fun handleTab(
+    nav: androidx.navigation.NavHostController,
+    tab: HomeTab,
+    currentRoute: String,
+) {
+    val target = when (tab) {
+        HomeTab.Home -> Routes.Main
+        HomeTab.Search -> Routes.Search
+        HomeTab.Discover -> Routes.Discover
+        HomeTab.Favorites -> Routes.Favorites
+        HomeTab.Me -> Routes.Mypage
+    }
+    if (target == currentRoute) return
+    nav.navigate(target) { launchSingleTop = true }
 }
 
 private fun goMain(nav: androidx.navigation.NavHostController) {
