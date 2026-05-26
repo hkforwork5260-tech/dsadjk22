@@ -10,19 +10,25 @@ import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
 import com.jobalert.app.ui.screens.main.MainScreen
+import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
+import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingJobCategoryScreen
+import com.jobalert.app.ui.screens.onboarding.OnboardingWidgetScreen
 
 /**
- * 라우트 정의. 이번 세션 범위는 onb1 / main / detail/{id} 3개.
- * 나머지 23개 화면은 placeholder로 두고 다음 세션에 채움.
+ * 라우트 정의.
+ * 온보딩 1→2→3→4 → main. 각 단계에서 건너뛰기 시 바로 main.
  */
 object Routes {
     const val Onboarding1 = "onb1"
+    const val Onboarding2 = "onb2"
+    const val Onboarding3 = "onb3"
+    const val Onboarding4 = "onb4"
     const val Main = "main"
     const val Detail = "detail/{jobId}"
     fun detail(jobId: String) = "detail/$jobId"
 
-    // Placeholders (스캐폴드만)
+    // Placeholders (다음 세션에서 구현)
     const val Search = "search"
     const val Discover = "discover"
     const val Favorites = "favorites"
@@ -40,8 +46,31 @@ fun JobAlertNavHost() {
     NavHost(navController = nav, startDestination = Routes.Onboarding1) {
         composable(Routes.Onboarding1) {
             OnboardingJobCategoryScreen(
-                onNext = { nav.navigate(Routes.Main) { popUpTo(Routes.Onboarding1) { inclusive = true } } },
-                onSkip = { nav.navigate(Routes.Main) { popUpTo(Routes.Onboarding1) { inclusive = true } } },
+                onNext = { nav.navigate(Routes.Onboarding2) },
+                onSkip = { goMain(nav) },
+            )
+        }
+
+        composable(Routes.Onboarding2) {
+            OnboardingCompanySizeScreen(
+                onNext = { nav.navigate(Routes.Onboarding3) },
+                onSkip = { goMain(nav) },
+                onBack = { nav.popBackStack() },
+            )
+        }
+
+        composable(Routes.Onboarding3) {
+            OnboardingCompanySwipeScreen(
+                onNext = { nav.navigate(Routes.Onboarding4) },
+                onSkip = { goMain(nav) },
+                onBack = { nav.popBackStack() },
+            )
+        }
+
+        composable(Routes.Onboarding4) {
+            OnboardingWidgetScreen(
+                onAllow = { goMain(nav) },
+                onLater = { goMain(nav) },
             )
         }
 
@@ -89,6 +118,13 @@ fun JobAlertNavHost() {
         ).forEach { (route, label) ->
             composable(route) { Placeholder(label) }
         }
+    }
+}
+
+private fun goMain(nav: androidx.navigation.NavHostController) {
+    nav.navigate(Routes.Main) {
+        popUpTo(Routes.Onboarding1) { inclusive = true }
+        launchSingleTop = true
     }
 }
 
