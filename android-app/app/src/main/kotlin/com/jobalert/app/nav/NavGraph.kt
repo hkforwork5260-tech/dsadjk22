@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
+import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
@@ -127,13 +128,19 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.Filter) {
+            FilterScreen(
+                onClose = { nav.popBackStack() },
+                onApply = { _ -> nav.popBackStack() },
+            )
+        }
+
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
             Routes.Search to "검색",
             Routes.Discover to "찾아보기",
             Routes.Favorites to "관심기업",
             Routes.Mypage to "마이페이지",
-            Routes.Filter to "필터",
             Routes.NotifHistory to "알림 히스토리",
             Routes.ShareSheet to "공유",
             Routes.Similar to "비슷한 공고",
