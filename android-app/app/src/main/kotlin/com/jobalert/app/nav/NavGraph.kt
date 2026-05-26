@@ -9,6 +9,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
+import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
@@ -25,6 +26,7 @@ object Routes {
     const val Onboarding3 = "onb3"
     const val Onboarding4 = "onb4"
     const val Main = "main"
+    const val MainEmpty = "mainEmpty"
     const val Detail = "detail/{jobId}"
     fun detail(jobId: String) = "detail/$jobId"
 
@@ -82,6 +84,26 @@ fun JobAlertNavHost() {
                 onTabClick = { tab ->
                     when (tab) {
                         HomeTab.Home -> Unit
+                        HomeTab.Search -> nav.navigate(Routes.Search)
+                        HomeTab.Discover -> nav.navigate(Routes.Discover)
+                        HomeTab.Favorites -> nav.navigate(Routes.Favorites)
+                        HomeTab.Me -> nav.navigate(Routes.Mypage)
+                    }
+                },
+            )
+        }
+
+        composable(Routes.MainEmpty) {
+            MainEmptyScreen(
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+                onFilterClick = { nav.navigate(Routes.Filter) },
+                onNotificationClick = { nav.navigate(Routes.NotifHistory) },
+                onAddFavorites = { nav.navigate(Routes.Favorites) },
+                onTabClick = { tab ->
+                    when (tab) {
+                        HomeTab.Home -> nav.navigate(Routes.Main) {
+                            popUpTo(Routes.MainEmpty) { inclusive = true }
+                        }
                         HomeTab.Search -> nav.navigate(Routes.Search)
                         HomeTab.Discover -> nav.navigate(Routes.Discover)
                         HomeTab.Favorites -> nav.navigate(Routes.Favorites)
