@@ -3,35 +3,2870 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>채용알리미 — 와이어프레임 탐색</title>
-<link rel="stylesheet" href="styles.css"/>
-<link rel="stylesheet" href="styles-hifi.css"/>
+<title>채용알리미 — 인터랙티브 프로토타입</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"/>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a1a; min-height: 100vh; font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+#root { width: 100%; }
+
+.proto-screen { animation: protoFade 0.22s ease; }
+@keyframes protoFade {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.proto-jump::-webkit-scrollbar { display: none; }
+.proto-jump { scrollbar-width: none; }
+
+/* ── HiFi tokens (scoped to .hifi) ── */
+.hifi {
+  --h-bg: #ffffff;
+  --h-bg-2: #f7f8fa;
+  --h-bg-3: #efeff1;
+  --h-text: #3c3c3c;
+  --h-text-2: #777777;
+  --h-text-3: #afafaf;
+  --h-border: #e5e5e5;
+  --h-border-dark: #d1d1d1;
+  --h-brand: #ff6b35;
+  --h-brand-hover: #ff5722;
+  --h-brand-dark: #e5522a;
+  --h-brand-soft: #fff0e8;
+  --h-brand-shadow: #d9532a;
+  --h-new: #58cc02;
+  --h-new-shadow: #4ab801;
+  --h-new-soft: #e7f9d6;
+  --h-update: #ffc800;
+  --h-update-shadow: #e0a800;
+  --h-update-soft: #fff7d6;
+  --h-closing: #ff4b4b;
+  --h-closing-shadow: #e63d3d;
+  --h-closing-soft: #ffe1e1;
+  --h-info: #1cb0f6;
+  --h-info-soft: #e1f3fc;
+  --h-shadow-sm: 0 2px 0 rgba(0,0,0,0.08);
+  --h-shadow-card: 0 2px 0 var(--h-border-dark);
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  color: var(--h-text);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hifi-phone {
+  position: relative;
+  width: 360px;
+  height: 740px;
+  background: var(--h-bg);
+  border: 8px solid #1a1a1a;
+  border-radius: 44px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+}
+.hifi-phone-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--h-bg);
+}
+
+.hifi-status {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--h-text);
+  gap: 6px;
+  flex-shrink: 0;
+}
+.hifi-status .right { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+
+.hifi-appbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 20px 4px;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 48px;
+}
+.hifi-appbar .title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; flex: 1; }
+.hifi .icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: var(--h-bg-2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+
+.hifi-nav { flex: 0 0 22px; display: flex; align-items: center; justify-content: center; }
+.hifi-nav-pill { width: 120px; height: 4px; background: #1a1a1a; border-radius: 2px; }
+
+.h-display { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; color: var(--h-text); }
+.h-title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; line-height: 1.2; color: var(--h-text); }
+.h-h2 { font-size: 17px; font-weight: 700; line-height: 1.3; color: var(--h-text); }
+.h-body { font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--h-text); }
+.h-body-2 { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--h-text-2); }
+.h-caption { font-size: 12px; font-weight: 700; color: var(--h-text-3); letter-spacing: 0.4px; text-transform: uppercase; }
+.h-mono-num { font-feature-settings: "tnum"; font-weight: 800; }
+
+.h-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 14px 22px; border-radius: 16px;
+  font-family: inherit; font-size: 16px; font-weight: 800;
+  cursor: pointer; border: 2px solid transparent;
+  background: var(--h-bg-2); color: var(--h-text);
+  letter-spacing: -0.2px; transition: transform .04s, box-shadow .04s;
+  box-shadow: 0 4px 0 var(--h-border-dark); border-bottom: none;
+  user-select: none;
+}
+.h-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--h-border-dark); }
+.h-btn.primary { background: var(--h-brand); color: #fff; box-shadow: 0 4px 0 var(--h-brand-shadow); text-transform: uppercase; letter-spacing: 0.4px; }
+.h-btn.primary:active { box-shadow: 0 2px 0 var(--h-brand-shadow); }
+.h-btn.green { background: var(--h-new); color: #fff; box-shadow: 0 4px 0 var(--h-new-shadow); text-transform: uppercase; letter-spacing: 0.4px; }
+.h-btn.green:active { box-shadow: 0 2px 0 var(--h-new-shadow); }
+.h-btn.ghost { background: transparent; box-shadow: none; color: var(--h-text-2); }
+.h-btn.ghost:active { transform: none; }
+.h-btn.block { width: 100%; }
+.h-btn.sm { padding: 10px 14px; font-size: 14px; box-shadow: 0 3px 0 var(--h-border-dark); }
+.h-btn.sm:active { box-shadow: 0 1px 0 var(--h-border-dark); }
+.h-btn.lg { padding: 18px 26px; font-size: 18px; }
+
+.h-card { background: var(--h-bg); border: 2px solid var(--h-border); border-radius: 18px; padding: 16px; }
+.h-card.flat { border-radius: 14px; }
+.h-card.brand { background: var(--h-brand-soft); border-color: var(--h-brand); }
+.h-card.green { background: var(--h-new-soft); border-color: var(--h-new); }
+.h-card.yellow { background: var(--h-update-soft); border-color: var(--h-update); }
+
+.h-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 999px;
+  background: var(--h-bg-2); color: var(--h-text);
+  font-size: 14px; font-weight: 700; border: 2px solid transparent;
+}
+.h-chip.on { background: var(--h-brand); color: #fff; }
+.h-chip.outline { background: var(--h-bg); border-color: var(--h-border); }
+.h-chip.outline.on { background: var(--h-brand-soft); border-color: var(--h-brand); color: var(--h-brand-dark); }
+.h-chip.sm { padding: 5px 10px; font-size: 12px; }
+
+.h-label {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 800;
+  letter-spacing: 0.6px; text-transform: uppercase;
+}
+.h-label.new { background: var(--h-new); color: #fff; }
+.h-label.update { background: var(--h-update); color: #fff; }
+.h-label.closing { background: var(--h-closing); color: #fff; }
+.h-label.outline-new { background: var(--h-new-soft); color: var(--h-new-shadow); }
+.h-label.outline-closing { background: var(--h-closing-soft); color: var(--h-closing); }
+
+.h-logo {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; color: var(--h-text);
+  background: var(--h-bg-2); flex-shrink: 0;
+}
+.h-logo.sm { width: 32px; height: 32px; font-size: 12px; border-radius: 10px; }
+.h-logo.lg { width: 64px; height: 64px; font-size: 18px; border-radius: 18px; }
+
+.h-tabbar {
+  flex: 0 0 64px; border-top: 1px solid var(--h-border);
+  display: flex; background: var(--h-bg); padding: 6px 4px 8px;
+}
+.h-tabbar .tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 2px; cursor: pointer;
+  padding: 4px 0; color: var(--h-text-3);
+  font-size: 10px; font-weight: 700;
+}
+.h-tabbar .tab.on { color: var(--h-brand); }
+.h-tabbar .tab .ico { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+
+.h-job-card {
+  background: var(--h-bg); border: 2px solid var(--h-border);
+  border-radius: 16px; padding: 14px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: background .12s, border-color .12s;
+}
+.h-job-card:hover { border-color: var(--h-brand); background: var(--h-brand-soft); }
+
+.h-toggle {
+  width: 44px; height: 26px; background: var(--h-bg-3);
+  border-radius: 999px; position: relative;
+  cursor: pointer; flex-shrink: 0; transition: background .15s;
+}
+.h-toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 22px; height: 22px; background: #fff;
+  border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: left .15s;
+}
+.h-toggle.on { background: var(--h-brand); }
+.h-toggle.on::after { left: 20px; }
+
+.h-bar { height: 12px; background: var(--h-bg-3); border-radius: 999px; overflow: hidden; position: relative; }
+.h-bar > i { display: block; height: 100%; background: var(--h-brand); border-radius: 999px; position: relative; }
+.h-bar > i::after { content: ''; position: absolute; left: 4px; right: 4px; top: 2px; height: 3px; background: rgba(255,255,255,0.5); border-radius: 999px; }
+.h-bar.green > i { background: var(--h-new); }
+
+.h-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--h-bg-3); display: inline-block; }
+.h-dot.on { background: var(--h-brand); width: 24px; border-radius: 4px; }
+
+.h-divider { height: 1px; background: var(--h-border); margin: 14px 0; }
+.h-row { display: flex; align-items: center; gap: 8px; }
+.h-col { display: flex; flex-direction: column; gap: 8px; }
+.h-grow { flex: 1; min-width: 0; }
+.h-pad { padding: 16px 20px; }
+
+.hifi *::-webkit-scrollbar { display: none; }
+.hifi * { scrollbar-width: none; }
+
+.h-lock {
+  background: linear-gradient(160deg, #ff7a5a 0%, #ff6b35 40%, #f04e1f 100%);
+  position: relative;
+}
+.h-lock .h-time { font-size: 80px; font-weight: 800; color: #fff; letter-spacing: -2px; line-height: 1; }
+.h-lock .h-date { font-size: 15px; color: rgba(255,255,255,0.85); margin-top: 8px; font-weight: 600; }
+
+.h-push {
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 18px; padding: 14px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.h-push .ico-box {
+  width: 38px; height: 38px; border-radius: 12px;
+  background: var(--h-brand);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.h-widget {
+  background: #fff; border-radius: 22px; padding: 14px 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  font-family: 'Pretendard Variable', Pretendard, sans-serif;
+}
+
+.hifi-reel-feed { scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+.hifi-reel-card {
+  height: 100%; min-height: 100%; scroll-snap-align: start;
+  scroll-snap-stop: always; display: flex; flex-direction: column;
+  background: #fff; position: relative; border-bottom: 1px solid var(--h-border);
+}
+</style>
 </head>
 <body>
 <div id="root"></div>
 
-<script type="text/babel" src="tweaks-panel.jsx"></script>
-<script type="text/babel" src="design-canvas.jsx"></script>
-<script type="text/babel" src="shared.jsx"></script>
-<script type="text/babel" src="screens-onboarding.jsx"></script>
-<script type="text/babel" src="screens-main.jsx"></script>
-<script type="text/babel" src="screens-detail.jsx"></script>
-<script type="text/babel" src="screens-filter.jsx"></script>
-<script type="text/babel" src="screens-favorites.jsx"></script>
-<script type="text/babel" src="screens-notifications.jsx"></script>
-<script type="text/babel" src="screens-search.jsx"></script>
-<script type="text/babel" src="screens-monitor.jsx"></script>
-<script type="text/babel" src="screens-v2.jsx"></script>
-<script type="text/babel" src="screens-v2-extra.jsx"></script>
-<script type="text/babel" src="screens-v2-subpages.jsx"></script>
-<script type="text/babel" src="shared-hifi.jsx"></script>
-<script type="text/babel" src="screens-hifi.jsx"></script>
-<script type="text/babel" src="screens-hifi-extra.jsx"></script>
-<script type="text/babel" src="screens-hifi-new.jsx"></script>
-<script type="text/babel" src="prototype.jsx"></script>
-<script type="text/babel" src="app.jsx"></script>
+<script type="text/babel">
+// ─────────────────────────────────────────────────────
+// Nav Context
+// ─────────────────────────────────────────────────────
+const NavCtx = React.createContext({ go: () => {}, back: () => {}, reset: () => {}, current: null });
+const useNav = () => React.useContext(NavCtx);
+
+// ─────────────────────────────────────────────────────
+// Mascot — '꽁이' 고양이 SVG
+// ─────────────────────────────────────────────────────
+function Mascot({ size = 80, expression = 'default', tint, species }) {
+  const sp = species || 'cat';
+  const fill = tint || (sp === 'dog' ? '#e8b88a' : '#fad9b0');
+  const earInner = sp === 'dog' ? '#c89060' : '#ffb8c2';
+
+  const eyes = {
+    default: <>
+      <ellipse cx="38" cy="52" rx="4.2" ry="5" fill="#1a1a1a"/>
+      <ellipse cx="62" cy="52" rx="4.2" ry="5" fill="#1a1a1a"/>
+      <circle cx="39.5" cy="50" r="1.4" fill="#fff"/>
+      <circle cx="63.5" cy="50" r="1.4" fill="#fff"/>
+    </>,
+    happy: <>
+      <path d="M34 53 Q38 48 42 53" stroke="#1a1a1a" strokeWidth="2.8" fill="none" strokeLinecap="round"/>
+      <path d="M58 53 Q62 48 66 53" stroke="#1a1a1a" strokeWidth="2.8" fill="none" strokeLinecap="round"/>
+    </>,
+    sleep: <>
+      <path d="M33 53 L43 53" stroke="#1a1a1a" strokeWidth="2.6" strokeLinecap="round"/>
+      <path d="M57 53 L67 53" stroke="#1a1a1a" strokeWidth="2.6" strokeLinecap="round"/>
+    </>,
+    sad: <>
+      <ellipse cx="38" cy="54" rx="4" ry="4.5" fill="#1a1a1a"/>
+      <ellipse cx="62" cy="54" rx="4" ry="4.5" fill="#1a1a1a"/>
+      <path d="M33 48 L42 50" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M67 48 L58 50" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round"/>
+    </>,
+    wow: <>
+      <ellipse cx="38" cy="52" rx="5" ry="6" fill="#1a1a1a"/>
+      <ellipse cx="62" cy="52" rx="5" ry="6" fill="#1a1a1a"/>
+      <circle cx="39.5" cy="50" r="1.6" fill="#fff"/>
+      <circle cx="63.5" cy="50" r="1.6" fill="#fff"/>
+    </>,
+    wave: <>
+      <ellipse cx="38" cy="52" rx="4.2" ry="5" fill="#1a1a1a"/>
+      <ellipse cx="62" cy="52" rx="4.2" ry="5" fill="#1a1a1a"/>
+      <circle cx="39.5" cy="50" r="1.4" fill="#fff"/>
+      <circle cx="63.5" cy="50" r="1.4" fill="#fff"/>
+    </>,
+  }[expression] || null;
+
+  const mouth = {
+    default: <path d="M44 65 Q50 70 56 65" stroke="#1a1a1a" strokeWidth="2.4" fill="none" strokeLinecap="round"/>,
+    happy: <path d="M40 64 Q50 74 60 64 Q56 70 50 70 Q44 70 40 64 Z" stroke="#1a1a1a" strokeWidth="2.6" fill="#ff6b8a" strokeLinejoin="round"/>,
+    sleep: <ellipse cx="50" cy="68" rx="3.5" ry="2.5" fill="none" stroke="#1a1a1a" strokeWidth="2"/>,
+    sad: <path d="M44 70 Q50 65 56 70" stroke="#1a1a1a" strokeWidth="2.4" fill="none" strokeLinecap="round"/>,
+    wow: <ellipse cx="50" cy="68" rx="4" ry="5" fill="#1a1a1a"/>,
+    wave: <path d="M44 65 Q50 70 56 65" stroke="#1a1a1a" strokeWidth="2.4" fill="none" strokeLinecap="round"/>,
+  }[expression];
+
+  const arm = expression === 'wave' ? (
+    <g transform="translate(82,58) rotate(-25)">
+      <ellipse cx="0" cy="0" rx="5" ry="3.5" fill={fill} stroke="#1a1a1a" strokeWidth="2"/>
+    </g>
+  ) : null;
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: 'block' }}>
+      <ellipse cx="50" cy="93" rx="22" ry="2.5" fill="rgba(0,0,0,0.08)"/>
+      <ellipse cx="40" cy="89" rx="6" ry="3.5" fill={fill} stroke="#1a1a1a" strokeWidth="2"/>
+      <ellipse cx="60" cy="89" rx="6" ry="3.5" fill={fill} stroke="#1a1a1a" strokeWidth="2"/>
+      {sp === 'cat' ? (
+        <g>
+          <path d="M 26 30 L 22 12 L 38 22 Z" fill={fill} stroke="#1a1a1a" strokeWidth="2.2" strokeLinejoin="round"/>
+          <path d="M 74 30 L 78 12 L 62 22 Z" fill={fill} stroke="#1a1a1a" strokeWidth="2.2" strokeLinejoin="round"/>
+          <path d="M 27 26 L 26 18 L 32 22 Z" fill={earInner}/>
+          <path d="M 73 26 L 74 18 L 68 22 Z" fill={earInner}/>
+        </g>
+      ) : (
+        <g>
+          <ellipse cx="22" cy="32" rx="8" ry="14" fill={fill} stroke="#1a1a1a" strokeWidth="2.2" transform="rotate(-18 22 32)"/>
+          <ellipse cx="78" cy="32" rx="8" ry="14" fill={fill} stroke="#1a1a1a" strokeWidth="2.2" transform="rotate(18 78 32)"/>
+        </g>
+      )}
+      <path
+        d="M 50 22 C 28 22, 20 38, 20 56 C 20 78, 32 88, 50 88 C 68 88, 80 78, 80 56 C 80 38, 72 22, 50 22 Z"
+        fill={fill} stroke="#1a1a1a" strokeWidth="2.4" strokeLinejoin="round"
+      />
+      <ellipse cx="35" cy="38" rx="7" ry="4.5" fill="rgba(255,255,255,0.45)" transform="rotate(-25 35 38)"/>
+      {eyes}
+      {sp === 'cat' ? (
+        <path d="M 47 60 L 53 60 L 50 64 Z" fill="#ff8fa3" stroke="#1a1a1a" strokeWidth="1.4" strokeLinejoin="round"/>
+      ) : (
+        <ellipse cx="50" cy="62" rx="3.5" ry="2.5" fill="#1a1a1a"/>
+      )}
+      {sp === 'cat' ? (
+        <g>
+          <path d="M 50 64 Q 50 68 46 68" stroke="#1a1a1a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          <path d="M 50 64 Q 50 68 54 68" stroke="#1a1a1a" strokeWidth="2" fill="none" strokeLinecap="round"/>
+          <path d="M 25 64 L 38 62" stroke="#1a1a1a" strokeWidth="1.4" strokeLinecap="round" opacity="0.7"/>
+          <path d="M 25 68 L 38 67" stroke="#1a1a1a" strokeWidth="1.4" strokeLinecap="round" opacity="0.7"/>
+          <path d="M 75 64 L 62 62" stroke="#1a1a1a" strokeWidth="1.4" strokeLinecap="round" opacity="0.7"/>
+          <path d="M 75 68 L 62 67" stroke="#1a1a1a" strokeWidth="1.4" strokeLinecap="round" opacity="0.7"/>
+        </g>
+      ) : null}
+      {mouth}
+      <circle cx="28" cy="68" r="4" fill="#ff8fa3" opacity="0.55"/>
+      <circle cx="72" cy="68" r="4" fill="#ff8fa3" opacity="0.55"/>
+      {arm}
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// SkIcon — 손그림 아이콘
+// ─────────────────────────────────────────────────────
+function SkIcon({ name, size = 16, color = 'currentColor', strokeWidth = 1.8 }) {
+  const paths = {
+    home: <path d="M3 10 L10 3 L17 10 M5 9 V17 H15 V9"/>,
+    bell: <path d="M5 14 H15 M6 14 V9 Q6 5 10 5 Q14 5 14 9 V14 M8 16 Q10 18 12 16"/>,
+    star: <path d="M10 3 L12 8 L17 8.5 L13 12 L14.5 17 L10 14 L5.5 17 L7 12 L3 8.5 L8 8 Z"/>,
+    user: <>
+      <circle cx="10" cy="7" r="3"/>
+      <path d="M4 17 Q4 11 10 11 Q16 11 16 17"/>
+    </>,
+    search: <>
+      <circle cx="8.5" cy="8.5" r="4.5"/>
+      <path d="M12 12 L16 16"/>
+    </>,
+    filter: <path d="M3 5 H17 M5 10 H15 M8 15 H12"/>,
+    close: <path d="M5 5 L15 15 M15 5 L5 15"/>,
+    chev: <path d="M7 4 L13 10 L7 16"/>,
+    'chev-l': <path d="M13 4 L7 10 L13 16"/>,
+    'chev-d': <path d="M4 7 L10 13 L16 7"/>,
+    'chev-u': <path d="M4 13 L10 7 L16 13"/>,
+    plus: <path d="M10 4 V16 M4 10 H16"/>,
+    check: <path d="M4 10 L8 14 L16 5"/>,
+    list: <path d="M3 5 H17 M3 10 H17 M3 15 H17"/>,
+    grid: <path d="M3 3 H9 V9 H3 Z M11 3 H17 V9 H11 Z M3 11 H9 V17 H3 Z M11 11 H17 V17 H11 Z"/>,
+    heart: <path d="M10 16 Q3 11 3 7 Q3 4 6 4 Q8 4 10 7 Q12 4 14 4 Q17 4 17 7 Q17 11 10 16 Z"/>,
+    clock: <>
+      <circle cx="10" cy="10" r="6"/>
+      <path d="M10 7 V10 L13 12"/>
+    </>,
+    calendar: <>
+      <rect x="3" y="5" width="14" height="12" rx="1"/>
+      <path d="M3 8 H17 M7 3 V6 M13 3 V6"/>
+    </>,
+    doc: <path d="M5 3 H13 L16 6 V17 H5 Z M13 3 V6 H16 M7 9 H14 M7 12 H14 M7 15 H11"/>,
+    link: <path d="M9 7 L7 7 Q3 7 3 11 Q3 14 7 14 L9 14 M11 7 L13 7 Q17 7 17 11 Q17 14 13 14 L11 14 M7 11 H13"/>,
+    bookmark: <path d="M5 3 H15 V17 L10 13 L5 17 Z"/>,
+    share: <>
+      <circle cx="5" cy="10" r="2"/>
+      <circle cx="15" cy="5" r="2"/>
+      <circle cx="15" cy="15" r="2"/>
+      <path d="M7 9 L13 6 M7 11 L13 14"/>
+    </>,
+    mic: <path d="M10 3 Q12 3 12 5 V10 Q12 12 10 12 Q8 12 8 10 V5 Q8 3 10 3 Z M5 10 Q5 14 10 14 Q15 14 15 10 M10 14 V17"/>,
+    refresh: <path d="M5 5 Q5 3 8 3 H12 Q16 3 16 7 V10 M16 7 L14 9 M16 7 L18 9 M15 15 Q15 17 12 17 H8 Q4 17 4 13 V10 M4 13 L2 11 M4 13 L6 11"/>,
+    settings: <>
+      <circle cx="10" cy="10" r="2.5"/>
+      <path d="M10 3 V5 M10 15 V17 M17 10 H15 M5 10 H3 M15 5 L13.5 6.5 M6.5 13.5 L5 15 M15 15 L13.5 13.5 M6.5 6.5 L5 5"/>
+    </>,
+    fire: <path d="M10 3 Q6 7 6 10 Q6 14 10 17 Q14 14 14 10 Q14 7 12 5 Q11 8 10 8 Q9 6 10 3 Z"/>,
+    bag: <path d="M5 7 H15 L16 17 H4 Z M7 7 Q7 3 10 3 Q13 3 13 7"/>,
+    sparkle: <path d="M10 3 L11 8 L16 9 L11 10 L10 15 L9 10 L4 9 L9 8 Z M16 3 L16.5 5 L18 5.5 L16.5 6 L16 8 L15.5 6 L14 5.5 L15.5 5 Z"/>,
+    compass: <>
+      <circle cx="10" cy="10" r="7"/>
+      <path d="M10 5 L12 10 L10 15 L8 10 Z" fill={color} fillOpacity="0.15"/>
+      <path d="M10 5 L12 10 L10 15 L8 10 Z"/>
+    </>,
+    arrowR: <path d="M3 10 H17 M12 5 L17 10 L12 15"/>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={{ display:'inline-block', verticalAlign:'middle' }}>
+      {paths[name]}
+    </svg>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// HiFi 공용
+// ─────────────────────────────────────────────────────
+function HiFiPhone({ children, title, showAppBar = true, leading, action, padTop = false, lockScreen = false }) {
+  return (
+    <div className={'hifi'}>
+      <div className={'hifi-phone' + (lockScreen ? ' h-lock' : '')}>
+        <div className="hifi-status" style={lockScreen ? { color: '#fff' } : {}}>
+          <span>9:41</span>
+          <span style={{ flex: 1 }}/>
+          <span className="right">
+            <span style={{ fontSize: 12 }}>●●●</span>
+            <span style={{ fontSize: 12 }}>📶</span>
+            <span style={{
+              display: 'inline-block', width: 22, height: 11, borderRadius: 2,
+              border: `1.4px solid ${lockScreen ? '#fff' : '#3c3c3c'}`,
+              position: 'relative'
+            }}>
+              <span style={{
+                position:'absolute', left: 1, top: 1, bottom: 1, width: '80%',
+                background: lockScreen ? '#fff' : '#3c3c3c', borderRadius: 1
+              }}/>
+            </span>
+          </span>
+        </div>
+
+        {showAppBar && title !== undefined && (
+          <div className="hifi-appbar">
+            {leading}
+            <div className="title">{title}</div>
+            {action}
+          </div>
+        )}
+
+        <div className="hifi-phone-inner" style={{
+          background: lockScreen ? 'transparent' : undefined,
+          paddingTop: padTop ? 12 : 0
+        }}>
+          {children}
+        </div>
+
+        <div className="hifi-nav">
+          <div className="hifi-nav-pill" style={{ background: lockScreen ? '#fff' : '#1a1a1a', opacity: lockScreen ? 0.8 : 1 }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HiFiIconBtn({ name, size = 20, onClick, ariaLabel }) {
+  return (
+    <div className="icon-btn" onClick={onClick} aria-label={ariaLabel} role="button">
+      <SkIcon name={name} size={size} color="#3c3c3c"/>
+    </div>
+  );
+}
+
+function HiFiTabBar({ active = 'home' }) {
+  const nav = useNav();
+  const tabs = [
+    { id: 'home', label: '오늘', icon: 'home', route: 'h_main' },
+    { id: 'search', label: '검색', icon: 'search', route: 'h_search' },
+    { id: 'discover', label: '찾아보기', icon: 'compass', route: 'h_discover' },
+    { id: 'fav', label: '관심기업', icon: 'heart', route: 'h_fav' },
+    { id: 'me', label: '내정보', icon: 'user', route: 'h_mypage' },
+  ];
+  return (
+    <div className="h-tabbar">
+      {tabs.map(t => (
+        <div key={t.id} className={'tab' + (active === t.id ? ' on' : '')}
+             onClick={() => nav.go(t.route)}>
+          <div className="ico">
+            <SkIcon name={t.icon} size={22} color="currentColor" strokeWidth={2.2}/>
+          </div>
+          <div>{t.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function HiFiJobCard({ kind = 'new', company, role, logo, dday, dateText, onClick }) {
+  const labelKlass = kind === 'new' ? 'new' : kind === 'update' ? 'update' : 'closing';
+  const labelText = kind === 'new' ? 'NEW' : kind === 'update' ? 'UPDATE' : 'CLOSING';
+  return (
+    <div className="h-job-card" onClick={onClick}>
+      <div className="h-logo">{logo}</div>
+      <div className="h-grow">
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className={`h-label ${labelKlass}`}>{labelText}</span>
+          <span className="h-body-2" style={{ fontSize: 12, fontWeight: 600 }}>{company}</span>
+        </div>
+        <div className="h-h2" style={{ marginTop: 4, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{role}</div>
+      </div>
+      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+        <div className="h-mono-num" style={{ fontSize: 16, color: `var(--h-${labelKlass})` }}>{dday}</div>
+        <div className="h-body-2" style={{ fontSize: 11 }}>{dateText}</div>
+      </div>
+    </div>
+  );
+}
+
+function HiFiMascot({ size = 100, expression = 'happy', glow = false }) {
+  return (
+    <div style={{
+      width: size + 24, height: size + 24,
+      borderRadius: '50%',
+      background: glow ? 'var(--h-brand-soft)' : 'transparent',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'relative'
+    }}>
+      <Mascot size={size} expression={expression}/>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 상수
+// ─────────────────────────────────────────────────────
+const HIFI_JOB_CATEGORIES = [
+  '기획·전략', '마케팅·홍보·조사', '회계·세무·재무',
+  '인사·노무·HRD', '총무·법무·사무', 'IT개발·데이터',
+  '디자인', '영업·판매·무역', '고객상담·TM',
+  '구매·자재·물류', '상품기획·MD', '운전·운송·배송',
+  '서비스', '생산', '건설·건축',
+  '의료', '연구·R&D', '교육',
+  '미디어·문화·스포츠', '금융·보험', '공공·복지'
+];
+
+const HIFI_DECK = [
+  { logo:'두산', name:'두산에너빌리티', sector:'에너지·중공업', region:'창원', size:'대기업', recent:5,
+    posting:{ kind:'new', role:'2026 신입공채 (기계/전기/화학)', dday:'D-22', date:'~6/13 18:00',
+      summary:'배터리·원전·풍력 등 다양한 분야에서 신입 모집. 학사 이상.',
+      exp:'신입', edu:'학사+', loc:'창원' },
+    tags:['친환경', '원전', '터빈'] },
+  { logo:'KT', name:'KT', sector:'통신·IT', region:'서울/판교', size:'대기업', recent:3,
+    posting:{ kind:'new', role:'AI Lab 연구원 (신입)', dday:'D-18', date:'~6/9 23:59',
+      summary:'GPT 기반 한국어 LLM 연구·개발. 석사+ 우대.',
+      exp:'신입', edu:'학사+', loc:'판교' },
+    tags:['AI', '5G', '클라우드'] },
+  { logo:'아모', name:'아모레퍼시픽', sector:'화장품·뷰티', region:'서울', size:'대기업', recent:2,
+    posting:{ kind:'new', role:'마케팅·브랜드 매니저', dday:'D-14', date:'~6/5 18:00',
+      summary:'설화수·라네즈 등 메인 브랜드 마케팅 담당. 3년+ 경력.',
+      exp:'3년+', edu:'학사+', loc:'서울 용산' },
+    tags:['뷰티', '글로벌', 'K-beauty'] },
+  { logo:'한화', name:'한화시스템', sector:'방산·IT', region:'성남', size:'대기업', recent:4,
+    posting:{ kind:'new', role:'SW 엔지니어 (신입)', dday:'D-25', date:'~6/16 18:00',
+      summary:'위성·방산 SW 개발. C++/Python 기본. 보안의식 필수.',
+      exp:'신입', edu:'학사+', loc:'성남' },
+    tags:['방산', '위성', '보안'] },
+  { logo:'쿠팡', name:'쿠팡', sector:'커머스·물류', region:'서울', size:'대기업', recent:7,
+    posting:{ kind:'new', role:'백엔드 엔지니어 (신입)', dday:'D-12', date:'~6/3 23:59',
+      summary:'대규모 트래픽 처리. Java/Kotlin · MSA. 영어 가능자 우대.',
+      exp:'신입', edu:'학사+', loc:'서울 송파' },
+    tags:['커머스', '대규모', '성장'] },
+];
+
+function HiFi_DiscoverCard({ data, companyFav, postingSaved, onToggleCompany, onTogglePosting, idx, total }) {
+  const k = data.posting.kind;
+  return (
+    <div className="hifi-reel-card">
+      <div style={{ padding: '20px 20px 16px' }}>
+        <div className="h-row" style={{ gap: 14, alignItems:'flex-start' }}>
+          <div className="h-logo lg" style={{ background:'var(--h-brand-soft)', color:'var(--h-brand-dark)' }}>{data.logo}</div>
+          <div className="h-grow">
+            <div className="h-body-2" style={{ fontSize: 12 }}>{data.size} · {data.region}</div>
+            <div className="h-title" style={{ marginTop: 2 }}>{data.name}</div>
+            <div className="h-body-2" style={{ fontSize: 13 }}>{data.sector}</div>
+          </div>
+        </div>
+        <div className="h-row" style={{ gap: 6, marginTop: 12, flexWrap:'wrap' }}>
+          {data.tags.map(t => <span key={t} className="h-chip sm">#{t}</span>)}
+          <span className="h-chip sm" style={{ background:'var(--h-brand-soft)', color:'var(--h-brand-dark)' }}>
+            최근 공고 {data.recent}건
+          </span>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background:'var(--h-border)', margin: '0 20px' }}/>
+
+      <div style={{ padding: '20px 20px 24px', flex: 1, display:'flex', flexDirection:'column' }}>
+        <div className="h-row" style={{ gap: 8 }}>
+          <span className={`h-label ${k}`}>{k.toUpperCase()}</span>
+          <span style={{
+            fontSize: 13, fontWeight: 800,
+            color: `var(--h-${k})`,
+            fontFeatureSettings: '"tnum"'
+          }}>{data.posting.dday}</span>
+          <span style={{ flex: 1 }}/>
+          <span className="h-body-2" style={{ fontSize: 12 }}>~{data.posting.date}</span>
+        </div>
+
+        <div className="h-display" style={{ fontSize: 26, marginTop: 12, lineHeight: 1.15 }}>
+          {data.posting.role}
+        </div>
+
+        <div className="h-row" style={{ gap: 6, marginTop: 14, flexWrap:'wrap' }}>
+          <span className="h-chip outline sm">📍 {data.posting.loc}</span>
+          <span className="h-chip outline sm">🎓 {data.posting.edu}</span>
+          <span className="h-chip outline sm">💼 {data.posting.exp}</span>
+        </div>
+
+        <div className="h-card brand" style={{ padding: 14, marginTop: 16 }}>
+          <div className="h-row" style={{ gap: 8, alignItems:'flex-start' }}>
+            <span style={{ fontSize: 18 }}>✨</span>
+            <div className="h-body" style={{ fontWeight: 700, lineHeight: 1.4 }}>
+              {data.posting.summary}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }}/>
+
+        <div className="h-row" style={{ gap: 8, marginTop: 16 }}>
+          <button className="h-btn block" style={{ paddingTop: 12, paddingBottom: 12 }}>상세 보기</button>
+        </div>
+
+        <div style={{
+          textAlign:'center', marginTop: 14,
+          color:'var(--h-text-3)', fontSize: 12, fontWeight: 700,
+          opacity: idx === total - 1 ? 0 : 0.7
+        }}>
+          ↓ 다음 공고로 스크롤
+        </div>
+      </div>
+
+      <div style={{
+        position:'absolute', right: 14, bottom: 110,
+        display:'flex', flexDirection:'column', gap: 16, alignItems:'center'
+      }}>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: 2 }}>
+          <button
+            onClick={onToggleCompany}
+            style={{
+              width: 48, height: 48, borderRadius: 999,
+              background: companyFav ? 'var(--h-brand)' : '#fff',
+              border: companyFav ? '2px solid var(--h-brand)' : '2px solid var(--h-border)',
+              cursor:'pointer',
+              boxShadow: companyFav ? '0 4px 12px rgba(255,107,53,0.35)' : '0 2px 6px rgba(0,0,0,0.08)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition: 'transform 0.15s, background 0.15s'
+            }}>
+            <SkIcon name="heart" size={22} color={companyFav ? '#fff' : 'var(--h-text-2)'} strokeWidth={2.2}/>
+          </button>
+          <span style={{ fontSize: 10, fontWeight: 800, color: companyFav ? 'var(--h-brand)' : 'var(--h-text-3)' }}>
+            관심기업
+          </span>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: 2 }}>
+          <button
+            onClick={onTogglePosting}
+            style={{
+              width: 48, height: 48, borderRadius: 999,
+              background: postingSaved ? 'var(--h-update)' : '#fff',
+              border: postingSaved ? '2px solid var(--h-update)' : '2px solid var(--h-border)',
+              cursor:'pointer',
+              boxShadow: postingSaved ? '0 4px 12px rgba(255,200,0,0.35)' : '0 2px 6px rgba(0,0,0,0.08)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              transition: 'transform 0.15s, background 0.15s'
+            }}>
+            <SkIcon name="bookmark" size={22} color={postingSaved ? '#fff' : 'var(--h-text-2)'} strokeWidth={2.2}/>
+          </button>
+          <span style={{ fontSize: 10, fontWeight: 800, color: postingSaved ? 'var(--h-update-shadow)' : 'var(--h-text-3)' }}>
+            공고 저장
+          </span>
+        </div>
+      </div>
+
+      <div style={{
+        position:'absolute', left: 14, top: 14,
+        display:'flex', gap: 3
+      }}>
+        {Array.from({ length: total }).map((_, i) =>
+          <span key={i} style={{
+            width: i === idx ? 16 : 6,
+            height: 3,
+            borderRadius: 999,
+            background: i <= idx ? 'var(--h-brand)' : 'var(--h-border)',
+            transition: 'width 0.3s'
+          }}/>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 온보딩 ① 직군
+// ─────────────────────────────────────────────────────
+function HiFi_Onb1() {
+  const nav = useNav();
+  const [selected, setSelected] = React.useState({ 2: true, 5: true, 6: true });
+  const count = Object.values(selected).filter(Boolean).length;
+  const toggle = (i) => setSelected(s => ({ ...s, [i]: !s[i] }));
+
+  return (
+    <HiFiPhone showAppBar={false}>
+      <div className="h-pad" style={{ flex: 1, display: 'flex', flexDirection: 'column', paddingBottom: 14 }}>
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className="h-dot on"/>
+          <span className="h-dot"/>
+          <span className="h-dot"/>
+          <span className="h-dot"/>
+          <span style={{ flex: 1 }}/>
+          <button className="h-btn ghost sm" onClick={() => nav.go('h_main')}>건너뛰기</button>
+        </div>
+
+        <div className="h-row" style={{ gap: 12, alignItems:'center', marginTop: 12 }}>
+          <Mascot size={56} expression="wave"/>
+          <div>
+            <div className="h-display" style={{ fontSize: 24 }}>어떤 일을 찾고 있어?</div>
+            <div className="h-body-2" style={{ marginTop: 2 }}>복수 선택 OK</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', marginTop: 14, paddingRight: 2 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {HIFI_JOB_CATEGORIES.map((j, i) =>
+              <button
+                key={j}
+                onClick={() => toggle(i)}
+                className={'h-btn ' + (selected[i] ? 'primary' : '') + ' sm'}
+                style={{
+                  padding: '12px 8px',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  textAlign: 'center',
+                  lineHeight: 1.2,
+                  letterSpacing: -0.2,
+                  textTransform: 'none'
+                }}>
+                {j}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <button
+          className={'h-btn block ' + (count > 0 ? 'primary' : '')}
+          style={{ marginTop: 14 }}
+          onClick={() => nav.go('h_onb2')}
+          disabled={count === 0}>
+          다음 ({count}개 선택됨) →
+        </button>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 온보딩 ② 기업 규모/산업
+// ─────────────────────────────────────────────────────
+function HiFi_Onb2() {
+  const nav = useNav();
+  const [scale, setScale] = React.useState({ 0: true, 1: true });
+  const [sector, setSector] = React.useState({ 0: true, 1: true });
+  const scales = ['대기업', '공기업', '중견기업', '중소기업', '외국계', '스타트업'];
+  const sectors = ['IT/플랫폼', '반도체', '금융', '자동차', '바이오', '화학/소재', '유통', '+ 더보기'];
+  const toggle = (state, set) => (i) => set(s => ({ ...s, [i]: !s[i] }));
+
+  return (
+    <HiFiPhone showAppBar={false}>
+      <div className="h-pad" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot on"/>
+          <span className="h-dot"/>
+          <span className="h-dot"/>
+          <span style={{ flex: 1 }}/>
+          <button className="h-btn ghost sm" onClick={() => nav.go('h_main')}>건너뛰기</button>
+        </div>
+
+        <div className="h-row" style={{ gap: 12, alignItems:'center', marginTop: 12 }}>
+          <Mascot size={56} expression="default"/>
+          <div>
+            <div className="h-display" style={{ fontSize: 24 }}>어떤 회사들이 궁금해?</div>
+            <div className="h-body-2" style={{ marginTop: 2 }}>매칭 정확도 ↑</div>
+          </div>
+        </div>
+
+        <div className="h-body-2" style={{ marginTop: 18, fontWeight: 700, color: 'var(--h-text-2)' }}>기업 규모</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginTop: 8 }}>
+          {scales.map((s, i) =>
+            <button key={s} onClick={() => toggle(scale, setScale)(i)}
+              className={'h-btn sm' + (scale[i] ? ' primary' : '')}
+              style={{ padding: '10px 6px', fontSize: 13, textTransform: 'none' }}>{s}</button>
+          )}
+        </div>
+
+        <div className="h-body-2" style={{ marginTop: 22, fontWeight: 700, color: 'var(--h-text-2)' }}>산업군</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+          {sectors.map((s, i) =>
+            <button key={s} onClick={() => toggle(sector, setSector)(i)}
+              className={'h-btn sm' + (sector[i] ? ' primary' : '')}
+              style={{ padding: '12px 8px', fontSize: 14, textTransform: 'none' }}>{s}</button>
+          )}
+        </div>
+
+        <div style={{ flex: 1 }}/>
+        <div className="h-row" style={{ gap: 10 }}>
+          <button className="h-btn" style={{ flex: 1 }} onClick={() => nav.back()}>← 이전</button>
+          <button className="h-btn primary" style={{ flex: 2 }} onClick={() => nav.go('h_onb2swipe')}>다음 →</button>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 온보딩 ③ 회사 스와이프 (Reels)
+// ─────────────────────────────────────────────────────
+function HiFi_OnbSwipe() {
+  const nav = useNav();
+  const [companyFav, setCompanyFav] = React.useState({});
+  const [postingSaved, setPostingSaved] = React.useState({});
+  const scrollRef = React.useRef(null);
+
+  const total = HIFI_DECK.length;
+  const favCount = Object.values(companyFav).filter(Boolean).length;
+
+  return (
+    <HiFiPhone
+      showAppBar={true}
+      title="관심 회사 고르기"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+      action={<button className="h-btn ghost sm" onClick={() => nav.go('h_onb4')}>건너뛰기</button>}
+    >
+      <div style={{ padding: '0 20px 12px' }}>
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot on"/>
+          <span className="h-dot"/>
+        </div>
+        <div className="h-row" style={{ marginTop: 8, alignItems: 'center' }}>
+          <div className="h-body-2 h-grow">스크롤하면서 ❤️ 누르면 관심기업으로!</div>
+          <span className="h-chip sm" style={{ background:'var(--h-brand-soft)', color:'var(--h-brand-dark)', fontWeight: 800 }}>
+            {favCount}개 추가됨
+          </span>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="hifi-reel-feed"
+        style={{
+          flex: 1,
+          overflowY: 'scroll',
+          scrollSnapType: 'y mandatory',
+          scrollBehavior: 'smooth',
+        }}>
+        {HIFI_DECK.map((data, i) =>
+          <HiFi_DiscoverCard
+            key={i}
+            data={data}
+            companyFav={!!companyFav[data.name]}
+            postingSaved={!!postingSaved[data.posting.role]}
+            onToggleCompany={() => setCompanyFav(s => ({ ...s, [data.name]: !s[data.name] }))}
+            onTogglePosting={() => setPostingSaved(s => ({ ...s, [data.posting.role]: !s[data.posting.role] }))}
+            idx={i}
+            total={total}
+          />
+        )}
+        <div className="hifi-reel-card" style={{
+          background:'var(--h-brand-soft)',
+          display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          padding: 28, textAlign:'center'
+        }}>
+          <HiFiMascot size={120} expression="happy"/>
+          <div className="h-title" style={{ marginTop: 14, color: 'var(--h-brand-dark)' }}>
+            {favCount > 0 ? `${favCount}개 관심기업 추가!` : '관심 회사를 골라봐!'}
+          </div>
+          <div className="h-body-2" style={{ marginTop: 6, lineHeight: 1.4 }}>
+            매일 새 공고를 알려드릴게요
+          </div>
+          <button className="h-btn primary block" style={{ marginTop: 22 }} onClick={() => nav.go('h_onb4')}>
+            다음
+          </button>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 온보딩 ④ 위젯 + 알림
+// ─────────────────────────────────────────────────────
+function HiFi_Onb4Widget() {
+  const nav = useNav();
+  return (
+    <HiFiPhone showAppBar={false}>
+      <div className="h-pad" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot" style={{ background:'var(--h-brand)', width: 24, borderRadius: 4 }}/>
+          <span className="h-dot on"/>
+        </div>
+
+        <div className="h-display" style={{ marginTop: 18, fontSize: 28, lineHeight: 1.1 }}>
+          마지막!<br/>
+          잊지 않게 챙겨줄게
+        </div>
+        <div className="h-body-2" style={{ marginTop: 6 }}>
+          매일 아침 9시, 저녁 9시에 새 공고를 알려드릴게요
+        </div>
+
+        <div className="h-card brand" style={{ padding: 14, marginTop: 22 }}>
+          <div className="h-caption" style={{ color: 'var(--h-brand-dark)' }}>📱 바탕화면 위젯 미리보기</div>
+          <div style={{
+            marginTop: 10,
+            background: '#1a1a1a',
+            borderRadius: 16,
+            padding: 14,
+          }}>
+            <div className="h-widget" style={{ boxShadow: 'none' }}>
+              <div className="h-row" style={{ gap: 10 }}>
+                <Mascot size={40} expression="happy"/>
+                <div className="h-grow">
+                  <div className="h-body-2" style={{ fontSize: 11 }}>오늘 새 공고</div>
+                  <div className="h-row" style={{ gap: 6, marginTop: 2, alignItems:'baseline' }}>
+                    <span className="h-mono-num" style={{ fontSize: 26, color:'var(--h-brand)', lineHeight: 1 }}>17</span>
+                    <span className="h-body-2" style={{ fontSize: 12 }}>+ 마감 3</span>
+                  </div>
+                </div>
+                <div style={{
+                  minWidth: 24, height: 24, padding: '0 6px', borderRadius: 999,
+                  background: 'var(--h-brand)', color: '#fff',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize: 11, fontWeight: 800,
+                  border: '2px solid #fff'
+                }}>17</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-col" style={{ gap: 10, marginTop: 18 }}>
+          {[
+            '아침 9:00 · 새 공고 요약',
+            '저녁 9:00 · 마감 임박 공고',
+            '바탕화면 위젯으로 한눈에',
+          ].map((t, i) =>
+            <div key={i} className="h-row" style={{ gap: 10 }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: 999, background: 'var(--h-brand)',
+                display:'flex', alignItems:'center', justifyContent:'center'
+              }}>
+                <SkIcon name="check" size={14} color="#fff" strokeWidth={2.4}/>
+              </div>
+              <span className="h-body" style={{ fontWeight: 600 }}>{t}</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ flex: 1 }}/>
+        <button className="h-btn primary block lg" onClick={() => nav.go('h_main')}>
+          알림 허용하고 위젯 추가
+        </button>
+        <button className="h-btn ghost block" style={{ marginTop: 6, fontSize: 14 }} onClick={() => nav.go('h_main')}>
+          나중에 설정에서 켤 수 있어요
+        </button>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 메인 피드
+// ─────────────────────────────────────────────────────
+function HiFi_Main() {
+  const nav = useNav();
+  const [section, setSection] = React.useState('new');
+  const sections = {
+    new: { count: 17, color: 'var(--h-new)', label: 'NEW' },
+    update: { count: 4, color: 'var(--h-update)', label: 'UPDATE' },
+    closing: { count: 3, color: 'var(--h-closing)', label: 'CLOSING' },
+  };
+  const newJobs = [
+    ['삼성','삼성전자','2026 상반기 신입공채','D-24','~6/15'],
+    ['N','네이버','신입 백엔드 개발자','D-19','~6/10'],
+    ['LG','LG에너지솔루션','연구개발(R&D) 신입','D-16','~6/7'],
+    ['카카오','카카오','신입 안드로이드 개발자','D-14','~6/5'],
+    ['포스','포스코','2026 상반기 신입공채','D-12','~6/3'],
+    ['HM','현대모비스','기계 R&D 신입','D-10','~6/1'],
+  ];
+
+  return (
+    <HiFiPhone
+      title="채용알리미"
+      action={
+        <div className="h-row" style={{ gap: 6 }}>
+          <HiFiIconBtn name="bell" onClick={() => nav.go('h_notifHistory')}/>
+          <HiFiIconBtn name="filter" onClick={() => nav.go('h_filter')}/>
+        </div>
+      }
+    >
+      <div style={{ padding: '0 20px 8px' }}>
+        <div className="h-row" style={{ alignItems:'flex-end' }}>
+          <div className="h-grow">
+            <div className="h-body-2">5월 22일 목요일</div>
+            <div className="h-title" style={{ marginTop: 2 }}>
+              오늘 새 공고 <span style={{ color: 'var(--h-brand)' }}>17건</span>
+            </div>
+          </div>
+          <div style={{ position:'relative' }}>
+            <Mascot size={60} expression="happy"/>
+            <div style={{
+              position: 'absolute', top: -2, right: -4,
+              minWidth: 24, height: 24, padding: '0 6px',
+              borderRadius: 999, background: 'var(--h-brand)', color: '#fff',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize: 12, fontWeight: 800,
+              border: '2px solid #fff'
+            }}>17</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '6px 20px 10px' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {Object.entries(sections).map(([id, s]) =>
+            <button
+              key={id}
+              onClick={() => setSection(id)}
+              className={'h-chip outline' + (section === id ? ' on' : '')}
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+                background: section === id ? s.color : 'var(--h-bg)',
+                borderColor: section === id ? s.color : 'var(--h-border)',
+                color: section === id ? '#fff' : 'var(--h-text-2)',
+              }}>
+              {s.label} {s.count}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px', display:'flex', flexDirection:'column', gap: 10 }}>
+        {newJobs.map(([logo, comp, role, dday, date], i) =>
+          <HiFiJobCard key={i}
+            kind={section}
+            logo={logo}
+            company={comp}
+            role={role}
+            dday={dday}
+            dateText={date}
+            onClick={() => nav.go('h_detail')}
+          />
+        )}
+        <div style={{ height: 4 }}/>
+      </div>
+
+      <HiFiTabBar active="home"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 메인 (빈 상태)
+// ─────────────────────────────────────────────────────
+function HiFi_MainEmpty() {
+  const nav = useNav();
+  return (
+    <HiFiPhone
+      title="채용알리미"
+      action={<HiFiIconBtn name="filter" onClick={() => nav.go('h_filter')}/>}
+    >
+      <div style={{ padding: '0 20px 8px' }}>
+        <div className="h-row" style={{ alignItems:'flex-end' }}>
+          <div className="h-grow">
+            <div className="h-body-2">5월 22일 목요일</div>
+            <div className="h-title" style={{ marginTop: 2 }}>
+              오늘은 <span style={{ color: 'var(--h-text-2)' }}>조용한 날</span>
+            </div>
+          </div>
+          <Mascot size={60} expression="sleep"/>
+        </div>
+      </div>
+
+      <div style={{ padding: '6px 20px 10px' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="h-chip outline" style={{ flex: 1, justifyContent: 'center', color: 'var(--h-text-3)' }}>NEW 0</button>
+          <button className="h-chip outline" style={{ flex: 1, justifyContent: 'center' }}>UPDATE 1</button>
+          <button className="h-chip outline" style={{ flex: 1, justifyContent: 'center' }}>CLOSING 2</button>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 16px' }}>
+        <div className="h-card brand" style={{ padding: 22, textAlign: 'center' }}>
+          <Mascot size={80} expression="default"/>
+          <div className="h-h2" style={{ marginTop: 10 }}>오늘 새 공고는 없어요</div>
+          <div className="h-body-2" style={{ marginTop: 6, lineHeight: 1.4 }}>
+            대부분 기업이 휴식 중이에요.<br/>
+            관심 기업을 더 추가하면 더 자주 볼 수 있어요!
+          </div>
+          <button className="h-btn primary" style={{ marginTop: 16 }} onClick={() => nav.go('h_fav')}>+ 관심 기업 추가</button>
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>📌 챙겨봐야 할 공고</div>
+        <div className="h-col" style={{ gap: 10, marginTop: 10 }}>
+          <HiFiJobCard kind="closing" logo="현" company="현대자동차" role="신입사원 일반공채" dday="D-1" dateText="내일" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="closing" logo="CJ" company="CJ제일제당" role="CJ 신입공채" dday="D-0" dateText="오늘" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="update" logo="SK" company="SK하이닉스" role="2026 신입사원 채용" dday="D-11" dateText="~6/2" onClick={() => nav.go('h_detail')}/>
+        </div>
+
+        <div className="h-card flat" style={{ marginTop: 16, padding: 12, background: 'var(--h-bg-2)', border: 'none' }}>
+          <div className="h-row" style={{ gap: 8 }}>
+            <SkIcon name="refresh" size={16} color="var(--h-text-2)"/>
+            <div className="h-body-2" style={{ fontWeight: 700 }}>다음 자동 수집: 내일 9:00</div>
+          </div>
+        </div>
+      </div>
+
+      <HiFiTabBar active="home"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 공고 상세
+// ─────────────────────────────────────────────────────
+function HiFi_Detail() {
+  const nav = useNav();
+  const [tab, setTab] = React.useState('summary');
+  const [saved, setSaved] = React.useState(false);
+
+  return (
+    <HiFiPhone
+      showAppBar={true}
+      title=""
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+      action={
+        <div className="h-row" style={{ gap: 8 }}>
+          <HiFiIconBtn name="bookmark" onClick={() => setSaved(s => !s)}/>
+          <HiFiIconBtn name="share" onClick={() => nav.go('h_share')}/>
+        </div>
+      }
+    >
+      <div style={{ padding: '0 20px 8px' }}>
+        <div className="h-row" style={{ gap: 14, alignItems:'flex-start' }}>
+          <div className="h-logo lg">N</div>
+          <div className="h-grow">
+            <span className="h-label new">NEW</span>
+            <div className="h-title" style={{ marginTop: 6 }}>신입 백엔드 개발자</div>
+            <div className="h-body-2" style={{ marginTop: 2 }}>네이버 · 판교</div>
+          </div>
+        </div>
+
+        <div className="h-row" style={{ gap: 6, marginTop: 12, flexWrap:'wrap' }}>
+          <span className="h-chip outline" style={{ background:'var(--h-new-soft)', color:'var(--h-new-shadow)', borderColor:'transparent' }}>D-19</span>
+          <span className="h-chip sm outline">신입</span>
+          <span className="h-chip sm outline">학사+</span>
+          <span className="h-chip sm outline">Java/Kotlin</span>
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 20px 0', borderBottom: '1px solid var(--h-border)', display:'flex', gap: 20 }}>
+        {[
+          ['summary', '요약'],
+          ['original', '원문'],
+          ['company', '회사'],
+          ['similar', '비슷한'],
+        ].map(([id, t]) =>
+          <div key={id}
+            onClick={() => {
+              if (id === 'similar') nav.go('h_similar');
+              else setTab(id);
+            }}
+            style={{
+              padding: '10px 0',
+              fontSize: 15,
+              fontWeight: 700,
+              color: tab === id ? 'var(--h-brand)' : 'var(--h-text-3)',
+              borderBottom: tab === id ? '3px solid var(--h-brand)' : '3px solid transparent',
+              marginBottom: -1,
+              cursor: 'pointer',
+            }}>{t}</div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+        <div className="h-card brand">
+          <div className="h-row" style={{ gap: 8, alignItems:'flex-start' }}>
+            <span style={{ fontSize: 22 }}>✨</span>
+            <div className="h-grow">
+              <div className="h-caption" style={{ color: 'var(--h-brand-dark)' }}>꽁이의 한줄 요약</div>
+              <div className="h-h2" style={{ marginTop: 4, fontWeight: 700 }}>
+                검색·커머스 백엔드. Java/Kotlin 대규모 트래픽 처리. 학사 이상, 신입 가능.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>📋 핵심 정보</div>
+        <div className="h-col" style={{ gap: 10, marginTop: 10 }}>
+          {[
+            ['마감', '6월 10일 (수) 23:59'],
+            ['자격', '학사 이상, 신입~3년'],
+            ['근무지', '분당구 정자동'],
+            ['전형', '서류 → 코딩 → 면접'],
+          ].map(([k, v]) =>
+            <div key={k} className="h-row" style={{ alignItems:'flex-start' }}>
+              <div className="h-body-2" style={{ width: 60, flexShrink: 0 }}>{k}</div>
+              <div className="h-body" style={{ fontWeight: 700, flex: 1 }}>{v}</div>
+            </div>
+          )}
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>🎯 우대사항</div>
+        <ul className="h-body" style={{ margin: '10px 0', paddingLeft: 20, lineHeight: 1.7 }}>
+          <li>대규모 분산 시스템 경험</li>
+          <li>Spring Boot / Kotlin 능숙자</li>
+          <li>오픈소스 기여 경험</li>
+        </ul>
+
+        <div className="h-card" style={{ background:'var(--h-bg-2)', borderColor:'transparent', marginTop: 12 }}>
+          <div className="h-row" style={{ gap: 8 }}>
+            <SkIcon name="link" size={18} color="var(--h-text-2)"/>
+            <div className="h-body-2" style={{ fontWeight: 700, color: 'var(--h-text-2)' }}>
+              recruit.navercorp.com/...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 20px 12px', borderTop: '1px solid var(--h-border)' }}>
+        <button className="h-btn primary block lg" onClick={() => alert('실제 앱: 네이버 채용 사이트로 이동')}>
+          지원하러 가기
+        </button>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 필터
+// ─────────────────────────────────────────────────────
+function HiFi_Filter() {
+  const nav = useNav();
+  const [job, setJob] = React.useState({ 5: true, 6: true });
+  const allJobs = HIFI_JOB_CATEGORIES;
+  const toggle = (i) => setJob(s => ({ ...s, [i]: !s[i] }));
+
+  const Sec = ({ title, sub, children }) => (
+    <div style={{ marginBottom: 22 }}>
+      <div className="h-row" style={{ justifyContent:'space-between', marginBottom: 8 }}>
+        <div className="h-h2">{title}</div>
+        {sub && <div className="h-body-2">{sub}</div>}
+      </div>
+      {children}
+    </div>
+  );
+
+  return (
+    <HiFiPhone
+      title="필터"
+      leading={<HiFiIconBtn name="close" size={22} onClick={() => nav.back()}/>}
+      action={<button className="h-btn ghost sm">초기화</button>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 16px' }}>
+        <Sec title="직군" sub={`${Object.values(job).filter(Boolean).length}개 선택`}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 6 }}>
+            {allJobs.map((j, i) =>
+              <button key={j} onClick={() => toggle(i)}
+                className={'h-btn sm' + (job[i] ? ' primary' : '')}
+                style={{ padding: '10px 6px', fontSize: 12, textTransform: 'none', lineHeight: 1.15 }}>{j}</button>
+            )}
+          </div>
+        </Sec>
+        <Sec title="기업 규모">
+          <div className="h-row" style={{ gap: 6, flexWrap:'wrap' }}>
+            {['대기업','공기업','중견','중소','외국계','스타트업'].map((j,i) =>
+              <span key={j} className={'h-chip outline' + ([0,1].includes(i) ? ' on' : '')}>{j}</span>
+            )}
+          </div>
+        </Sec>
+        <Sec title="경력">
+          <div className="h-row" style={{ gap: 6, flexWrap:'wrap' }}>
+            {['신입','1~3년','3~5년','5년+','무관'].map((j,i) =>
+              <span key={j} className={'h-chip outline' + (i===0 ? ' on' : '')}>{j}</span>
+            )}
+          </div>
+        </Sec>
+        <Sec title="지역">
+          <div className="h-row" style={{ gap: 6, flexWrap:'wrap' }}>
+            {['서울','경기/인천','대전','부산','광주','대구','+'].map((j,i) =>
+              <span key={j} className={'h-chip outline' + ([0,1].includes(i) ? ' on' : '')}>{j}</span>
+            )}
+          </div>
+        </Sec>
+        <Sec title="마감일">
+          <div className="h-row" style={{ gap: 6, flexWrap:'wrap' }}>
+            {['오늘','내일','D-3','D-7','D-14'].map(j =>
+              <span key={j} className="h-chip outline">{j}</span>
+            )}
+          </div>
+        </Sec>
+      </div>
+      <div style={{ padding: 16, borderTop: '1px solid var(--h-border)' }}>
+        <button className="h-btn primary block lg" onClick={() => nav.go('h_main')}>
+          17건 결과 보기
+        </button>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 검색
+// ─────────────────────────────────────────────────────
+function HiFi_Search() {
+  const nav = useNav();
+  return (
+    <HiFiPhone title="검색">
+      <div style={{ padding: '0 20px 8px' }}>
+        <div onClick={() => nav.go('h_searchResults')} style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 16px',
+          background: 'var(--h-bg-2)',
+          borderRadius: 14,
+          cursor: 'pointer',
+          border: '2px solid transparent'
+        }}>
+          <SkIcon name="search" size={18} color="var(--h-text)"/>
+          <span className="h-body" style={{ flex: 1, fontWeight: 600, color: 'var(--h-text-2)' }}>기업명·직무·키워드</span>
+          <SkIcon name="mic" size={18} color="var(--h-text-2)"/>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px 16px' }}>
+        <div className="h-row" style={{ justifyContent:'space-between' }}>
+          <div className="h-h2">최근 검색</div>
+          <button className="h-btn ghost sm" style={{ fontSize: 13 }}>전체삭제</button>
+        </div>
+        <div className="h-row" style={{ gap: 6, marginTop: 8, flexWrap:'wrap' }}>
+          {['삼성전자', 'UX 디자이너', '대전', '신입 개발', 'LG'].map(k =>
+            <span key={k} className="h-chip outline h-row" style={{ gap: 4, cursor:'pointer' }} onClick={() => nav.go('h_searchResults')}>
+              {k} <SkIcon name="close" size={11} color="var(--h-text-3)"/>
+            </span>
+          )}
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>🔥 지금 인기 검색어</div>
+        <div className="h-col" style={{ gap: 2, marginTop: 10 }}>
+          {[
+            ['1', '삼성전자 상반기 공채', '▲'],
+            ['2', '네이버 백엔드', '▲'],
+            ['3', 'LG에너지 R&D', 'NEW'],
+            ['4', '현대차', '-'],
+            ['5', '카카오 경력', '▼'],
+          ].map(([n, k, t]) =>
+            <div key={n} className="h-row" style={{ padding: '8px 0' }}>
+              <span className="h-mono-num" style={{ width: 24, color: 'var(--h-brand)', fontSize: 15 }}>{n}</span>
+              <span className="h-body h-grow" style={{ fontWeight: 600 }}>{k}</span>
+              <span style={{
+                fontSize: 11, fontWeight: 800,
+                color: t === '▲' ? 'var(--h-new-shadow)' : t === '▼' ? 'var(--h-closing)' : t === 'NEW' ? 'var(--h-brand)' : 'var(--h-text-3)'
+              }}>{t}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>직군별 둘러보기</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 10 }}>
+          {[
+            'IT개발·데이터', '디자인', '마케팅·홍보·조사',
+            '기획·전략', '회계·세무·재무', '인사·노무·HRD',
+            '영업·판매·무역', '연구·R&D'
+          ].map(j =>
+            <button key={j} className="h-btn sm" style={{ padding: '10px 6px', fontSize: 12, textTransform: 'none' }}
+              onClick={() => nav.go('h_searchResults')}>
+              {j}
+            </button>
+          )}
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>추천 키워드</div>
+        <div className="h-row" style={{ gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+          {['#신입공채', '#수시채용', '#재택가능', '#복지좋은', '#성과급', '#스타트업'].map(k =>
+            <span key={k} className="h-chip outline sm">{k}</span>
+          )}
+        </div>
+      </div>
+      <HiFiTabBar active="search"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 검색 결과
+// ─────────────────────────────────────────────────────
+function HiFi_SearchResults() {
+  const nav = useNav();
+  return (
+    <HiFiPhone
+      title=""
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ padding: '0 20px 8px' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '10px 16px',
+          background: 'var(--h-bg-2)',
+          borderRadius: 14,
+        }}>
+          <SkIcon name="search" size={18}/>
+          <span className="h-body" style={{ flex: 1, fontWeight: 700 }}>삼성</span>
+          <SkIcon name="close" size={14} color="var(--h-text-2)"/>
+        </div>
+      </div>
+
+      <div style={{ padding: '12px 20px 0', borderBottom: '1px solid var(--h-border)' }}>
+        <div className="h-row" style={{ gap: 6 }}>
+          <span className="h-chip on">전체 12</span>
+          <span className="h-chip outline">기업 4</span>
+          <span className="h-chip outline">공고 8</span>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
+        <div className="h-caption">기업 (4)</div>
+        <div className="h-col" style={{ gap: 0, marginTop: 8 }}>
+          {[
+            ['삼성', '삼성전자', 3, true],
+            ['삼성', '삼성SDS', 1, false],
+            ['삼성', '삼성바이오로직스', 0, false],
+            ['삼성', '삼성생명', 0, false],
+          ].map(([l, n, b, fav], i) =>
+            <div key={i} className="h-row" style={{
+              padding: '12px 0',
+              borderBottom: i < 3 ? '1px solid var(--h-border)' : 'none',
+              gap: 12,
+              cursor: 'pointer'
+            }} onClick={() => nav.go(b > 0 ? 'h_company' : 'h_companyEmpty')}>
+              <div className="h-logo sm">{l}</div>
+              <div className="h-grow">
+                <div className="h-body" style={{ fontWeight: 700 }}>
+                  <span style={{ background: 'var(--h-brand-soft)', color: 'var(--h-brand-dark)', padding: '0 2px', borderRadius: 2 }}>삼성</span>
+                  {n.slice(2)}
+                </div>
+                {b > 0 && <div className="h-body-2" style={{ fontSize: 12 }}>오늘 공고 {b}건</div>}
+              </div>
+              {fav ? (
+                <SkIcon name="heart" size={20} color="var(--h-brand)" strokeWidth={2.4}/>
+              ) : (
+                <button className="h-btn sm" style={{ padding: '6px 12px', fontSize: 12 }}>관심+</button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>공고 (8)</div>
+        <div className="h-col" style={{ gap: 10, marginTop: 8 }}>
+          <HiFiJobCard kind="new" logo="삼성" company="삼성전자" role="2026 상반기 신입공채" dday="D-24" dateText="~6/15" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="new" logo="삼성" company="삼성SDS" role="클라우드 신입사원" dday="D-20" dateText="~6/11" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="update" logo="삼성" company="삼성전자" role="DS부문 경력직" dday="D-30" dateText="~6/21" onClick={() => nav.go('h_detail')}/>
+        </div>
+      </div>
+      <HiFiTabBar active="search"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 찾아보기 (Reels)
+// ─────────────────────────────────────────────────────
+function HiFi_Discover() {
+  const [companyFav, setCompanyFav] = React.useState({});
+  const [postingSaved, setPostingSaved] = React.useState({});
+  const [activeIdx, setActiveIdx] = React.useState(0);
+  const scrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const h = el.clientHeight;
+      const i = Math.round(el.scrollTop / h);
+      if (i !== activeIdx) setActiveIdx(i);
+    };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [activeIdx]);
+
+  return (
+    <HiFiPhone title="찾아보기" action={<HiFiIconBtn name="filter"/>}>
+      <div
+        ref={scrollRef}
+        className="hifi-reel-feed"
+        style={{
+          flex: 1,
+          overflowY: 'scroll',
+          scrollSnapType: 'y mandatory',
+          scrollBehavior: 'smooth',
+        }}>
+        {HIFI_DECK.map((data, i) =>
+          <HiFi_DiscoverCard
+            key={i}
+            data={data}
+            companyFav={!!companyFav[data.name]}
+            postingSaved={!!postingSaved[data.posting.role]}
+            onToggleCompany={() => setCompanyFav(s => ({ ...s, [data.name]: !s[data.name] }))}
+            onTogglePosting={() => setPostingSaved(s => ({ ...s, [data.posting.role]: !s[data.posting.role] }))}
+            idx={i}
+            total={HIFI_DECK.length}
+          />
+        )}
+        <div className="hifi-reel-card" style={{ background:'var(--h-brand-soft)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding: 28, textAlign:'center' }}>
+          <HiFiMascot size={120} expression="happy"/>
+          <div className="h-title" style={{ marginTop: 14, color: 'var(--h-brand-dark)' }}>오늘은 여기까지!</div>
+          <div className="h-body-2" style={{ marginTop: 6, lineHeight: 1.4 }}>
+            내일 또 새로운 공고가<br/>기다릴게요
+          </div>
+          <div style={{ display:'flex', gap: 12, marginTop: 24 }}>
+            <div style={{ textAlign:'center' }}>
+              <div className="h-mono-num" style={{ fontSize: 28, color:'var(--h-brand)' }}>{Object.values(companyFav).filter(Boolean).length}</div>
+              <div className="h-body-2" style={{ fontSize: 11 }}>관심기업</div>
+            </div>
+            <div style={{ textAlign:'center' }}>
+              <div className="h-mono-num" style={{ fontSize: 28, color:'var(--h-update-shadow)' }}>{Object.values(postingSaved).filter(Boolean).length}</div>
+              <div className="h-body-2" style={{ fontSize: 11 }}>공고 저장</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <HiFiTabBar active="discover"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 관심 기업
+// ─────────────────────────────────────────────────────
+function HiFi_Favorites() {
+  const nav = useNav();
+  const companies = [
+    ['삼성','삼성전자', 3, true, 'h_company'],
+    ['N','네이버', 2, true, 'h_company'],
+    ['카', '카카오', 1, false, 'h_company'],
+    ['LG','LG에너지', 1, true, 'h_company'],
+    ['SK','SK하이닉스', 0, false, 'h_companyEmpty'],
+    ['현','현대차', 2, true, 'h_company'],
+    ['CJ','CJ', 0, false, 'h_companyEmpty'],
+    ['포','포스코', 1, false, 'h_company'],
+  ];
+
+  return (
+    <HiFiPhone
+      title="관심 기업"
+      action={<HiFiIconBtn name="plus" size={20}/>}
+    >
+      <div style={{ padding: '0 20px 14px' }}>
+        <div className="h-h2">관심 기업 8 · <span style={{ color: 'var(--h-brand)' }}>오늘 새공고 8건</span></div>
+        <div className="h-body-2" style={{ marginTop: 2 }}>로고 우상단 빨간 점 = 오늘 새 공고</div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          {companies.map(([logo, name, badge, hasAlarm, route], i) =>
+            <div key={i}
+              className="h-card flat"
+              style={{ padding: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, position: 'relative', cursor: 'pointer', borderColor: badge > 0 ? 'var(--h-brand)' : 'var(--h-border)' }}
+              onClick={() => nav.go(route)}>
+              <div className="h-logo" style={{ background: badge > 0 ? 'var(--h-brand-soft)' : 'var(--h-bg-2)' }}>{logo}</div>
+              <div className="h-body" style={{ fontSize: 13, fontWeight: 700, textAlign:'center', lineHeight: 1.1 }}>{name}</div>
+              <div className="h-body-2" style={{ fontSize: 11 }}>공고 {badge}</div>
+              {badge > 0 && (
+                <div style={{
+                  position:'absolute', top: 6, right: 6,
+                  minWidth: 20, height: 20, padding: '0 5px', borderRadius: 999,
+                  background:'var(--h-brand)', color:'#fff',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  fontSize: 11, fontWeight: 800,
+                  border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>{badge}</div>
+              )}
+              {hasAlarm && (
+                <div style={{ position:'absolute', bottom: 4, left: 4, fontSize: 11 }}>🔔</div>
+              )}
+            </div>
+          )}
+          <div className="h-card flat" style={{
+            padding: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 4, border: '2px dashed var(--h-border-dark)', background: 'transparent', minHeight: 90, cursor: 'pointer'
+          }}>
+            <SkIcon name="plus" size={20} color="var(--h-text-3)" strokeWidth={2.2}/>
+            <div className="h-body-2" style={{ fontSize: 11 }}>기업 추가</div>
+          </div>
+        </div>
+
+        <div className="h-card brand" style={{ padding: 12, marginTop: 16 }}>
+          <div className="h-row" style={{ gap: 10 }}>
+            <Mascot size={40} expression="default"/>
+            <div className="h-grow">
+              <div className="h-body" style={{ fontWeight: 700 }}>로고를 누르면 그 회사 공고만 모아볼 수 있어요</div>
+              <div className="h-body-2" style={{ fontSize: 12, marginTop: 2 }}>꾹 누르면 알림 끄기 / 삭제</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <HiFiTabBar active="fav"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 회사 상세
+// ─────────────────────────────────────────────────────
+function HiFi_CompanyPage({ data }) {
+  const nav = useNav();
+  const hasPostings = data.postings && data.postings.length > 0;
+  return (
+    <HiFiPhone
+      title=""
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+      action={<HiFiIconBtn name="share" size={18}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div style={{ padding: '0 20px 16px', textAlign:'center' }}>
+          <div className="h-logo lg" style={{ width: 80, height: 80, fontSize: 24, margin: '0 auto', background:'var(--h-brand-soft)', color: 'var(--h-brand-dark)' }}>
+            {data.logo}
+          </div>
+          <div className="h-display" style={{ marginTop: 10, fontSize: 24 }}>{data.name}</div>
+          <div className="h-body-2" style={{ marginTop: 4 }}>{data.sector}</div>
+          <div className="h-row" style={{ justifyContent:'center', gap: 6, marginTop: 10, flexWrap:'wrap' }}>
+            <span className="h-chip outline sm">{data.size}</span>
+            <span className="h-chip outline sm">📍 {data.region}</span>
+          </div>
+          <div className="h-row" style={{ justifyContent:'center', gap: 8, marginTop: 14 }}>
+            <button className={'h-btn sm' + (data.starred ? ' primary' : '')} style={{ padding: '8px 14px', fontSize: 13 }}>
+              {data.starred ? '✓ 관심기업' : '+ 관심기업'}
+            </button>
+            <button className="h-btn sm" style={{ padding: '8px 14px', fontSize: 13 }}>
+              <SkIcon name="link" size={14}/> 홈페이지
+            </button>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 20px 14px' }}>
+          <div className="h-card">
+            <div className="h-caption">회사 소개</div>
+            <div className="h-body" style={{ marginTop: 6, lineHeight: 1.4 }}>{data.about}</div>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 20px 16px' }}>
+          <div className="h-row" style={{ gap: 8 }}>
+            <div className="h-card flat" style={{ flex: 1, padding: 12, textAlign:'center' }}>
+              <div className="h-body-2" style={{ fontSize: 11 }}>올해 신규</div>
+              <div className="h-mono-num" style={{ fontSize: 22, color: 'var(--h-brand)', marginTop: 2 }}>{data.stats.thisYear}건</div>
+            </div>
+            <div className="h-card flat" style={{ flex: 1, padding: 12, textAlign:'center' }}>
+              <div className="h-body-2" style={{ fontSize: 11 }}>평균 마감</div>
+              <div className="h-mono-num" style={{ fontSize: 22, marginTop: 2 }}>{data.stats.avgClose}</div>
+            </div>
+            <div className="h-card flat" style={{ flex: 1, padding: 12, textAlign:'center' }}>
+              <div className="h-body-2" style={{ fontSize: 11 }}>합격률</div>
+              <div className="h-mono-num" style={{ fontSize: 22, color: 'var(--h-new-shadow)', marginTop: 2 }}>{data.stats.rate}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ padding: '0 20px 16px' }}>
+          <div className="h-row" style={{ justifyContent:'space-between' }}>
+            <div className="h-h2">진행중인 공고</div>
+            {hasPostings && <div className="h-body-2" style={{ fontSize: 12, fontWeight: 700 }}>{data.postings.length}건</div>}
+          </div>
+        </div>
+
+        {hasPostings ? (
+          <div style={{ padding: '0 20px 16px', display:'flex', flexDirection:'column', gap: 10 }}>
+            {data.postings.map((p, i) =>
+              <HiFiJobCard key={i} kind={p.kind} logo={data.logo} company={data.name} role={p.role} dday={p.dday} dateText="" onClick={() => nav.go('h_detail')}/>
+            )}
+          </div>
+        ) : (
+          <div style={{ padding: '0 20px 16px' }}>
+            <div className="h-card flat" style={{ padding: 22, textAlign:'center', border: '2px dashed var(--h-border-dark)', background: 'transparent' }}>
+              <Mascot size={64} expression="sleep"/>
+              <div className="h-h2" style={{ marginTop: 8 }}>지금은 채용 공고가 없어요</div>
+              <div className="h-body-2" style={{ marginTop: 6, lineHeight: 1.4 }}>
+                새 공고가 뜨면 알려드릴게요.<br/>관심기업으로 등록되어 있어요 ✓
+              </div>
+              <button className="h-btn sm" style={{ marginTop: 14, padding: '8px 14px' }}>
+                <SkIcon name="link" size={14}/> 채용 사이트 직접 보기
+              </button>
+            </div>
+
+            <div className="h-h2" style={{ marginTop: 22 }}>최근 채용 이력</div>
+            <div className="h-col" style={{ gap: 6, marginTop: 10 }}>
+              {data.history && data.history.map((h, i) =>
+                <div key={i} className="h-row" style={{ padding: 12, background: 'var(--h-bg-2)', borderRadius: 12, gap: 10, opacity: 0.85 }}>
+                  <div className="h-grow">
+                    <div className="h-body" style={{ fontWeight: 700 }}>{h.role}</div>
+                    <div className="h-body-2" style={{ fontSize: 12 }}>{h.period}</div>
+                  </div>
+                  <span className="h-body-2" style={{ fontSize: 12, fontWeight: 700 }}>마감</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </HiFiPhone>
+  );
+}
+
+const HIFI_SAMSUNG = {
+  logo: '삼성', name: '삼성전자', sector: '반도체 · IT · 가전',
+  region: '서울/수원/화성', size: '대기업', starred: true,
+  about: '반도체(DS), 디스플레이, 모바일·생활가전(DX) 등 사업부문 운영. 글로벌 1위 메모리 반도체 기업.',
+  stats: { thisYear: 24, avgClose: '3주', rate: '4%' },
+  postings: [
+    { kind: 'new', role: '2026 상반기 신입공채', dday: 'D-24' },
+    { kind: 'new', role: 'DS 부문 메모리 R&D', dday: 'D-20' },
+    { kind: 'update', role: 'DX 부문 SW 경력직', dday: 'D-35' },
+    { kind: 'new', role: '글로벌 마케팅 (3년+)', dday: 'D-18' },
+  ],
+};
+
+const HIFI_DOOSAN_EMPTY = {
+  logo: '두산', name: '두산밥캣', sector: '건설기계 · 산업기계',
+  region: '인천', size: '대기업', starred: true,
+  about: '소형 건설장비 글로벌 1위. 북미 시장 매출 비중 70%.',
+  stats: { thisYear: 8, avgClose: '2주', rate: '6%' },
+  postings: [],
+  history: [
+    { role: '2026 상반기 신입공채', period: '5/1 ~ 5/14 마감' },
+    { role: '재무 경력직', period: '4/15 ~ 4/30 마감' },
+    { role: '글로벌 영업 (5년+)', period: '3/10 ~ 4/3 마감' },
+  ]
+};
+
+function HiFi_CompanyDetail() { return <HiFi_CompanyPage data={HIFI_SAMSUNG}/>; }
+function HiFi_CompanyDetailEmpty() { return <HiFi_CompanyPage data={HIFI_DOOSAN_EMPTY}/>; }
+
+// ─────────────────────────────────────────────────────
+// 마이페이지
+// ─────────────────────────────────────────────────────
+function HiFi_MyPage() {
+  const nav = useNav();
+  return (
+    <HiFiPhone title="내 정보" action={
+      <div className="h-row" style={{ gap: 6 }}>
+        <HiFiIconBtn name="bell" onClick={() => nav.go('h_notifHistory')}/>
+        <HiFiIconBtn name="settings"/>
+      </div>
+    }>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-card brand" style={{ padding: 18 }}>
+          <div className="h-row" style={{ gap: 14 }}>
+            <Mascot size={72} expression="happy"/>
+            <div className="h-grow">
+              <div className="h-title" style={{ color: 'var(--h-brand-dark)' }}>잘하고 있어요! 🔥</div>
+              <div className="h-body-2" style={{ marginTop: 2 }}>꽁이가 12일째 챙겨주는 중</div>
+            </div>
+          </div>
+          <div style={{
+            marginTop: 16, paddingTop: 14, borderTop: '1px dashed var(--h-brand)',
+            display: 'flex', justifyContent: 'space-around'
+          }}>
+            <div style={{ textAlign:'center', flex: 1 }}>
+              <div className="h-mono-num" style={{ fontSize: 26, color: 'var(--h-text)' }}>87</div>
+              <div className="h-body-2" style={{ fontSize: 11 }}>본 공고</div>
+            </div>
+            <div style={{ textAlign:'center', flex: 1, borderLeft:'1px dashed var(--h-brand)', cursor:'pointer' }}
+                 onClick={() => nav.go('h_saved')}>
+              <div className="h-mono-num" style={{ fontSize: 26, color: 'var(--h-update-shadow)' }}>14</div>
+              <div className="h-body-2" style={{ fontSize: 11 }}>저장한 공고 ›</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 22 }}>
+          {[
+            ['🔔','알림 설정','매일 9시 / 21시','h_notifSettings'],
+            ['📜','알림 히스토리','받은 알림 다시 보기','h_notifHistory'],
+            ['📅','마감 캘린더','저장한 공고 마감일','h_calendar'],
+            ['📱','바탕화면 위젯','켜짐 (Medium)','h_widgetSettings'],
+            ['🎯','관심 직군','개발 · 디자인 · 데이터','h_jobInterests'],
+            ['💬','피드백 보내기','','h_feedback'],
+            ['ℹ️','앱 정보','v0.1.0 · 베타',null],
+          ].map(([e, t, sub, route], i, arr) =>
+            <div key={i} className="h-row" style={{
+              padding: '14px 4px',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--h-border)' : 'none',
+              gap: 14, cursor:'pointer'
+            }} onClick={() => route && nav.go(route)}>
+              <span style={{ fontSize: 22 }}>{e}</span>
+              <div className="h-grow">
+                <div className="h-body" style={{ fontWeight: 700 }}>{t}</div>
+                {sub && <div className="h-body-2" style={{ fontSize: 12 }}>{sub}</div>}
+              </div>
+              <SkIcon name="chev" size={16} color="var(--h-text-3)"/>
+            </div>
+          )}
+        </div>
+      </div>
+      <HiFiTabBar active="me"/>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 저장한 공고
+// ─────────────────────────────────────────────────────
+function HiFi_SavedPostings() {
+  const nav = useNav();
+  return (
+    <HiFiPhone
+      title="저장한 공고"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ padding: '0 20px 12px' }}>
+        <div className="h-body-2">북마크한 공고 <b style={{ color: 'var(--h-update-shadow)' }}>14개</b></div>
+        <div className="h-row" style={{ gap: 6, marginTop: 10 }}>
+          <span className="h-chip on">전체 14</span>
+          <span className="h-chip outline">진행중 9</span>
+          <span className="h-chip outline">마감 5</span>
+        </div>
+      </div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <HiFiJobCard kind="new" logo="삼성" company="삼성전자" role="2026 상반기 신입공채" dday="D-24" dateText="~6/15" onClick={() => nav.go('h_detail')}/>
+        <HiFiJobCard kind="new" logo="N" company="네이버" role="신입 백엔드 개발자" dday="D-19" dateText="~6/10" onClick={() => nav.go('h_detail')}/>
+        <HiFiJobCard kind="update" logo="카" company="카카오" role="경력 프론트엔드 개발자" dday="D-6" dateText="~5/28" onClick={() => nav.go('h_detail')}/>
+        <HiFiJobCard kind="new" logo="LG" company="LG에너지솔루션" role="연구개발(R&D) 신입" dday="D-16" dateText="~6/7" onClick={() => nav.go('h_detail')}/>
+        <HiFiJobCard kind="closing" logo="현" company="현대자동차" role="신입사원 일반공채" dday="D-1" dateText="내일" onClick={() => nav.go('h_detail')}/>
+        <HiFiJobCard kind="new" logo="쿠" company="쿠팡" role="백엔드 엔지니어" dday="D-12" dateText="~6/3" onClick={() => nav.go('h_detail')}/>
+        <div className="h-card flat" style={{ padding: 14, textAlign:'center', border: '2px dashed var(--h-border-dark)', background: 'transparent' }}>
+          <div className="h-body-2">+ 8개 더 있어요</div>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 알림 설정
+// ─────────────────────────────────────────────────────
+function HiFi_NotifSettings() {
+  const nav = useNav();
+  const [toggles, setToggles] = React.useState({ 0: true, 1: true, 2: true, 3: true, 4: false, 5: false, 6: false });
+  const flip = (k) => setToggles(s => ({ ...s, [k]: !s[k] }));
+  const Item = ({ k, icon, title, sub }) => (
+    <div className="h-row" style={{ padding: '14px 0', borderBottom: '1px solid var(--h-border)', gap: 12 }}>
+      <span style={{ fontSize: 22 }}>{icon}</span>
+      <div className="h-grow">
+        <div className="h-body" style={{ fontWeight: 700 }}>{title}</div>
+        <div className="h-body-2" style={{ fontSize: 12 }}>{sub}</div>
+      </div>
+      <div className={'h-toggle' + (toggles[k] ? ' on' : '')} onClick={() => flip(k)}/>
+    </div>
+  );
+  return (
+    <HiFiPhone
+      title="알림 설정"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-row" style={{ gap: 12, alignItems:'center', padding: '6px 0 14px' }}>
+          <Mascot size={50} expression="default"/>
+          <div className="h-body-2" style={{ flex: 1, lineHeight: 1.4 }}>
+            매일 같은 시간에 알려드려요. 시간은 자동 설정이에요.
+          </div>
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 14 }}>매일 정기 알림</div>
+        <Item k={0} icon="☀️" title="아침 9:00" sub="어제 새로 뜬 공고 요약"/>
+        <Item k={1} icon="🌙" title="저녁 21:00" sub="마감 임박 공고 알림"/>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>이벤트 알림</div>
+        <Item k={2} icon="🆕" title="관심기업 새 공고" sub="등록 즉시 푸시"/>
+        <Item k={3} icon="🔥" title="마감 D-1" sub="저장한 공고 하루 전"/>
+        <Item k={4} icon="📝" title="공고 내용 변경" sub="자격/마감일 수정됨"/>
+        <Item k={5} icon="🎯" title="AI 추천 공고" sub="관심사 매칭 공고"/>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>방해 금지</div>
+        <Item k={6} icon="🌃" title="22:00 ~ 다음날 7:00" sub="이 시간엔 알림 안 와요"/>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 위젯 설정
+// ─────────────────────────────────────────────────────
+function HiFi_WidgetSettings() {
+  const nav = useNav();
+  const [size, setSize] = React.useState('medium');
+
+  const Preview = () => (
+    <div className="h-widget" style={{
+      width: size === 'small' ? 120 : 260,
+      height: size === 'small' ? 110 : size === 'medium' ? 90 : 200,
+      display: 'flex', flexDirection: 'column', justifyContent: 'center'
+    }}>
+      {size === 'small' ? (
+        <>
+          <div className="h-row" style={{ gap: 6, alignItems:'center' }}>
+            <Mascot size={24} expression="happy"/>
+            <div className="h-body-2" style={{ fontSize: 10 }}>오늘 새</div>
+          </div>
+          <div className="h-mono-num" style={{ fontSize: 28, color:'var(--h-brand)', lineHeight: 1, marginTop: 4 }}>17</div>
+          <div className="h-body-2" style={{ fontSize: 10 }}>마감 3건</div>
+        </>
+      ) : size === 'medium' ? (
+        <div className="h-row" style={{ gap: 10, alignItems:'center' }}>
+          <Mascot size={38} expression="happy"/>
+          <div className="h-grow">
+            <div className="h-body-2" style={{ fontSize: 10 }}>오늘</div>
+            <div className="h-row" style={{ gap: 6, alignItems:'baseline' }}>
+              <span className="h-mono-num" style={{ fontSize: 24, color:'var(--h-brand)', lineHeight: 1 }}>17</span>
+              <span className="h-body-2" style={{ fontSize: 11 }}>+ 마감 3</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="h-row" style={{ gap: 10 }}>
+            <Mascot size={44} expression="happy"/>
+            <div className="h-grow">
+              <div className="h-body-2" style={{ fontSize: 11 }}>오늘 새 공고</div>
+              <div className="h-row" style={{ gap: 6, alignItems:'baseline' }}>
+                <span className="h-mono-num" style={{ fontSize: 28, color:'var(--h-brand)', lineHeight: 1 }}>17</span>
+                <span className="h-body-2" style={{ fontSize: 12 }}>+ 마감 3</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ height: 1, background: 'var(--h-border)', margin: '10px 0' }}/>
+          <div className="h-col" style={{ gap: 4 }}>
+            {[['삼성전자','D-24'], ['네이버','D-19'], ['LG에너지','D-16']].map(([c, d]) =>
+              <div key={c} className="h-row" style={{ fontSize: 12 }}>
+                <span style={{ fontWeight: 700, flex: 1 }}>{c}</span>
+                <span style={{ fontWeight: 800, color: 'var(--h-brand)' }}>{d}</span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <HiFiPhone
+      title="바탕화면 위젯"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '6px 20px 16px' }}>
+        <div className="h-row" style={{ padding: '12px 0' }}>
+          <div className="h-body h-grow" style={{ fontWeight: 700 }}>위젯 사용</div>
+          <div className="h-toggle on"/>
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 14 }}>크기 선택</div>
+        <div className="h-col" style={{ gap: 8, marginTop: 8 }}>
+          {[
+            ['small', 'Small · 2×1', '카운터만'],
+            ['medium', 'Medium · 4×1', '한 줄 요약'],
+            ['large', 'Large · 4×2', '핵심 공고 3개'],
+          ].map(([id, t, sub]) =>
+            <div key={id} onClick={() => setSize(id)} className="h-card flat" style={{
+              padding: 12,
+              display: 'flex', alignItems: 'center', gap: 12,
+              borderColor: size === id ? 'var(--h-brand)' : 'var(--h-border)',
+              background: size === id ? 'var(--h-brand-soft)' : 'var(--h-bg)',
+              cursor: 'pointer'
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: 999,
+                background: size === id ? 'var(--h-brand)' : 'transparent',
+                border: '2px solid ' + (size === id ? 'var(--h-brand)' : 'var(--h-border-dark)'),
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                {size === id && <SkIcon name="check" size={12} color="#fff" strokeWidth={3}/>}
+              </div>
+              <div className="h-grow">
+                <div className="h-body" style={{ fontWeight: 700 }}>{t}</div>
+                <div className="h-body-2" style={{ fontSize: 12 }}>{sub}</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>미리보기</div>
+        <div style={{
+          padding: 24, marginTop: 8,
+          background: 'linear-gradient(135deg, #2a1f3d 0%, #4a3457 100%)',
+          borderRadius: 18,
+          display: 'flex', justifyContent: 'center', alignItems: 'center',
+          minHeight: 220
+        }}>
+          <Preview/>
+        </div>
+
+        <div className="h-card brand" style={{ padding: 12, marginTop: 16 }}>
+          <div className="h-row" style={{ gap: 8 }}>
+            <SkIcon name="sparkle" size={16} color="var(--h-brand)"/>
+            <div className="h-body-2" style={{ flex: 1, fontWeight: 700, color: 'var(--h-brand-dark)' }}>
+              바탕화면에 위젯 추가: 홈 길게 누르기 → 위젯 → 채용알리미
+            </div>
+          </div>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 관심 직군
+// ─────────────────────────────────────────────────────
+function HiFi_JobInterests() {
+  const nav = useNav();
+  const [selected, setSelected] = React.useState({ 2: true, 5: true, 6: true });
+  const toggle = (i) => setSelected(s => ({ ...s, [i]: !s[i] }));
+  const allJobs = HIFI_JOB_CATEGORIES;
+  const count = Object.values(selected).filter(Boolean).length;
+
+  return (
+    <HiFiPhone
+      title="관심 직군"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-body-2" style={{ padding: '4px 0 14px' }}>선택한 직군 위주로 새 공고를 알려드려요</div>
+
+        <div className="h-caption">현재 선택 ({count}개)</div>
+        <div className="h-row" style={{ gap: 6, marginTop: 8, flexWrap:'wrap' }}>
+          {Object.entries(selected).filter(([_, v]) => v).map(([i]) =>
+            <span key={i} className="h-chip on" style={{ cursor: 'pointer' }} onClick={() => toggle(+i)}>
+              {allJobs[+i]} <SkIcon name="close" size={11} color="#fff"/>
+            </span>
+          )}
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>전체 직군 (21)</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 10 }}>
+          {allJobs.map((j, i) =>
+            <button key={j} onClick={() => toggle(i)}
+              className={'h-btn sm' + (selected[i] ? ' primary' : '')}
+              style={{ padding: '10px 6px', fontSize: 12, textTransform: 'none', lineHeight: 1.15 }}>
+              {j}
+            </button>
+          )}
+        </div>
+
+        <div className="h-card yellow" style={{ padding: 12, marginTop: 22 }}>
+          <div className="h-body" style={{ fontWeight: 700 }}>💡 팁</div>
+          <div className="h-body-2" style={{ marginTop: 4, lineHeight: 1.4 }}>
+            너무 많이 선택하면 공고가 쏟아져요. 3~5개가 적당해요.
+          </div>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 피드백
+// ─────────────────────────────────────────────────────
+function HiFi_Feedback() {
+  const nav = useNav();
+  const [type, setType] = React.useState('idea');
+  return (
+    <HiFiPhone
+      title="피드백"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-row" style={{ gap: 12, padding: '6px 0 14px', alignItems:'center' }}>
+          <Mascot size={50} expression="wave"/>
+          <div className="h-body-2" style={{ flex: 1, lineHeight: 1.4 }}>
+            꽁이가 듣고 있어요! 뭐든 편하게 말해주세요.
+          </div>
+        </div>
+
+        <div className="h-caption">종류</div>
+        <div className="h-row" style={{ gap: 6, marginTop: 8 }}>
+          {[
+            ['idea', '💡 아이디어'],
+            ['bug', '🐛 버그'],
+            ['etc', '✏️ 기타'],
+          ].map(([id, label]) =>
+            <span key={id} onClick={() => setType(id)}
+              className={'h-chip' + (type === id ? ' on' : ' outline')}
+              style={{ flex: 1, justifyContent: 'center', cursor:'pointer' }}>
+              {label}
+            </span>
+          )}
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>내용</div>
+        <div className="h-card" style={{ marginTop: 8, minHeight: 130, padding: 14 }}>
+          <div className="h-body-2" style={{ lineHeight: 1.5 }}>
+            예) "○○ 기업이 추가됐으면 좋겠어요"<br/>
+            예) "관심없는 공고도 너무 많이 떠요"
+          </div>
+        </div>
+
+        <div className="h-caption" style={{ marginTop: 22 }}>연락처 (선택)</div>
+        <div className="h-card" style={{ marginTop: 8, padding: 14 }}>
+          <div className="h-body-2">답변 받을 이메일</div>
+        </div>
+
+        <button className="h-btn primary block lg" style={{ marginTop: 22 }}>
+          보내기
+        </button>
+
+        <div className="h-body-2" style={{ marginTop: 10, textAlign:'center', fontSize: 12 }}>
+          꽁이가 24시간 안에 답변드려요
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 잠금화면
+// ─────────────────────────────────────────────────────
+function HiFi_LockScreen() {
+  return (
+    <HiFiPhone showAppBar={false} lockScreen>
+      <div style={{ flex: 1, display:'flex', flexDirection:'column', padding: '20px 22px' }}>
+        <div style={{ marginTop: 30, textAlign:'center' }}>
+          <div className="h-time">9:00</div>
+          <div className="h-date">5월 22일 목요일</div>
+        </div>
+
+        <div style={{ marginTop: 48 }}>
+          <div className="h-push">
+            <div className="ico-box">
+              <Mascot size={28} expression="wave"/>
+            </div>
+            <div className="h-grow">
+              <div className="h-row" style={{ justifyContent:'space-between' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--h-text)' }}>채용알리미</div>
+                <div className="h-body-2" style={{ fontSize: 11 }}>지금</div>
+              </div>
+              <div className="h-h2" style={{ marginTop: 4 }}>☀️ 좋은 아침! 오늘 새 공고 17건</div>
+              <div className="h-body-2" style={{ marginTop: 2, fontSize: 13 }}>
+                삼성전자 · 네이버 · LG에너지솔루션 외 14곳
+              </div>
+            </div>
+          </div>
+
+          <div className="h-push" style={{ marginTop: 10, opacity: 0.95 }}>
+            <div className="ico-box" style={{ background:'#5b8def' }}>
+              <span style={{ fontSize: 18 }}>💬</span>
+            </div>
+            <div className="h-grow">
+              <div className="h-row" style={{ justifyContent:'space-between' }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--h-text)' }}>메시지</div>
+                <div className="h-body-2" style={{ fontSize: 11 }}>8:42</div>
+              </div>
+              <div className="h-body" style={{ fontWeight: 700, marginTop: 2 }}>엄마</div>
+              <div className="h-body-2" style={{ fontSize: 13 }}>오늘 점심 뭐 먹어?</div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }}/>
+        <div style={{ textAlign:'center', color:'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: 600 }}>
+          ↑ 위로 밀어 잠금 해제
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 홈화면 위젯
+// ─────────────────────────────────────────────────────
+function HiFi_Widget() {
+  return (
+    <div className="hifi" style={{ position:'relative' }}>
+      <div className="hifi-phone" style={{ background: '#1a1a1a' }}>
+        <div className="hifi-status" style={{ color:'#fff' }}>
+          <span>9:41</span>
+          <span style={{ flex: 1 }}/>
+          <span className="right">
+            <span style={{ fontSize: 12 }}>📶</span>
+            <span style={{
+              display: 'inline-block', width: 22, height: 11, borderRadius: 2,
+              border: `1.4px solid #fff`, position: 'relative'
+            }}>
+              <span style={{ position:'absolute', left: 1, top: 1, bottom: 1, width: '80%', background: '#fff', borderRadius: 1 }}/>
+            </span>
+          </span>
+        </div>
+
+        <div style={{ padding: '24px 0 0', textAlign:'center', color:'#fff' }}>
+          <div style={{ fontSize: 58, fontWeight: 700, lineHeight: 1, fontFamily:'Pretendard Variable, Pretendard, sans-serif' }}>9:41</div>
+          <div style={{ fontSize: 14, opacity: 0.7, marginTop: 6 }}>5월 22일 목요일</div>
+        </div>
+
+        <div style={{ padding: '32px 16px 0' }}>
+          <div className="h-widget">
+            <div className="h-row" style={{ gap: 12 }}>
+              <Mascot size={48} expression="happy"/>
+              <div className="h-grow">
+                <div className="h-body-2" style={{ fontSize: 12 }}>5/22 (목)</div>
+                <div className="h-h2" style={{ marginTop: 2 }}>오늘 새 공고</div>
+                <div className="h-row" style={{ gap: 8, marginTop: 2, alignItems:'baseline' }}>
+                  <span className="h-mono-num" style={{ fontSize: 36, color:'var(--h-brand)', lineHeight: 1 }}>17</span>
+                  <span className="h-body-2" style={{ fontSize: 13 }}>+ 마감 3</span>
+                </div>
+              </div>
+              <div style={{
+                minWidth: 28, height: 28, padding: '0 6px', borderRadius: 999,
+                background: 'var(--h-brand)', color: '#fff',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize: 13, fontWeight: 800
+              }}>17</div>
+            </div>
+            <div style={{ height: 1, background: 'var(--h-border)', margin: '14px 0' }}/>
+            <div className="h-caption" style={{ marginBottom: 6 }}>오늘 핵심</div>
+            <div className="h-col" style={{ gap: 6 }}>
+              {[
+                ['삼성전자', '신입공채', 'D-24'],
+                ['네이버', '백엔드', 'D-19'],
+                ['LG에너지', 'R&D', 'D-16'],
+              ].map(([c, r, d]) =>
+                <div key={c} className="h-row" style={{ fontSize: 14 }}>
+                  <span style={{ fontWeight: 700, width: 84 }}>{c}</span>
+                  <span className="h-grow" style={{ color: 'var(--h-text-2)' }}>{r}</span>
+                  <span style={{ fontWeight: 800, color:'var(--h-brand)' }}>{d}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1 }}/>
+        <div style={{ padding: '0 16px 24px', display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap: 12 }}>
+          {[
+            ['brand', <Mascot size={32} expression="default"/>, '채용알리미', '17'],
+            ['blue', '💬', '메시지', null],
+            ['green', '🗺️', '지도', null],
+            ['orange', '📷', '카메라', null],
+          ].map(([color, icon, label, badge], i) =>
+            <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: 4 }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: 16,
+                background: color === 'brand' ? 'var(--h-brand)' :
+                           color === 'blue' ? '#5b8def' :
+                           color === 'green' ? '#3ba861' : '#f97316',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize: 26, color:'#fff',
+                position: 'relative',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+              }}>
+                {icon}
+                {badge && (
+                  <div style={{
+                    position:'absolute', top:-4, right:-4,
+                    minWidth: 22, height: 22, padding:'0 5px', borderRadius:999,
+                    background:'#ff4b4b', color:'#fff',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize: 11, fontWeight: 800,
+                    border:'2px solid #1a1a1a'
+                  }}>{badge}</div>
+                )}
+              </div>
+              <span style={{ fontSize: 11, color:'#fff', fontWeight: 600 }}>{label}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="hifi-nav">
+          <div className="hifi-nav-pill" style={{ background:'#fff', opacity: 0.7 }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 알림 히스토리
+// ─────────────────────────────────────────────────────
+function HiFi_NotifHistory() {
+  const nav = useNav();
+  const Group = ({ date, children }) => (
+    <div style={{ marginBottom: 18 }}>
+      <div className="h-caption" style={{ marginBottom: 8 }}>{date}</div>
+      <div className="h-col" style={{ gap: 8 }}>{children}</div>
+    </div>
+  );
+  const Item = ({ icon, bg, time, title, sub, unread, onClick }) => (
+    <div onClick={onClick} style={{
+      display: 'flex', gap: 12, padding: 14,
+      background: unread ? 'var(--h-brand-soft)' : 'var(--h-bg)',
+      border: '1px solid ' + (unread ? 'var(--h-brand)' : 'var(--h-border)'),
+      borderRadius: 14, cursor: 'pointer', position: 'relative'
+    }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: 12, background: bg,
+        display:'flex', alignItems:'center', justifyContent:'center',
+        flexShrink: 0, fontSize: 18
+      }}>{icon}</div>
+      <div className="h-grow">
+        <div className="h-row" style={{ justifyContent:'space-between' }}>
+          <div className="h-body" style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
+          <div className="h-body-2" style={{ fontSize: 11 }}>{time}</div>
+        </div>
+        <div className="h-body-2" style={{ marginTop: 2, fontSize: 13, lineHeight: 1.35 }}>{sub}</div>
+      </div>
+      {unread && <div style={{
+        position:'absolute', top: 12, right: 12,
+        width: 8, height: 8, borderRadius: 999, background: 'var(--h-brand)'
+      }}/>}
+    </div>
+  );
+
+  return (
+    <HiFiPhone
+      title="알림"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+      action={<button className="h-btn ghost sm" style={{ fontSize: 12 }}>모두 읽음</button>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <Group date="오늘 · 5/22">
+          <Item icon={<Mascot size={26} expression="wave"/>} bg="var(--h-brand-soft)"
+            time="9:00" unread
+            title="아침 브리핑"
+            sub="☀️ 오늘 새 공고 17건이 떴어요. 삼성·네이버·LG 외 14곳"
+            onClick={() => nav.go('h_main')}/>
+          <Item icon="⭐" bg="#ffe7b3" time="7:23" unread
+            title="네이버에 새 공고"
+            sub="신입 백엔드 개발자 (D-19, 판교)"
+            onClick={() => nav.go('h_detail')}/>
+        </Group>
+
+        <Group date="어제 · 5/21">
+          <Item icon="🔥" bg="var(--h-update-soft)" time="21:00"
+            title="저녁 마감 알림"
+            sub="저장한 2개 공고 마감 임박 — 현대차 D-1 · CJ제일제당 D-0"
+            onClick={() => nav.go('h_saved')}/>
+          <Item icon="📝" bg="var(--h-info-soft)" time="14:32"
+            title="공고 내용 변경"
+            sub="SK하이닉스 - 서류 마감일이 6/2 → 6/5로 변경됐어요"
+            onClick={() => nav.go('h_detail')}/>
+          <Item icon={<Mascot size={26} expression="happy"/>} bg="var(--h-brand-soft)"
+            time="9:00"
+            title="아침 브리핑"
+            sub="☀️ 어제 새 공고 12건. 카카오·포스코·CJ 포함"
+            onClick={() => nav.go('h_main')}/>
+        </Group>
+
+        <Group date="이번 주">
+          <Item icon="🎯" bg="var(--h-new-soft)" time="5/20"
+            title="딱맞는 공고 발견"
+            sub="네 관심사(개발·디자인) 매칭률 92% — 토스 프론트엔드"
+            onClick={() => nav.go('h_detail')}/>
+          <Item icon="🔥" bg="var(--h-update-soft)" time="5/19"
+            title="삼성전자 새 공고"
+            sub="DS 부문 메모리 R&D (D-20)"
+            onClick={() => nav.go('h_detail')}/>
+        </Group>
+
+        <div className="h-card flat" style={{
+          padding: 16, marginTop: 8, textAlign:'center',
+          border: '2px dashed var(--h-border-dark)', background: 'transparent'
+        }}>
+          <div className="h-body-2">+ 31개 더 있어요</div>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 마감 캘린더
+// ─────────────────────────────────────────────────────
+function HiFi_Calendar() {
+  const nav = useNav();
+  const closings = {
+    22: [{ company: 'CJ', kind: 'closing', count: 1 }],
+    23: [{ company: '현대', kind: 'closing', count: 1 }],
+    28: [{ company: '카', kind: 'update', count: 1 }],
+    30: [{ company: '카', kind: 'new', count: 2 }],
+  };
+  const today = 22;
+
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const firstDay = 4;
+  const totalDays = 31;
+  const cells = Array.from({ length: 42 }, (_, i) => {
+    const d = i - firstDay + 1;
+    return d > 0 && d <= totalDays ? d : null;
+  });
+
+  return (
+    <HiFiPhone
+      title="마감 캘린더"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+      action={<HiFiIconBtn name="settings" size={18}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-row" style={{ justifyContent:'center', padding: '4px 0 12px', gap: 16 }}>
+          <SkIcon name="chev-l" size={16} color="var(--h-text-2)"/>
+          <div className="h-h2">2026년 5월</div>
+          <SkIcon name="chev" size={16} color="var(--h-text-2)"/>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
+          {days.map((d, i) =>
+            <div key={d} className="h-body-2" style={{
+              textAlign:'center', fontSize: 11, fontWeight: 700, padding: 4,
+              color: i === 0 ? 'var(--h-closing)' : i === 6 ? 'var(--h-info)' : 'var(--h-text-2)'
+            }}>{d}</div>
+          )}
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, marginTop: 4 }}>
+          {cells.map((d, i) => {
+            const closing = d ? closings[d] : null;
+            const isToday = d === today;
+            const dow = i % 7;
+            return (
+              <div key={i} style={{
+                aspectRatio: '1 / 1.2',
+                background: closing ? 'var(--h-brand-soft)' : 'transparent',
+                border: '1.5px solid ' + (isToday ? 'var(--h-brand)' : 'transparent'),
+                borderRadius: 8,
+                padding: 4,
+                display: 'flex', flexDirection: 'column',
+                gap: 2,
+                cursor: closing ? 'pointer' : 'default'
+              }}>
+                {d && (
+                  <>
+                    <div style={{
+                      fontSize: 12, fontWeight: isToday ? 800 : 600,
+                      color: isToday ? 'var(--h-brand)' :
+                             dow === 0 ? 'var(--h-closing)' :
+                             dow === 6 ? 'var(--h-info)' : 'var(--h-text)',
+                      textAlign: 'center'
+                    }}>{d}</div>
+                    {closing && closing.map((c, j) =>
+                      <div key={j} style={{
+                        fontSize: 9, fontWeight: 800,
+                        padding: '1px 3px',
+                        background: `var(--h-${c.kind})`,
+                        color: '#fff',
+                        borderRadius: 4,
+                        textAlign:'center',
+                        lineHeight: 1.3
+                      }}>{c.company}{c.count > 1 ? ` +${c.count - 1}` : ''}</div>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="h-row" style={{ gap: 12, marginTop: 14, justifyContent:'center' }}>
+          <div className="h-row" style={{ gap: 4 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background:'var(--h-new)' }}/>
+            <span className="h-body-2" style={{ fontSize: 11 }}>새공고</span>
+          </div>
+          <div className="h-row" style={{ gap: 4 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background:'var(--h-update)' }}/>
+            <span className="h-body-2" style={{ fontSize: 11 }}>변경</span>
+          </div>
+          <div className="h-row" style={{ gap: 4 }}>
+            <span style={{ width: 8, height: 8, borderRadius: 2, background:'var(--h-closing)' }}/>
+            <span className="h-body-2" style={{ fontSize: 11 }}>마감</span>
+          </div>
+        </div>
+
+        <div className="h-card brand" style={{ padding: 14, marginTop: 22 }}>
+          <div className="h-caption" style={{ color: 'var(--h-brand-dark)' }}>오늘 마감 · 5/22</div>
+          <div className="h-h2" style={{ marginTop: 4 }}>1개 공고</div>
+          <div className="h-col" style={{ gap: 8, marginTop: 10 }}>
+            <HiFiJobCard kind="closing" logo="CJ" company="CJ제일제당" role="CJ 신입공채" dday="D-0" dateText="23:59" onClick={() => nav.go('h_detail')}/>
+          </div>
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>이번 주 마감 (3건)</div>
+        <div className="h-col" style={{ gap: 8, marginTop: 10 }}>
+          <HiFiJobCard kind="closing" logo="현" company="현대자동차" role="신입사원 일반공채" dday="D-1" dateText="5/23" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="update" logo="카" company="카카오" role="경력 프론트엔드" dday="D-6" dateText="5/28" onClick={() => nav.go('h_detail')}/>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 공유 시트
+// ─────────────────────────────────────────────────────
+function HiFi_ShareSheet() {
+  const nav = useNav();
+  return (
+    <div className="hifi" style={{ position: 'relative' }}>
+      <div className="hifi-phone" style={{ background: '#1a1a1a' }}>
+        <div className="hifi-status" style={{ color: '#fff' }}>
+          <span>9:41</span>
+          <span style={{ flex: 1 }}/>
+          <span className="right">
+            <span style={{ fontSize: 12 }}>📶</span>
+            <span style={{
+              display: 'inline-block', width: 22, height: 11, borderRadius: 2,
+              border: '1.4px solid #fff', position: 'relative'
+            }}>
+              <span style={{ position:'absolute', left:1, top:1, bottom:1, width:'80%', background:'#fff', borderRadius: 1 }}/>
+            </span>
+          </span>
+        </div>
+
+        <div style={{
+          flex: 1, position: 'relative',
+          background: 'rgba(255,255,255,0.08)',
+          display: 'flex', flexDirection: 'column'
+        }}>
+          <div style={{ padding: 20, opacity: 0.4 }}>
+            <div style={{ height: 28, background: '#fff', borderRadius: 8, width: '60%', marginBottom: 12 }}/>
+            <div style={{ height: 18, background: '#fff', borderRadius: 6, width: '80%', marginBottom: 8 }}/>
+            <div style={{ height: 18, background: '#fff', borderRadius: 6, width: '70%' }}/>
+          </div>
+
+          <div style={{
+            position: 'absolute', left: 0, right: 0, bottom: 0,
+            background: '#fff',
+            borderTopLeftRadius: 24, borderTopRightRadius: 24,
+            padding: '14px 20px 20px',
+            maxHeight: '70%', overflowY: 'auto'
+          }}>
+            <div style={{ width: 40, height: 4, background: 'var(--h-border-dark)', borderRadius: 2, margin: '0 auto 16px' }}/>
+
+            <div className="h-card brand" style={{ padding: 12 }}>
+              <div className="h-row" style={{ gap: 10 }}>
+                <div className="h-logo">N</div>
+                <div className="h-grow">
+                  <div className="h-caption" style={{ color: 'var(--h-brand-dark)' }}>NEW · D-19</div>
+                  <div className="h-body" style={{ fontWeight: 700, marginTop: 2 }}>네이버 · 신입 백엔드 개발자</div>
+                  <div className="h-body-2" style={{ fontSize: 12 }}>~ 6/10 23:59 · 판교</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-h2" style={{ marginTop: 18 }}>공유하기</div>
+            <div style={{
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: 12, marginTop: 14
+            }}>
+              {[
+                ['💛', '카카오톡', '#FEE500', '#3C1E1E'],
+                ['🟢', '라인', '#00C300', '#fff'],
+                ['💬', '문자', '#5B8DEF', '#fff'],
+                ['📧', '이메일', '#FF6B35', '#fff'],
+                ['📋', '링크 복사', '#f0f0f0', '#3c3c3c'],
+                ['📷', '인스타', 'linear-gradient(135deg,#833AB4,#FD1D1D,#FCB045)', '#fff'],
+                ['🔗', 'URL', '#f0f0f0', '#3c3c3c'],
+                ['…', '더보기', '#f0f0f0', '#3c3c3c'],
+              ].map(([icon, label, bg, fg]) =>
+                <div key={label} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap: 6, cursor:'pointer' }}>
+                  <div style={{
+                    width: 54, height: 54, borderRadius: 16,
+                    background: bg, color: fg,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 24,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
+                  }}>{icon}</div>
+                  <div className="h-body-2" style={{ fontSize: 11, fontWeight: 700, textAlign: 'center' }}>{label}</div>
+                </div>
+              )}
+            </div>
+
+            <div className="h-h2" style={{ marginTop: 22 }}>옵션</div>
+            <div className="h-col" style={{ gap: 0, marginTop: 8 }}>
+              <div className="h-row" style={{ padding: '12px 0', borderBottom: '1px solid var(--h-border)', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>💬</span>
+                <div className="h-body h-grow" style={{ fontWeight: 600 }}>한 줄 메시지 추가</div>
+                <SkIcon name="chev" size={14} color="var(--h-text-3)"/>
+              </div>
+              <div className="h-row" style={{ padding: '12px 0', borderBottom: '1px solid var(--h-border)', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>👥</span>
+                <div className="h-body h-grow" style={{ fontWeight: 600 }}>같이 보는 친구 만들기</div>
+                <div className="h-chip sm" style={{ background:'var(--h-brand-soft)', color:'var(--h-brand-dark)', fontSize: 10 }}>NEW</div>
+              </div>
+              <div className="h-row" style={{ padding: '12px 0', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>🔒</span>
+                <div className="h-body h-grow" style={{ fontWeight: 600 }}>익명으로 공유</div>
+                <div className="h-toggle"/>
+              </div>
+            </div>
+
+            <button className="h-btn block" style={{ marginTop: 16, background: 'var(--h-bg-2)' }} onClick={() => nav.back()}>
+              취소
+            </button>
+          </div>
+        </div>
+
+        <div className="hifi-nav">
+          <div className="hifi-nav-pill" style={{ background:'#fff' }}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// 비슷한 공고
+// ─────────────────────────────────────────────────────
+function HiFi_Similar() {
+  const nav = useNav();
+  return (
+    <HiFiPhone
+      title="비슷한 공고"
+      leading={<HiFiIconBtn name="chev-l" size={22} onClick={() => nav.back()}/>}
+    >
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 16px' }}>
+        <div className="h-card" style={{ padding: 12 }}>
+          <div className="h-caption">이 공고 기준</div>
+          <div className="h-row" style={{ gap: 10, marginTop: 6 }}>
+            <div className="h-logo">N</div>
+            <div className="h-grow">
+              <div className="h-body" style={{ fontWeight: 700 }}>네이버 · 신입 백엔드 개발자</div>
+              <div className="h-body-2" style={{ fontSize: 12 }}>판교 · Java/Kotlin · 학사+</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="h-card brand" style={{ padding: 12, marginTop: 14 }}>
+          <div className="h-row" style={{ gap: 8 }}>
+            <span style={{ fontSize: 18 }}>✨</span>
+            <div className="h-body" style={{ fontWeight: 700, lineHeight: 1.4 }}>
+              꽁이가 직무·지역·스택을 비교해서 비슷한 공고 8개를 찾았어요
+            </div>
+          </div>
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>매칭률 높은 공고</div>
+        <div className="h-col" style={{ gap: 10, marginTop: 10 }}>
+          {[
+            { logo:'카', name:'카카오', role:'신입 백엔드 개발자', loc:'판교', stack:'Java/Spring', dday:'D-14', match:96 },
+            { logo:'쿠', name:'쿠팡', role:'백엔드 엔지니어 (신입)', loc:'송파', stack:'Kotlin/Spring', dday:'D-12', match:91 },
+            { logo:'토', name:'토스', role:'백엔드 신입 개발자', loc:'역삼', stack:'Kotlin/Spring', dday:'D-9', match:88 },
+          ].map((p, i) =>
+            <div key={i} className="h-card" style={{ padding: 12, cursor:'pointer' }} onClick={() => nav.go('h_detail')}>
+              <div className="h-row" style={{ gap: 12 }}>
+                <div className="h-logo">{p.logo}</div>
+                <div className="h-grow">
+                  <div className="h-row" style={{ gap: 6 }}>
+                    <span className="h-label new">NEW</span>
+                    <span className="h-body-2" style={{ fontSize: 11 }}>{p.name}</span>
+                  </div>
+                  <div className="h-body" style={{ fontWeight: 700, marginTop: 2 }}>{p.role}</div>
+                  <div className="h-body-2" style={{ fontSize: 12, marginTop: 2 }}>📍 {p.loc} · {p.stack}</div>
+                </div>
+                <div style={{ textAlign:'right' }}>
+                  <div style={{
+                    fontSize: 14, fontWeight: 800, color: 'var(--h-brand)',
+                    background: 'var(--h-brand-soft)', padding: '2px 8px', borderRadius: 999
+                  }}>{p.match}%</div>
+                  <div className="h-mono-num" style={{ fontSize: 13, marginTop: 4, color:'var(--h-new-shadow)' }}>{p.dday}</div>
+                </div>
+              </div>
+              <div className="h-row" style={{ gap: 4, marginTop: 8, flexWrap:'wrap' }}>
+                {p.match >= 90 && <span className="h-chip sm" style={{ background:'var(--h-new-soft)', color:'var(--h-new-shadow)' }}>같은 직무</span>}
+                {(p.loc.includes('판교') || p.loc.includes('역삼') || p.loc.includes('송파')) ? <span className="h-chip sm">같은 권역</span> : null}
+                <span className="h-chip sm">같은 스택</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>같은 산업 (IT/플랫폼)</div>
+        <div className="h-col" style={{ gap: 10, marginTop: 10 }}>
+          <HiFiJobCard kind="new" logo="당" company="당근마켓" role="플랫폼 백엔드 (신입)" dday="D-21" dateText="~6/12" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="new" logo="배" company="배달의민족" role="서버 개발자 (신입)" dday="D-17" dateText="~6/8" onClick={() => nav.go('h_detail')}/>
+        </div>
+
+        <div className="h-h2" style={{ marginTop: 22 }}>네 관심사 기반 추천</div>
+        <div className="h-body-2" style={{ marginTop: 4, fontSize: 12 }}>
+          관심 직군: IT개발·데이터 / 좋아한 공고 23개 분석
+        </div>
+        <div className="h-col" style={{ gap: 10, marginTop: 10 }}>
+          <HiFiJobCard kind="new" logo="라" company="라인" role="신입 서버 사이드 엔지니어" dday="D-25" dateText="~6/16" onClick={() => nav.go('h_detail')}/>
+          <HiFiJobCard kind="new" logo="삼" company="삼성SDS" role="클라우드 백엔드 신입" dday="D-20" dateText="~6/11" onClick={() => nav.go('h_detail')}/>
+        </div>
+      </div>
+    </HiFiPhone>
+  );
+}
+
+// ─────────────────────────────────────────────────────
+// SCREEN_REGISTRY
+// ─────────────────────────────────────────────────────
+const SCREEN_REGISTRY = {
+  h_onb1:          { Comp: () => <HiFi_Onb1/>,               label: '🎬 온보딩 ① 직군' },
+  h_onb2:          { Comp: () => <HiFi_Onb2/>,               label: '온보딩 ② 기업/산업' },
+  h_onb2swipe:     { Comp: () => <HiFi_OnbSwipe/>,           label: '온보딩 ③ 회사 스와이프' },
+  h_onb4:          { Comp: () => <HiFi_Onb4Widget/>,         label: '온보딩 ④ 위젯' },
+  h_main:          { Comp: () => <HiFi_Main/>,               label: '🏠 메인' },
+  h_mainEmpty:     { Comp: () => <HiFi_MainEmpty/>,          label: '· 메인 (빈 상태)' },
+  h_detail:        { Comp: () => <HiFi_Detail/>,             label: '공고 상세' },
+  h_filter:        { Comp: () => <HiFi_Filter/>,             label: '필터' },
+  h_search:        { Comp: () => <HiFi_Search/>,             label: '🔍 검색' },
+  h_searchResults: { Comp: () => <HiFi_SearchResults/>,      label: '· 검색 결과' },
+  h_discover:      { Comp: () => <HiFi_Discover/>,           label: '🌟 찾아보기 (릴스)' },
+  h_fav:           { Comp: () => <HiFi_Favorites/>,          label: '❤️ 관심 기업' },
+  h_company:       { Comp: () => <HiFi_CompanyDetail/>,      label: '· 회사 상세 (삼성)' },
+  h_companyEmpty:  { Comp: () => <HiFi_CompanyDetailEmpty/>, label: '· 회사 상세 (공고없음)' },
+  h_mypage:        { Comp: () => <HiFi_MyPage/>,             label: '👤 마이페이지' },
+  h_saved:         { Comp: () => <HiFi_SavedPostings/>,      label: '· 저장한 공고' },
+  h_notifSettings: { Comp: () => <HiFi_NotifSettings/>,      label: '· 알림 설정' },
+  h_widgetSettings:{ Comp: () => <HiFi_WidgetSettings/>,     label: '· 위젯 설정' },
+  h_jobInterests:  { Comp: () => <HiFi_JobInterests/>,       label: '· 관심 직군' },
+  h_feedback:      { Comp: () => <HiFi_Feedback/>,           label: '· 피드백' },
+  h_notifHistory:  { Comp: () => <HiFi_NotifHistory/>,       label: '🔔 알림 히스토리' },
+  h_calendar:      { Comp: () => <HiFi_Calendar/>,           label: '📅 마감 캘린더' },
+  h_similar:       { Comp: () => <HiFi_Similar/>,            label: '✨ 비슷한 공고' },
+  h_share:         { Comp: () => <HiFi_ShareSheet/>,         label: '📤 공유 시트' },
+  h_lock:          { Comp: () => <HiFi_LockScreen/>,         label: '🔒 잠금화면' },
+  h_widget:        { Comp: () => <HiFi_Widget/>,             label: '📱 홈화면 위젯' },
+};
+
+// ─────────────────────────────────────────────────────
+// Prototype
+// ─────────────────────────────────────────────────────
+function Prototype() {
+  const [history, setHistory] = React.useState(['h_onb1']);
+  const [animKey, setAnimKey] = React.useState(0);
+  const current = history[history.length - 1];
+
+  const nav = React.useMemo(() => ({
+    current,
+    go: (s) => {
+      if (!SCREEN_REGISTRY[s]) { console.warn('no screen:', s); return; }
+      setHistory(h => [...h, s]);
+      setAnimKey(k => k + 1);
+    },
+    back: () => {
+      setHistory(h => h.length > 1 ? h.slice(0, -1) : h);
+      setAnimKey(k => k + 1);
+    },
+    reset: () => {
+      setHistory(['h_onb1']);
+      setAnimKey(k => k + 1);
+    },
+  }), [current]);
+
+  const Screen = SCREEN_REGISTRY[current].Comp;
+
+  return (
+    <NavCtx.Provider value={nav}>
+      <div style={{
+        display: 'flex', gap: 20, padding: 20,
+        width: '100%', minHeight: '100vh',
+        boxSizing: 'border-box', alignItems: 'flex-start',
+        background: '#1a1a1a'
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: 13, color: '#999'
+          }}>
+            <span>현재: <b style={{ color: '#ddd' }}>{SCREEN_REGISTRY[current].label}</b></span>
+            <span style={{ flex: 1 }}/>
+            <button
+              onClick={nav.back}
+              disabled={history.length <= 1}
+              style={{
+                fontFamily: 'inherit', fontSize: 12, padding: '6px 14px', borderRadius: 8,
+                border: '1.5px solid #444', background: '#2a2a2a', color: '#ddd',
+                cursor: history.length > 1 ? 'pointer' : 'not-allowed',
+                opacity: history.length <= 1 ? 0.35 : 1, fontWeight: 600
+              }}>← 뒤로</button>
+            <button
+              onClick={nav.reset}
+              style={{
+                fontFamily: 'inherit', fontSize: 12, padding: '6px 14px', borderRadius: 8,
+                border: '1.5px solid #444', background: '#2a2a2a', color: '#ddd',
+                cursor: 'pointer', fontWeight: 600
+              }}>↺ 처음</button>
+          </div>
+          <div key={animKey} className="proto-screen">
+            <Screen/>
+          </div>
+        </div>
+
+        <div className="proto-jump" style={{
+          width: 200, maxHeight: '95vh', overflowY: 'auto',
+          display: 'flex', flexDirection: 'column', gap: 4,
+          paddingTop: 44, fontSize: 13
+        }}>
+          <div style={{ color: '#888', marginBottom: 6, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, textTransform: 'uppercase' }}>
+            ↪ 화면 점프
+          </div>
+          {Object.entries(SCREEN_REGISTRY).map(([id, { label }]) => (
+            <button
+              key={id}
+              onClick={() => nav.go(id)}
+              style={{
+                fontFamily: 'inherit', fontSize: 12, padding: '8px 11px', borderRadius: 8,
+                border: '1.5px solid ' + (id === current ? '#ff6b35' : '#333'),
+                background: id === current ? '#ff6b35' : '#2a2a2a',
+                color: id === current ? '#fff' : '#bbb',
+                cursor: 'pointer', textAlign: 'left',
+                fontWeight: id === current ? 700 : 500,
+                lineHeight: 1.3,
+                boxShadow: id === current ? '0 2px 8px rgba(255,107,53,0.35)' : 'none'
+              }}>
+              {label}
+            </button>
+          ))}
+          <div style={{ color: '#555', marginTop: 14, fontSize: 11, lineHeight: 1.5 }}>
+            💡 폰 안의 버튼/카드를 직접 탭하거나 점프 메뉴로 임의 화면 이동
+          </div>
+        </div>
+      </div>
+    </NavCtx.Provider>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Prototype/>);
+</script>
 </body>
 </html>
