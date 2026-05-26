@@ -14,6 +14,7 @@ import com.jobalert.app.ui.screens.favorites.FavoritesScreen
 import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
+import com.jobalert.app.ui.screens.mypage.MyPageScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
 import com.jobalert.app.ui.screens.search.SearchResultsScreen
 import com.jobalert.app.ui.screens.search.SearchScreen
@@ -48,6 +49,7 @@ object Routes {
     const val Mypage = "mypage"
     const val Filter = "filter"
     const val NotifHistory = "notifHistory"
+    const val Calendar = "calendar"
     const val ShareSheet = "share"
     const val Similar = "similar"
 }
@@ -166,6 +168,14 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.Mypage) {
+            MyPageScreen(
+                onNotifHistory = { nav.navigate(Routes.NotifHistory) },
+                onCalendar = { nav.navigate(Routes.Calendar) },
+                onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Mypage) },
+            )
+        }
+
         composable(Routes.Search) {
             SearchScreen(
                 onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
@@ -194,8 +204,8 @@ fun JobAlertNavHost() {
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
             Routes.Discover to "찾아보기",
-            Routes.Mypage to "마이페이지",
             Routes.NotifHistory to "알림 히스토리",
+            Routes.Calendar to "마감 캘린더",
             Routes.ShareSheet to "공유",
             Routes.Similar to "비슷한 공고",
         ).forEach { (route, label) ->
