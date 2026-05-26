@@ -15,6 +15,7 @@ import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
 import com.jobalert.app.ui.screens.mypage.MyPageScreen
+import com.jobalert.app.ui.screens.notif.NotifHistoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
 import com.jobalert.app.ui.screens.search.SearchResultsScreen
 import com.jobalert.app.ui.screens.search.SearchScreen
@@ -176,6 +177,18 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.NotifHistory) {
+            NotifHistoryScreen(
+                onBack = { nav.popBackStack() },
+                onItemClick = { n ->
+                    // 첫 jobId 있으면 공고 상세, 없으면 main으로
+                    val firstJob = n.jobIds.firstOrNull()
+                    if (firstJob != null) nav.navigate(Routes.detail(firstJob))
+                    else nav.popBackStack()
+                },
+            )
+        }
+
         composable(Routes.Search) {
             SearchScreen(
                 onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
@@ -204,7 +217,6 @@ fun JobAlertNavHost() {
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
             Routes.Discover to "찾아보기",
-            Routes.NotifHistory to "알림 히스토리",
             Routes.Calendar to "마감 캘린더",
             Routes.ShareSheet to "공유",
             Routes.Similar to "비슷한 공고",
