@@ -87,13 +87,16 @@
 - HTML 프로토타입 (`project/index.html`) — 26개 화면 전부, jsdom 검증 26/26
 - 안드로이드 스캐폴드 (`android-app/`) — Gradle + 디자인 시스템 + 컴포넌트 9개 + 화면 3개 (온보딩 ①, 메인, 공고 상세) + Navigation
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
+- **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
 
 ### 🚧 진행
-- 백엔드 — 시작 전
-- 안드로이드 남은 23개 화면 — placeholder 라우트만 있음
-- 사람인 API 키 — 미발급
-- FCM·푸시 — 미작업
-- Play Store — 미작업
+- 안드로이드 남은 23개 화면 — placeholder 라우트만 있음 (Phase 2)
+- 사람인 API 키 — 미발급 (Phase 3 시작 조건)
+- 사람인 실 API 호출 — `SaraminRealClient` 스텁만 (Phase 3)
+- FCM·푸시 — 미작업 (Phase 3)
+- Claude Haiku 한줄 요약 — 미작업 (Phase 3)
+- 1000개 회사 시드 (공정위 공시) — placeholder만 (Phase 3)
+- Play Store — 미작업 (Phase 5)
 
 ### 📋 다음 단계
 `PHASE_PLAN.md` 참고. 백엔드(Window A)와 안드로이드(Window B)를 병렬 세션으로 진행.

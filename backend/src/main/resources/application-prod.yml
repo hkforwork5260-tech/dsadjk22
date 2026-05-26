@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+  data:
+    redis:
+      url: ${REDIS_URL}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jobalert:
+  saramin:
+    mode: ${SARAMIN_MODE:real}
+    api-key: ${SARAMIN_API_KEY}
+  collector:
+    enabled: ${COLLECTOR_ENABLED:true}
+  push:
+    enabled: ${PUSH_ENABLED:true}
+
+logging:
+  level:
+    root: INFO
+    com.jobalert: INFO

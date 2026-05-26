@@ -36,9 +36,9 @@
 
 ---
 
-### Phase 1 — 백엔드 코어 [Window A]
+### Phase 1 — 백엔드 코어 [Window A] ✅
 **Subagent**: Backend Claude
-**예상 시간**: 1 세션 (4~6시간 clock time)
+**예상 시간**: 1 세션 (4~6시간 clock time) — **완료 2026-05-26**
 
 **Tasks**:
 1. Spring Boot Kotlin 프로젝트 스캐폴드 (`backend/`)

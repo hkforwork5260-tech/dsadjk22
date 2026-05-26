@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/jobalert
+    username: jobalert
+    password: jobalert
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+
+jobalert:
+  saramin:
+    mode: mock
+  collector:
+    enabled: false
+  push:
+    enabled: false
