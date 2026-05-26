@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
 import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
+import com.jobalert.app.ui.screens.favorites.FavoritesScreen
 import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
@@ -157,6 +158,14 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(Routes.Favorites) {
+            FavoritesScreen(
+                onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
+                onAddCompany = { /* TODO: 검색으로 이동 또는 add flow */ },
+                onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Favorites) },
+            )
+        }
+
         composable(Routes.Search) {
             SearchScreen(
                 onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
@@ -185,7 +194,6 @@ fun JobAlertNavHost() {
         // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
         listOf(
             Routes.Discover to "찾아보기",
-            Routes.Favorites to "관심기업",
             Routes.Mypage to "마이페이지",
             Routes.NotifHistory to "알림 히스토리",
             Routes.ShareSheet to "공유",
