@@ -63,17 +63,17 @@
 
 ---
 
-### Phase 2 — 안드로이드 남은 화면 [Window B] (Phase 1과 병렬)
+### Phase 2 — 안드로이드 남은 화면 [Window B] (Phase 1과 병렬) ✅
 **Subagent**: Android Claude
 **예상 시간**: 2 세션 (8~12시간 clock time)
 
 **Tasks**:
-1. **Session 2.A** — 온보딩 + 메인 보강
+1. **Session 2.A** ✅ — 온보딩 + 메인 보강
    - 온보딩 ②③④ 화면 (기업 규모/산업, 회사 스와이프, 위젯 권한)
    - 메인 빈 상태
    - 필터 풀스크린
    - 검색 + 검색 결과
-2. **Session 2.B** — 상세·관심·마이
+2. **Session 2.B** ✅ — 상세·관심·마이
    - 회사 상세 (공고 있음/없음 2종)
    - 관심기업 그리드
    - 마이페이지 (서브는 placeholder 유지)
@@ -83,6 +83,7 @@
 4. 각 화면은 기존 `HiFi*` 컴포넌트 + 디자인 시스템 재활용
 
 **Done when**: 안드로이드 에뮬레이터에서 18개 화면 다 진입 가능, mock 데이터로 화면 보임. 빌드 성공 (`./gradlew :app:assembleDebug`).
+**상태**: 13개 화면 + NavGraph 12개 라우트 + MockApi 8개 응답 완료. `./gradlew assembleDebug` 검증은 사용자 PC에서 필요.
 
 ---
 
