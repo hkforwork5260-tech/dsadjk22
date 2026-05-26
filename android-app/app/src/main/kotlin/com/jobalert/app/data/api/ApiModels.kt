@@ -85,3 +85,58 @@ data class CategoriesResponse(val categories: List<JobCategoryDto>)
 
 /** GET /onboarding/popular-companies */
 data class PopularCompaniesResponse(val companies: List<CompanyDto>)
+
+/** GET /companies/{id} */
+data class CompanyDetailResponse(
+    val company: CompanyDto,
+    val region: String,                       // "서울/수원" 등 사람 친화 표기
+    val about: String,
+    val stats: CompanyStats,
+    val postings: List<JobDto>,               // 진행중인 공고
+    val history: List<JobHistoryDto>,         // 마감된 최근 공고 (공고 없을 때 노출)
+)
+
+data class CompanyStats(
+    val thisYearCount: Int,
+    val avgCloseLabel: String,                // "3주"
+    val passRateLabel: String,                // "4%"
+)
+
+data class JobHistoryDto(
+    val role: String,
+    val period: String,                       // "5/1 ~ 5/14 마감"
+)
+
+/** GET /users/me/favorites */
+data class FavoritesResponse(
+    val companies: List<FavoriteCompanyDto>,
+)
+
+/** Favorites 목록용. activeJobCount + hasAlarm 추가 표시. */
+data class FavoriteCompanyDto(
+    val company: CompanyDto,
+    val newCount: Int,                        // 오늘 새 공고 N건 (badge)
+    val hasAlarm: Boolean = true,
+)
+
+/** GET /notifications/history */
+data class NotificationsResponse(
+    val notifications: List<NotificationDto>,
+    val nextCursor: String? = null,
+)
+
+data class NotificationDto(
+    val id: String,
+    val sentAt: String,                       // ISO8601
+    val kind: String,                         // "morning_digest" | "evening_digest" | "deadline"
+    val title: String,
+    val body: String,
+    val jobIds: List<String> = emptyList(),
+    val read: Boolean = false,
+)
+
+/** GET /jobs/upcoming (캘린더용) */
+data class UpcomingResponse(
+    val days: Int,
+    val byDate: Map<String, List<JobDto>>,    // "2026-05-28" → [...]
+)

@@ -197,6 +197,173 @@ object MockApi {
         ),
     )
 
+    // ─── /api/v1/companies/{id} ───
+    /**
+     * 공고 있음(samsung=1) / 공고 없음(doosan_bobcat=99) 두 케이스만 demo.
+     */
+    fun companyDetail(id: Int): CompanyDetailResponse {
+        return when (id) {
+            99 -> CompanyDetailResponse(
+                company = CompanyDto(
+                    id = 99, name = "두산밥캣", logo = "두산",
+                    industry = "건설기계·산업기계", group = "두산", size = "large_corp",
+                    activeJobCount = 0, isFavorited = true,
+                    description = "소형 건설장비 글로벌 1위. 북미 시장 매출 비중 70%.",
+                ),
+                region = "인천",
+                about = "소형 건설장비 글로벌 1위. 북미 시장 매출 비중 70%.",
+                stats = CompanyStats(thisYearCount = 8, avgCloseLabel = "2주", passRateLabel = "6%"),
+                postings = emptyList(),
+                history = listOf(
+                    JobHistoryDto("2026 상반기 신입공채", "5/1 ~ 5/14 마감"),
+                    JobHistoryDto("재무 경력직", "4/15 ~ 4/30 마감"),
+                    JobHistoryDto("글로벌 영업 (5년+)", "3/10 ~ 4/3 마감"),
+                ),
+            )
+            else -> CompanyDetailResponse(
+                company = samsung.copy(
+                    description = "반도체(DS), 디스플레이, 모바일·생활가전(DX) 등 사업부문 운영. 글로벌 1위 메모리 반도체 기업.",
+                ),
+                region = "서울/수원/화성",
+                about = "반도체(DS), 디스플레이, 모바일·생활가전(DX) 등 사업부문 운영. 글로벌 1위 메모리 반도체 기업.",
+                stats = CompanyStats(thisYearCount = 24, avgCloseLabel = "3주", passRateLabel = "4%"),
+                postings = listOf(
+                    JobDto(
+                        id = "samsung-2026-h1", company = samsung,
+                        title = "2026 상반기 신입공채", kind = "NEW",
+                        dday = "D-24", deadline = "2026-06-15T14:59:59Z",
+                        location = "수원",
+                    ),
+                    JobDto(
+                        id = "samsung-ds-memory", company = samsung,
+                        title = "DS 부문 메모리 R&D", kind = "NEW",
+                        dday = "D-20", deadline = "2026-06-11T14:59:59Z",
+                        location = "화성",
+                    ),
+                    JobDto(
+                        id = "samsung-dx-sw", company = samsung,
+                        title = "DX 부문 SW 경력직", kind = "UPDATE",
+                        dday = "D-35", deadline = "2026-06-26T14:59:59Z",
+                        location = "수원",
+                    ),
+                    JobDto(
+                        id = "samsung-global-mkt", company = samsung,
+                        title = "글로벌 마케팅 (3년+)", kind = "NEW",
+                        dday = "D-18", deadline = "2026-06-09T14:59:59Z",
+                        location = "서울",
+                    ),
+                ),
+                history = emptyList(),
+            )
+        }
+    }
+
+    // ─── /api/v1/users/me/favorites ───
+    fun favorites(): FavoritesResponse = FavoritesResponse(
+        companies = listOf(
+            FavoriteCompanyDto(samsung, newCount = 3),
+            FavoriteCompanyDto(naver, newCount = 2),
+            FavoriteCompanyDto(kakao, newCount = 1, hasAlarm = false),
+            FavoriteCompanyDto(lges, newCount = 1),
+            FavoriteCompanyDto(skhynix.copy(id = 99, name = "두산밥캣", logo = "두산"), newCount = 0, hasAlarm = false),
+            FavoriteCompanyDto(hyundai, newCount = 2),
+            FavoriteCompanyDto(cj, newCount = 0, hasAlarm = false),
+            FavoriteCompanyDto(posco, newCount = 1),
+        ),
+    )
+
+    // ─── /api/v1/notifications/history ───
+    fun notifications(): NotificationsResponse = NotificationsResponse(
+        notifications = listOf(
+            NotificationDto(
+                id = "ntf-001",
+                sentAt = "2026-05-26T00:00:00Z",
+                kind = "morning_digest",
+                title = "오늘 새 공고 6건 ☀️",
+                body = "삼성전자, 네이버, 카카오 외 3건이 올라왔어요",
+                jobIds = listOf("samsung-2026-h1", "naver-backend", "kakao-android"),
+                read = false,
+            ),
+            NotificationDto(
+                id = "ntf-002",
+                sentAt = "2026-05-25T12:00:00Z",
+                kind = "evening_digest",
+                title = "마감 임박 2건 🔥",
+                body = "현대자동차 신입공채 (D-1), CJ제일제당 (D-0)",
+                jobIds = listOf("hyundai-closing", "cj-closing"),
+                read = false,
+            ),
+            NotificationDto(
+                id = "ntf-003",
+                sentAt = "2026-05-25T00:00:00Z",
+                kind = "morning_digest",
+                title = "오늘 새 공고 4건 ☀️",
+                body = "LG에너지솔루션, 포스코 외 2건",
+                jobIds = listOf("lges-rnd", "posco-2026-h1"),
+                read = true,
+            ),
+            NotificationDto(
+                id = "ntf-004",
+                sentAt = "2026-05-24T00:00:00Z",
+                kind = "morning_digest",
+                title = "오늘 새 공고 11건 ☀️",
+                body = "관심기업에서 새 공고가 다수 올라왔어요",
+                jobIds = emptyList(),
+                read = true,
+            ),
+            NotificationDto(
+                id = "ntf-005",
+                sentAt = "2026-05-23T12:00:00Z",
+                kind = "evening_digest",
+                title = "마감 임박 1건 🔥",
+                body = "두산에너빌리티 (D-3)",
+                jobIds = emptyList(),
+                read = true,
+            ),
+        ),
+    )
+
+    // ─── /api/v1/jobs/upcoming (캘린더) ───
+    fun upcoming(): UpcomingResponse = UpcomingResponse(
+        days = 30,
+        byDate = mapOf(
+            "2026-05-27" to listOf(
+                JobDto(id = "hyundai-closing", company = hyundai, title = "신입사원 일반공채",
+                    kind = "CLOSING", dday = "D-1", deadline = "2026-05-27T14:59:59Z", location = "서울"),
+            ),
+            "2026-05-28" to listOf(
+                JobDto(id = "kakao-fe-update", company = kakao, title = "경력 프론트엔드 개발자",
+                    kind = "UPDATE", dday = "D-2", deadline = "2026-05-28T14:59:59Z", location = "판교"),
+            ),
+            "2026-06-01" to listOf(
+                JobDto(id = "hmobis-rnd", company = hmobis, title = "기계 R&D 신입",
+                    kind = "NEW", dday = "D-6", deadline = "2026-06-01T14:59:59Z", location = "용인"),
+            ),
+            "2026-06-03" to listOf(
+                JobDto(id = "posco-2026-h1", company = posco, title = "2026 상반기 신입공채",
+                    kind = "NEW", dday = "D-8", deadline = "2026-06-03T14:59:59Z", location = "포항"),
+            ),
+            "2026-06-05" to listOf(
+                JobDto(id = "kakao-android", company = kakao, title = "신입 안드로이드 개발자",
+                    kind = "NEW", dday = "D-10", deadline = "2026-06-05T14:59:59Z", location = "판교"),
+            ),
+            "2026-06-07" to listOf(
+                JobDto(id = "lges-rnd", company = lges, title = "연구개발(R&D) 신입",
+                    kind = "NEW", dday = "D-12", deadline = "2026-06-07T14:59:59Z", location = "대전"),
+            ),
+            "2026-06-10" to listOf(
+                JobDto(id = "naver-backend", company = naver, title = "신입 백엔드 개발자",
+                    kind = "NEW", dday = "D-15", deadline = "2026-06-10T14:59:59Z", location = "판교"),
+            ),
+            "2026-06-15" to listOf(
+                JobDto(id = "samsung-2026-h1", company = samsung, title = "2026 상반기 신입공채",
+                    kind = "NEW", dday = "D-20", deadline = "2026-06-15T14:59:59Z", location = "수원"),
+                JobDto(id = "samsung-ds-memory", company = samsung, title = "DS 부문 메모리 R&D",
+                    kind = "NEW", dday = "D-20", deadline = "2026-06-15T14:59:59Z", location = "화성"),
+            ),
+        ),
+    )
+
     // ─── /api/v1/jobs/search ───
     /**
      * 키워드 "삼성" 검색 결과. 백엔드 붙으면 q 파라미터로 분기.

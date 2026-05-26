@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.jobalert.app.ui.components.HomeTab
+import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
 import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
@@ -32,6 +33,9 @@ object Routes {
     const val MainEmpty = "mainEmpty"
     const val Detail = "detail/{jobId}"
     fun detail(jobId: String) = "detail/$jobId"
+
+    const val CompanyDetail = "company/{companyId}"
+    fun company(id: Int) = "company/$id"
 
     const val Search = "search"
     const val SearchResults = "searchResults?q={q}"
@@ -140,6 +144,19 @@ fun JobAlertNavHost() {
             )
         }
 
+        composable(
+            route = Routes.CompanyDetail,
+            arguments = listOf(navArgument("companyId") { type = NavType.IntType }),
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("companyId") ?: 1
+            CompanyDetailScreen(
+                companyId = id,
+                onBack = { nav.popBackStack() },
+                onJobClick = { jid -> nav.navigate(Routes.detail(jid)) },
+                onShare = { nav.navigate(Routes.ShareSheet) },
+            )
+        }
+
         composable(Routes.Search) {
             SearchScreen(
                 onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
@@ -160,7 +177,7 @@ fun JobAlertNavHost() {
                 query = q,
                 onBack = { nav.popBackStack() },
                 onJobClick = { id -> nav.navigate(Routes.detail(id)) },
-                onCompanyClick = { /* TODO: 회사 상세 (Phase 2.B) */ },
+                onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.SearchResults) },
             )
         }
