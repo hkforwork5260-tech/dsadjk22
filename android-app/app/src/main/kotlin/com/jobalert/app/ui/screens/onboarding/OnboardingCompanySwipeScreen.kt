@@ -103,14 +103,15 @@ fun OnboardingCompanySwipeScreen(
         val flingBehavior = PagerDefaults.flingBehavior(
             state = pagerState,
             snapPositionalThreshold = 0.15f,
-            snapAnimationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioNoBouncy),
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioNoBouncy),
         )
         VerticalPager(
             state = pagerState,
             modifier = Modifier.weight(1f).fillMaxWidth(),
             pageSize = PageSize.Fill,
             flingBehavior = flingBehavior,
-            beyondViewportPageCount = 1,
+            // 인접 2페이지 미리 그려둠 → 양방향 스크롤 전부 prefetched 상태라 재measurement 없음.
+            beyondViewportPageCount = 2,
         ) { page ->
             if (page < companies.size) {
                 val c = companies[page]
