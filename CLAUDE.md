@@ -87,6 +87,7 @@
 - HTML 프로토타입 (`project/index.html`) — 26개 화면 전부, jsdom 검증 26/26
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
 - **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
+  - **bootRun 실 검증 (2026-05-27)**: postgres+redis 도커 + Spring Boot 2.3초 부팅 + 주요 5개 엔드포인트 200. `NoResourceFoundException` 404 매핑 fix (`d1a0529`).
 - **Phase 2.A + 2.B 안드로이드 핵심 화면 13개 완료** (`android-app/`):
   - 온보딩 ①②③④, 메인, 메인 빈 상태, 공고 상세, 필터, 검색, 검색 결과,
     회사 상세 (공고 있음/없음 2종), 관심기업, 마이페이지, 알림 히스토리, 마감 캘린더

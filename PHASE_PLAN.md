@@ -60,6 +60,7 @@
 10. 첫 실행 검증: `./gradlew bootRun` → curl로 `/api/v1/jobs/today` 200 응답
 
 **Done when**: 로컬에서 `docker-compose up && ./gradlew bootRun` → mock 응답으로 모든 v0.1 엔드포인트 동작.
+**실 검증 (2026-05-27)**: bootRun 2.3초 부팅 + 5개 엔드포인트 200, 미정의 경로 404 (GlobalExceptionHandler 매핑 fix `d1a0529`).
 
 ---
 
