@@ -6,8 +6,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -95,7 +95,7 @@ fun HiFiButton(
                 .background(s.bg)
                 .clickable(
                     interactionSource = interaction,
-                    indication = rememberRipple(color = HiFiColors.BorderDark),
+                    indication = ripple(color = HiFiColors.BorderDark),
                     enabled = enabled,
                     onClick = onClick,
                 )

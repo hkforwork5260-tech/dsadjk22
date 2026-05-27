@@ -19,7 +19,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -211,18 +215,14 @@ private fun displayTime(iso: String): String {
 }
 
 /** 점선 테두리 (FavoritesScreen과 동일 로직, 소규모라 공유 컴포넌트화 안 함) */
-private fun Modifier.dashedBorder(color: Color): Modifier = this.then(
-    androidx.compose.ui.draw.drawBehind {
-        val stroke = androidx.compose.ui.graphics.drawscope.Stroke(
-            width = 2.dp.toPx(),
-            pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
-                floatArrayOf(8f, 6f), 0f,
-            ),
-        )
-        drawRoundRect(
-            color = color,
-            style = stroke,
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(14.dp.toPx()),
-        )
-    }
-)
+private fun Modifier.dashedBorder(color: Color): Modifier = this.drawBehind {
+    val stroke = Stroke(
+        width = 2.dp.toPx(),
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f), 0f),
+    )
+    drawRoundRect(
+        color = color,
+        style = stroke,
+        cornerRadius = CornerRadius(14.dp.toPx()),
+    )
+}
