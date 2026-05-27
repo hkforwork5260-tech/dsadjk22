@@ -5,9 +5,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,8 +51,6 @@ fun OnboardingCompanySwipeScreen(
     val companies = remember { MockApi.popularCompanies().companies }
     var favSet by remember { mutableStateOf(setOf<Int>()) }
     var savedJobs by remember { mutableStateOf(setOf<String>()) }
-    val pageCount = companies.size + 1
-    val pagerState = rememberPagerState(pageCount = { pageCount })
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -94,32 +92,44 @@ fun OnboardingCompanySwipeScreen(
             }
         }
 
-        VerticalPager(
-            state = pagerState,
+        // LazyColumn으로 페이지 카드 스택. fillParentMaxSize로 한 화면에 한 카드.
+        // VerticalPager는 에뮬레이터 마우스 드래그가 잘 안 잡혀서 LazyColumn으로 대체.
+        LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
-            pageSize = PageSize.Fill,
-        ) { page ->
-            if (page < companies.size) {
-                val c = companies[page]
-                SwipeCompanyCard(
-                    company = c,
-                    isFav = c.id in favSet,
-                    isSaved = "job-of-${c.id}" in savedJobs,
-                    onToggleFav = {
-                        favSet = if (c.id in favSet) favSet - c.id else favSet + c.id
-                    },
-                    onToggleSave = {
-                        val k = "job-of-${c.id}"
-                        savedJobs = if (k in savedJobs) savedJobs - k else savedJobs + k
-                    },
-                    pageIndex = page,
-                    pageTotal = companies.size,
-                )
-            } else {
-                FinishCard(favCount = favSet.size, onNext = onNext)
+        ) {
+            items(companies, key = { it.id }) { c ->
+                SwipeCardSlot {
+                    SwipeCompanyCard(
+                        company = c,
+                        isFav = c.id in favSet,
+                        isSaved = "job-of-${c.id}" in savedJobs,
+                        onToggleFav = {
+                            favSet = if (c.id in favSet) favSet - c.id else favSet + c.id
+                        },
+                        onToggleSave = {
+                            val k = "job-of-${c.id}"
+                            savedJobs = if (k in savedJobs) savedJobs - k else savedJobs + k
+                        },
+                        pageIndex = companies.indexOf(c),
+                        pageTotal = companies.size,
+                    )
+                }
+            }
+            item(key = "finish") {
+                SwipeCardSlot {
+                    FinishCard(favCount = favSet.size, onNext = onNext)
+                }
             }
         }
         HiFiGestureNav()
+    }
+}
+
+/** 각 카드를 한 화면 풀로 채우는 LazyColumn item slot. */
+@Composable
+private fun LazyItemScope.SwipeCardSlot(content: @Composable () -> Unit) {
+    Box(Modifier.fillParentMaxSize()) {
+        content()
     }
 }
 

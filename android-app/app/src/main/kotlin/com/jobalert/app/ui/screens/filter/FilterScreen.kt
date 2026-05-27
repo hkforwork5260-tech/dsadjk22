@@ -150,7 +150,10 @@ private fun CategoriesGrid(
     val rows = items.chunked(2)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEachIndexed { rIdx, row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 row.forEachIndexed { cIdx, label ->
                     val idx = rIdx * 2 + cIdx
                     HiFiButton(
@@ -159,6 +162,7 @@ private fun CategoriesGrid(
                         variant = if (idx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                         fullWidth = true,
+                        maxLines = 1,
                         modifier = Modifier.weight(1f),
                     )
                 }

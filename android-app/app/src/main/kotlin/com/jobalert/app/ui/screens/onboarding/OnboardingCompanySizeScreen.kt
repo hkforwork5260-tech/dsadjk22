@@ -137,7 +137,10 @@ private fun GridButtons(
     val rows = items.chunked(columns)
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         rows.forEachIndexed { rIdx, row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 row.forEachIndexed { cIdx, label ->
                     val globalIdx = rIdx * columns + cIdx
                     HiFiButton(
@@ -146,6 +149,7 @@ private fun GridButtons(
                         variant = if (globalIdx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                         fullWidth = true,
+                        maxLines = 1,
                         modifier = Modifier.weight(1f),
                     )
                 }

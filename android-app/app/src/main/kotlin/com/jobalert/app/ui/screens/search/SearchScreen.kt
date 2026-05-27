@@ -213,7 +213,10 @@ private fun CategoryGrid(items: List<String>, onClick: (String) -> Unit) {
     val rows = items.chunked(2)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         rows.forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 row.forEach { label ->
                     HiFiButton(
                         text = label,
@@ -221,6 +224,7 @@ private fun CategoryGrid(items: List<String>, onClick: (String) -> Unit) {
                         variant = HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                         fullWidth = true,
+                        maxLines = 1,
                         modifier = Modifier.weight(1f),
                     )
                 }

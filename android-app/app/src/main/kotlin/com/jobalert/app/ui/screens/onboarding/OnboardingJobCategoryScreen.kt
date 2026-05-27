@@ -106,6 +106,7 @@ fun OnboardingJobCategoryScreen(
                         variant = if (idx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                         fullWidth = true,
+                        maxLines = 1,
                     )
                 }
             }

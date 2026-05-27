@@ -66,6 +66,7 @@ fun HiFiButton(
     size: HiFiButtonSize = HiFiButtonSize.Md,
     enabled: Boolean = true,
     fullWidth: Boolean = false,
+    maxLines: Int = Int.MAX_VALUE,
 ) {
     val s = styleFor(variant, size)
     val shape = RoundedCornerShape(s.cornerDp)
@@ -107,6 +108,8 @@ fun HiFiButton(
                 style = s.textStyle,
                 color = s.fg,
                 textAlign = TextAlign.Center,
+                maxLines = maxLines,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.Center),
             )
         }

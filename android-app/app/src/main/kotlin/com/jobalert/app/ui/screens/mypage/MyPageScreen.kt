@@ -17,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -35,6 +37,10 @@ fun MyPageScreen(
     onCalendar: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
+    val context = LocalContext.current
+    val showSoon: () -> Unit = {
+        Toast.makeText(context, "v0.2에서 추가될 예정이에요 ✨", Toast.LENGTH_SHORT).show()
+    }
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
@@ -92,7 +98,7 @@ fun MyPageScreen(
                             value = "14",
                             label = "저장한 공고 ›",
                             color = HiFiColors.UpdateShadow,
-                            modifier = Modifier.weight(1f).clickable { /* TODO: 저장한 공고 */ },
+                            modifier = Modifier.weight(1f).clickable { showSoon() },
                         )
                     }
                 }
@@ -102,12 +108,12 @@ fun MyPageScreen(
 
             // 메뉴 리스트
             val menu = listOf(
-                MenuItem("🔔", "알림 설정", "매일 9시 / 21시") { /* TODO */ },
+                MenuItem("🔔", "알림 설정", "매일 9시 / 21시", onClick = showSoon),
                 MenuItem("📜", "알림 히스토리", "받은 알림 다시 보기", onClick = onNotifHistory),
                 MenuItem("📅", "마감 캘린더", "저장한 공고 마감일", onClick = onCalendar),
-                MenuItem("📱", "바탕화면 위젯", "켜짐 (Medium)") { /* TODO */ },
-                MenuItem("🎯", "관심 직군", "개발 · 디자인 · 데이터") { /* TODO */ },
-                MenuItem("💬", "피드백 보내기", "") { /* TODO */ },
+                MenuItem("📱", "바탕화면 위젯", "켜짐 (Medium)", onClick = showSoon),
+                MenuItem("🎯", "관심 직군", "개발 · 디자인 · 데이터", onClick = showSoon),
+                MenuItem("💬", "피드백 보내기", "", onClick = showSoon),
                 MenuItem("ℹ️", "앱 정보", "v0.1.0 · 베타", onClick = null),
             )
             Column {
