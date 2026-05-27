@@ -1,15 +1,16 @@
 package com.jobalert.app.ui.screens.onboarding
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,6 +54,8 @@ fun OnboardingCompanySwipeScreen(
     val companies = remember { MockApi.popularCompanies().companies }
     var favSet by remember { mutableStateOf(setOf<Int>()) }
     var savedJobs by remember { mutableStateOf(setOf<String>()) }
+    val pageCount = companies.size + 1
+    val pagerState = rememberPagerState(pageCount = { pageCount })
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -94,48 +97,40 @@ fun OnboardingCompanySwipeScreen(
             }
         }
 
-        // LazyColumn + SnapFlingBehavior → 50% 넘기면 다음 페이지로 자동 snap (릴스 느낌).
-        // VerticalPager 대신 LazyColumn 쓰는 이유: 에뮬레이터 마우스 휠/드래그 호환성.
-        val listState = rememberLazyListState()
-        val snapFling = rememberSnapFlingBehavior(listState)
-        LazyColumn(
-            state = listState,
-            flingBehavior = snapFling,
+        // VerticalPager + 낮은 snapPositionalThreshold → 살짝만 스와이프해도 다음 페이지로 snap.
+        // 유튜브 쇼츠/릴스 감각: 15% 넘기면 자동 다음 페이지로, 빠른 spring으로 슉.
+        val flingBehavior = PagerDefaults.flingBehavior(
+            state = pagerState,
+            snapPositionalThreshold = 0.15f,
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium),
+        )
+        VerticalPager(
+            state = pagerState,
             modifier = Modifier.weight(1f).fillMaxWidth(),
-        ) {
-            items(companies, key = { it.id }) { c ->
-                SwipeCardSlot {
-                    SwipeCompanyCard(
-                        company = c,
-                        isFav = c.id in favSet,
-                        isSaved = "job-of-${c.id}" in savedJobs,
-                        onToggleFav = {
-                            favSet = if (c.id in favSet) favSet - c.id else favSet + c.id
-                        },
-                        onToggleSave = {
-                            val k = "job-of-${c.id}"
-                            savedJobs = if (k in savedJobs) savedJobs - k else savedJobs + k
-                        },
-                        pageIndex = companies.indexOf(c),
-                        pageTotal = companies.size,
-                    )
-                }
-            }
-            item(key = "finish") {
-                SwipeCardSlot {
-                    FinishCard(favCount = favSet.size, onNext = onNext)
-                }
+            pageSize = PageSize.Fill,
+            flingBehavior = flingBehavior,
+        ) { page ->
+            if (page < companies.size) {
+                val c = companies[page]
+                SwipeCompanyCard(
+                    company = c,
+                    isFav = c.id in favSet,
+                    isSaved = "job-of-${c.id}" in savedJobs,
+                    onToggleFav = {
+                        favSet = if (c.id in favSet) favSet - c.id else favSet + c.id
+                    },
+                    onToggleSave = {
+                        val k = "job-of-${c.id}"
+                        savedJobs = if (k in savedJobs) savedJobs - k else savedJobs + k
+                    },
+                    pageIndex = page,
+                    pageTotal = companies.size,
+                )
+            } else {
+                FinishCard(favCount = favSet.size, onNext = onNext)
             }
         }
         HiFiGestureNav()
-    }
-}
-
-/** 각 카드를 한 화면 풀로 채우는 LazyColumn item slot. */
-@Composable
-private fun LazyItemScope.SwipeCardSlot(content: @Composable () -> Unit) {
-    Box(Modifier.fillParentMaxSize()) {
-        content()
     }
 }
 

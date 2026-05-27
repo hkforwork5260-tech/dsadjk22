@@ -29,7 +29,15 @@ fun OnboardingCompanySizeScreen(
     onBack: () -> Unit,
 ) {
     val scales = listOf("대기업", "공기업", "중견기업", "중소기업", "외국계", "스타트업")
-    val sectors = listOf("IT/플랫폼", "반도체", "금융", "자동차", "바이오", "화학/소재", "유통", "+ 더보기")
+    // 산업군 — 사람인 기준 주요 분야 + 기타. 더보기 칸 없이 한눈에 다 보임.
+    val sectors = listOf(
+        "IT/플랫폼", "반도체", "금융",
+        "자동차", "바이오/제약", "화학/소재",
+        "유통/식품", "게임", "미디어/엔터",
+        "통신/방송", "에너지/중공업", "건설/건축",
+        "항공/물류", "교육/공공", "패션/뷰티",
+        "기타",
+    )
     var selectedScales by remember { mutableStateOf(setOf(0, 1)) }
     var selectedSectors by remember { mutableStateOf(setOf(0, 1)) }
 
@@ -88,7 +96,7 @@ fun OnboardingCompanySizeScreen(
                 GridButtons(
                     items = sectors,
                     selected = selectedSectors,
-                    columns = 2,
+                    columns = 3,
                     onToggle = { i ->
                         selectedSectors = if (i in selectedSectors) selectedSectors - i else selectedSectors + i
                     },
