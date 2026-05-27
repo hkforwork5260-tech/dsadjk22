@@ -1,0 +1,395 @@
+package com.jobalert.app.ui.screens.discover
+
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.model.Job
+import com.jobalert.app.data.sample.SampleJobs
+import com.jobalert.app.ui.components.*
+import com.jobalert.app.ui.theme.HiFiColors
+import com.jobalert.app.ui.theme.HiFiType
+import com.jobalert.app.ui.theme.color
+import com.jobalert.app.ui.theme.label
+import com.jobalert.app.ui.theme.softColor
+
+/**
+ * 찾아보기 (Reels 스타일 디스커버리).
+ * VerticalPager로 1페이지 = 1공고. 온보딩 ③ 스와이프 패턴 재사용.
+ * 마지막 페이지는 "다 봤어!" finish 카드.
+ */
+@Composable
+fun DiscoverScreen(
+    onJobClick: (String) -> Unit,
+    onShare: () -> Unit,
+    onFilter: () -> Unit,
+    onGoMain: () -> Unit,
+    onTabClick: (HomeTab) -> Unit,
+) {
+    val jobs = remember { SampleJobs }
+    var favSet by remember { mutableStateOf(setOf<String>()) }
+    var savedSet by remember { mutableStateOf(setOf<String>()) }
+    val pageCount = jobs.size + 1
+    val pagerState = rememberPagerState(pageCount = { pageCount })
+
+    Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
+        HiFiStatusBar()
+        HiFiAppBar(
+            title = "찾아보기",
+            action = { HiFiIconBtn(Icons.Outlined.Tune, "필터", onClick = onFilter) },
+        )
+
+        val flingBehavior = PagerDefaults.flingBehavior(
+            state = pagerState,
+            snapPositionalThreshold = 0.15f,
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioNoBouncy),
+        )
+        VerticalPager(
+            state = pagerState,
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            pageSize = PageSize.Fill,
+            flingBehavior = flingBehavior,
+            beyondViewportPageCount = 2,
+        ) { page ->
+            if (page < jobs.size) {
+                val j = jobs[page]
+                ReelsJobCard(
+                    job = j,
+                    isFav = j.id in favSet,
+                    isSaved = j.id in savedSet,
+                    onToggleFav = {
+                        favSet = if (j.id in favSet) favSet - j.id else favSet + j.id
+                    },
+                    onToggleSave = {
+                        savedSet = if (j.id in savedSet) savedSet - j.id else savedSet + j.id
+                    },
+                    onShare = onShare,
+                    onOpenDetail = { onJobClick(j.id) },
+                    pageIndex = page,
+                    pageTotal = jobs.size,
+                )
+            } else {
+                FinishReelsCard(favCount = favSet.size, savedCount = savedSet.size, onGoMain = onGoMain)
+            }
+        }
+
+        HiFiTabBar(active = HomeTab.Discover, onTabClick = onTabClick)
+        HiFiGestureNav()
+    }
+}
+
+@Composable
+private fun ReelsJobCard(
+    job: Job,
+    isFav: Boolean,
+    isSaved: Boolean,
+    onToggleFav: () -> Unit,
+    onToggleSave: () -> Unit,
+    onShare: () -> Unit,
+    onOpenDetail: () -> Unit,
+    pageIndex: Int,
+    pageTotal: Int,
+) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(HiFiColors.Bg)
+            .border(2.dp, HiFiColors.Border, RoundedCornerShape(24.dp))
+            .clickable(onClick = onOpenDetail),
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            // 상단 헤더 (로고 + 회사 + 종류 라벨)
+            Row(
+                Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                Box(
+                    Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(job.kind.softColor()),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(job.logo, style = HiFiType.h2.copy(fontSize = 22.sp), color = job.kind.color())
+                }
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
+                    HiFiLabel(text = job.kind.label(), bg = job.kind.color())
+                    Spacer(Modifier.height(6.dp))
+                    Text(job.company, style = HiFiType.title, color = HiFiColors.Text)
+                    if (job.location.isNotBlank()) {
+                        Text(
+                            "📍 ${job.location}",
+                            style = HiFiType.body2.copy(fontSize = 12.sp),
+                            color = HiFiColors.Text2,
+                        )
+                    }
+                }
+            }
+
+            // 직무 + D-day
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                Text(
+                    job.role,
+                    style = HiFiType.display.copy(fontSize = 26.sp, lineHeight = 30.sp),
+                    color = HiFiColors.Text,
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(job.kind.softColor())
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                    ) {
+                        Text(
+                            job.dday,
+                            style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
+                            color = job.kind.color(),
+                        )
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        job.dateText,
+                        style = HiFiType.body2.copy(fontSize = 13.sp),
+                        color = HiFiColors.Text2,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            // 칩 (가로 스크롤)
+            val hScroll = rememberScrollState()
+            Row(
+                Modifier
+                    .padding(horizontal = 20.dp)
+                    .horizontalScroll(hScroll),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                if (job.experience.isNotBlank()) HiFiChip("💼 ${job.experience}", small = true, variant = HiFiChipVariant.Outline)
+                if (job.education.isNotBlank()) HiFiChip("🎓 ${job.education}", small = true, variant = HiFiChipVariant.Outline)
+                job.tags.forEach { HiFiChip("#$it", small = true) }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            // 꽁이 한줄 요약
+            Box(
+                Modifier
+                    .padding(horizontal = 20.dp)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(HiFiColors.BrandSoft)
+                    .border(2.dp, HiFiColors.Brand, RoundedCornerShape(16.dp))
+                    .padding(14.dp),
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("✨", style = HiFiType.h2.copy(fontSize = 18.sp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("꽁이의 한줄 요약", style = HiFiType.caption, color = HiFiColors.BrandDark)
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        job.summary.ifBlank { "이 공고의 AI 요약은 곧 생성됩니다." },
+                        style = HiFiType.body.copy(fontWeight = FontWeight.SemiBold),
+                        color = HiFiColors.Text,
+                    )
+                }
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            // 안내 + 자세히 보기 CTA
+            Column(
+                Modifier.padding(horizontal = 20.dp, vertical = 18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                HiFiButton(
+                    text = "자세히 보기",
+                    onClick = onOpenDetail,
+                    variant = HiFiButtonVariant.Primary,
+                    size = HiFiButtonSize.Md,
+                    fullWidth = true,
+                )
+                Spacer(Modifier.height(8.dp))
+                if (pageIndex < pageTotal - 1) {
+                    Text(
+                        "↓ 다음 공고로 스크롤",
+                        style = HiFiType.caption,
+                        color = HiFiColors.Text3,
+                    )
+                } else {
+                    Text(
+                        "마지막 페이지에요",
+                        style = HiFiType.caption,
+                        color = HiFiColors.Text3,
+                    )
+                }
+            }
+        }
+
+        // 우측 액션
+        Column(
+            Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 14.dp, bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CircleAction(
+                icon = if (isFav) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
+                desc = "좋아요",
+                activeColor = HiFiColors.Closing,
+                active = isFav,
+                label = "좋아요",
+                onClick = onToggleFav,
+            )
+            CircleAction(
+                icon = Icons.Outlined.BookmarkBorder,
+                desc = "저장",
+                activeColor = HiFiColors.Update,
+                active = isSaved,
+                label = "저장",
+                onClick = onToggleSave,
+            )
+            CircleAction(
+                icon = Icons.Outlined.Share,
+                desc = "공유",
+                activeColor = HiFiColors.Info,
+                active = false,
+                label = "공유",
+                onClick = onShare,
+            )
+        }
+
+        // 좌상단 progress bar
+        Row(
+            Modifier
+                .align(Alignment.TopStart)
+                .padding(start = 18.dp, top = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            repeat(pageTotal) { i ->
+                val active = i <= pageIndex
+                Box(
+                    Modifier
+                        .width(if (i == pageIndex) 16.dp else 6.dp)
+                        .height(3.dp)
+                        .clip(CircleShape)
+                        .background(if (active) HiFiColors.Brand else HiFiColors.Border),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CircleAction(
+    icon: ImageVector,
+    desc: String,
+    activeColor: Color,
+    active: Boolean,
+    label: String,
+    onClick: () -> Unit,
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(if (active) activeColor else Color.White)
+                .border(2.dp, if (active) activeColor else HiFiColors.Border, CircleShape)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = desc,
+                tint = if (active) Color.White else HiFiColors.Text2,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        Spacer(Modifier.height(2.dp))
+        Text(
+            label,
+            style = HiFiType.caption.copy(fontSize = 10.sp, letterSpacing = 0.sp),
+            color = if (active) activeColor else HiFiColors.Text3,
+        )
+    }
+}
+
+@Composable
+private fun FinishReelsCard(favCount: Int, savedCount: Int, onGoMain: () -> Unit) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 12.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(HiFiColors.BrandSoft),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(28.dp),
+        ) {
+            Mascot(size = 120.dp, expression = MascotExpression.Happy)
+            Spacer(Modifier.height(14.dp))
+            Text(
+                "오늘은 여기까지!",
+                style = HiFiType.title,
+                color = HiFiColors.BrandDark,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                if (favCount + savedCount > 0)
+                    "좋아요 ${favCount}개 · 저장 ${savedCount}개"
+                else
+                    "내일 또 새로운 공고로 찾아올게요",
+                style = HiFiType.body2,
+                color = HiFiColors.Text2,
+            )
+            Spacer(Modifier.height(22.dp))
+            HiFiButton(
+                text = "홈으로 돌아가기",
+                onClick = onGoMain,
+                variant = HiFiButtonVariant.Primary,
+                fullWidth = true,
+            )
+        }
+    }
+}

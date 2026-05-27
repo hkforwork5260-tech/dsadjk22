@@ -18,10 +18,15 @@
 - Play Store 내부테스트 빌드 업로드
 
 **제외 (v0.2로):**
-- 홈 위젯 (Glance API) — 2일 추가 작업
+- 홈 위젯 (Glance API) — 2일 추가 작업 (UI는 만들어둠, AppWidgetProvider 등록만 남음)
 - 잠금화면 풀스크린 인텐트 푸시 — 일반 푸시로 대체
-- 찾아보기 Reels (VerticalPager) — 8개 안 만들고 placeholder
-- 공유 시트, 마감 캘린더 고급 인터랙션, 마이페이지 서브 5개
+- 마감 캘린더 고급 인터랙션 (멀티 선택·드래그 등)
+
+**v0.1에 포함 결정 (당초 v0.2 예정에서 승격, 2026-05-27 세션):**
+- 찾아보기 Reels (VerticalPager) ✅
+- 공유 시트 (ModalBottomSheet 스타일) ✅
+- 마이페이지 서브 4개 (알림 설정 / 위젯 설정 / 관심 직군 / 피드백) ✅
+- 비슷한 공고 ✅
 
 ## Phase 목록
 
@@ -84,7 +89,13 @@
 4. 각 화면은 기존 `HiFi*` 컴포넌트 + 디자인 시스템 재활용
 
 **Done when**: 안드로이드 에뮬레이터에서 18개 화면 다 진입 가능, mock 데이터로 화면 보임. 빌드 성공 (`./gradlew :app:assembleDebug`).
-**상태**: 13개 화면 + NavGraph 12개 라우트 + MockApi 8개 응답 완료. `./gradlew assembleDebug` 검증은 사용자 PC에서 필요.
+**상태**: 20개+ 화면 + NavGraph 라우트 16개 + MockApi 응답. `./gradlew assembleDebug` 검증은 사용자 PC에서 필요.
+
+5. **Session 2.C** ✅ (2026-05-27) — Placeholder 7개 채우기
+   - 찾아보기 Reels (VerticalPager + 액션 버튼)
+   - 공유 시트 (BottomSheet 스타일, 클립보드/시스템 공유 실 동작)
+   - 비슷한 공고 (jobId path param, 유사도 score 정렬)
+   - 마이페이지 서브: 알림 설정 / 위젯 설정 / 관심 직군 / 피드백
 
 ---
 

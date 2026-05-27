@@ -88,15 +88,16 @@
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
 - **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
   - **bootRun 실 검증 (2026-05-27)**: postgres+redis 도커 + Spring Boot 2.3초 부팅 + 주요 5개 엔드포인트 200. `NoResourceFoundException` 404 매핑 fix (`d1a0529`).
-- **Phase 2.A + 2.B 안드로이드 핵심 화면 13개 완료** (`android-app/`):
+- **Phase 2.A + 2.B + 2.C 안드로이드 화면 20개 완료** (`android-app/`):
   - 온보딩 ①②③④, 메인, 메인 빈 상태, 공고 상세, 필터, 검색, 검색 결과,
     회사 상세 (공고 있음/없음 2종), 관심기업, 마이페이지, 알림 히스토리, 마감 캘린더
+  - **2.C (2026-05-27)** — 찾아보기 Reels (VerticalPager), 공유 시트 (BottomSheet),
+    비슷한 공고, 마이페이지 서브 4개 (알림 설정 / 위젯 설정 / 관심 직군 / 피드백)
   - `data/api/MockApi.kt` — API_CONTRACT.md 형식 그대로 mock 응답 (백엔드 붙기 전 임시)
-  - 디자인 시스템 컴포넌트 10개 + 라우트 12개
+  - 디자인 시스템 컴포넌트 10개 + 라우트 16개
 
 ### 🚧 진행
-- 안드로이드 placeholder 라우트 — 찾아보기 (Reels), 공유 시트, 비슷한 공고, 마이페이지 서브 (알림설정/위젯설정/관심직군/피드백)
-- 사람인 API 키 — 미발급 (Phase 3 시작 조건)
+- 사람인 API 키 — 신청 완료 (2026-05-27), 승인 메일 대기 중
 - 사람인 실 API 호출 — `SaraminRealClient` 스텁만 (Phase 3)
 - FCM·푸시 — 미작업 (Phase 3)
 - Claude Haiku 한줄 요약 — 미작업 (Phase 3)

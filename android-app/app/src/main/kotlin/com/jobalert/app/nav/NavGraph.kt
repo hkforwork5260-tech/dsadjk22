@@ -1,6 +1,5 @@
 package com.jobalert.app.nav
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,6 +10,7 @@ import com.jobalert.app.ui.components.HomeTab
 import com.jobalert.app.ui.screens.calendar.CalendarScreen
 import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
+import com.jobalert.app.ui.screens.discover.DiscoverScreen
 import com.jobalert.app.ui.screens.favorites.FavoritesScreen
 import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
@@ -23,6 +23,12 @@ import com.jobalert.app.ui.screens.search.SearchScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingJobCategoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingWidgetScreen
+import com.jobalert.app.ui.screens.settings.FeedbackScreen
+import com.jobalert.app.ui.screens.settings.InterestsScreen
+import com.jobalert.app.ui.screens.settings.NotifSettingsScreen
+import com.jobalert.app.ui.screens.settings.WidgetSettingsScreen
+import com.jobalert.app.ui.screens.share.ShareSheetScreen
+import com.jobalert.app.ui.screens.similar.SimilarJobsScreen
 
 /**
  * 라우트 정의.
@@ -45,7 +51,6 @@ object Routes {
     const val SearchResults = "searchResults?q={q}"
     fun searchResults(q: String) = "searchResults?q=$q"
 
-    // Placeholders (다음 세션에서 구현)
     const val Discover = "discover"
     const val Favorites = "favorites"
     const val Mypage = "mypage"
@@ -53,7 +58,14 @@ object Routes {
     const val NotifHistory = "notifHistory"
     const val Calendar = "calendar"
     const val ShareSheet = "share"
-    const val Similar = "similar"
+    const val Similar = "similar/{jobId}"
+    fun similar(jobId: String) = "similar/$jobId"
+
+    // 마이페이지 서브
+    const val NotifSettings = "notifSettings"
+    const val WidgetSettings = "widgetSettings"
+    const val Interests = "interests"
+    const val Feedback = "feedback"
 }
 
 @Composable
@@ -137,7 +149,7 @@ fun JobAlertNavHost() {
                 jobId = jobId,
                 onBack = { nav.popBackStack() },
                 onShare = { nav.navigate(Routes.ShareSheet) },
-                onSimilarTab = { nav.navigate(Routes.Similar) },
+                onSimilarTab = { nav.navigate(Routes.similar(jobId)) },
                 onApply = { /* TODO: 외부 URL Intent */ },
             )
         }
@@ -174,8 +186,31 @@ fun JobAlertNavHost() {
             MyPageScreen(
                 onNotifHistory = { nav.navigate(Routes.NotifHistory) },
                 onCalendar = { nav.navigate(Routes.Calendar) },
+                onNotifSettings = { nav.navigate(Routes.NotifSettings) },
+                onWidgetSettings = { nav.navigate(Routes.WidgetSettings) },
+                onInterests = { nav.navigate(Routes.Interests) },
+                onFeedback = { nav.navigate(Routes.Feedback) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Mypage) },
             )
+        }
+
+        composable(Routes.NotifSettings) {
+            NotifSettingsScreen(onBack = { nav.popBackStack() })
+        }
+        composable(Routes.WidgetSettings) {
+            WidgetSettingsScreen(onBack = { nav.popBackStack() })
+        }
+        composable(Routes.Interests) {
+            InterestsScreen(
+                onBack = { nav.popBackStack() },
+                onEditJobCategory = { nav.navigate(Routes.Onboarding1) },
+                onEditCompanySize = { nav.navigate(Routes.Onboarding2) },
+                onEditCompanySwipe = { nav.navigate(Routes.Onboarding3) },
+                onOpenFavorites = { nav.navigate(Routes.Favorites) },
+            )
+        }
+        composable(Routes.Feedback) {
+            FeedbackScreen(onBack = { nav.popBackStack() })
         }
 
         composable(Routes.NotifHistory) {
@@ -222,13 +257,30 @@ fun JobAlertNavHost() {
             )
         }
 
-        // 임시 placeholder들 — 다음 세션에서 실제 화면으로 교체
-        listOf(
-            Routes.Discover to "찾아보기",
-            Routes.ShareSheet to "공유",
-            Routes.Similar to "비슷한 공고",
-        ).forEach { (route, label) ->
-            composable(route) { Placeholder(label) }
+        composable(Routes.ShareSheet) {
+            ShareSheetScreen(onClose = { nav.popBackStack() })
+        }
+
+        composable(
+            route = Routes.Similar,
+            arguments = listOf(navArgument("jobId") { type = NavType.StringType }),
+        ) { backStackEntry ->
+            val jId = backStackEntry.arguments?.getString("jobId").orEmpty()
+            SimilarJobsScreen(
+                jobId = jId,
+                onBack = { nav.popBackStack() },
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+            )
+        }
+
+        composable(Routes.Discover) {
+            DiscoverScreen(
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+                onShare = { nav.navigate(Routes.ShareSheet) },
+                onFilter = { nav.navigate(Routes.Filter) },
+                onGoMain = { goMain(nav) },
+                onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Discover) },
+            )
         }
     }
 }
@@ -256,7 +308,3 @@ private fun goMain(nav: androidx.navigation.NavHostController) {
     }
 }
 
-@Composable
-private fun Placeholder(label: String) {
-    Text("$label 화면 (다음 세션 구현 예정)")
-}

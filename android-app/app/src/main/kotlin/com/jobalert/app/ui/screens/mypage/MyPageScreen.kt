@@ -35,6 +35,10 @@ import com.jobalert.app.ui.theme.HiFiType
 fun MyPageScreen(
     onNotifHistory: () -> Unit,
     onCalendar: () -> Unit,
+    onNotifSettings: () -> Unit,
+    onWidgetSettings: () -> Unit,
+    onInterests: () -> Unit,
+    onFeedback: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
     val context = LocalContext.current
@@ -108,12 +112,12 @@ fun MyPageScreen(
 
             // 메뉴 리스트
             val menu = listOf(
-                MenuItem("🔔", "알림 설정", "매일 9시 / 21시", onClick = showSoon),
+                MenuItem("🔔", "알림 설정", "매일 9시 / 21시", onClick = onNotifSettings),
                 MenuItem("📜", "알림 히스토리", "받은 알림 다시 보기", onClick = onNotifHistory),
                 MenuItem("📅", "마감 캘린더", "저장한 공고 마감일", onClick = onCalendar),
-                MenuItem("📱", "바탕화면 위젯", "켜짐 (Medium)", onClick = showSoon),
-                MenuItem("🎯", "관심 직군", "개발 · 디자인 · 데이터", onClick = showSoon),
-                MenuItem("💬", "피드백 보내기", "", onClick = showSoon),
+                MenuItem("📱", "바탕화면 위젯", "켜짐 (Medium)", onClick = onWidgetSettings),
+                MenuItem("🎯", "관심 직군", "개발 · 디자인 · 데이터", onClick = onInterests),
+                MenuItem("💬", "피드백 보내기", "", onClick = onFeedback),
                 MenuItem("ℹ️", "앱 정보", "v0.1.0 · 베타", onClick = null),
             )
             Column {

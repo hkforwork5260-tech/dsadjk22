@@ -98,7 +98,7 @@
 { "code": "it_dev_data", "label": "IT개발·데이터" }
 ```
 
-21개 카테고리 코드는 `data/model/Job.kt` 또는 백엔드 `JobCategory` enum 참조 (CLAUDE.md에서 동기화).
+22개 카테고리 코드 (사람인 카테고리 21개 + "기타" 1개). 안드로이드는 `data/model/Job.kt` `JobCategories`, 백엔드는 `JobCategory` enum에 정의 (둘 다 22개 동기화).
 
 ---
 
@@ -235,7 +235,7 @@ GET /api/v1/onboarding/categories
 }
 ```
 
-21개 고정. 안드로이드는 첫 진입에 1회 호출 후 캐시.
+22개 고정 (사람인 카테고리 21개 + "기타"). 안드로이드는 첫 진입에 1회 호출 후 캐시.
 
 ---
 
