@@ -235,7 +235,33 @@ GET /api/v1/onboarding/categories
 }
 ```
 
-22개 고정 (사람인 카테고리 21개 + "기타"). 안드로이드는 첫 진입에 1회 호출 후 캐시.
+**정식 코드 키 21개 (canonical — 백엔드 source of truth, Flyway V1)**:
+
+| code | label |
+|---|---|
+| `plan_strategy` | 기획·전략 |
+| `marketing_pr` | 마케팅·홍보·조사 |
+| `accounting_finance` | 회계·세무·재무 |
+| `hr_hrd` | 인사·노무·HRD |
+| `admin_legal` | 총무·법무·사무 |
+| `it_dev_data` | IT개발·데이터 |
+| `design` | 디자인 |
+| `sales_trade` | 영업·판매·무역 |
+| `customer_tm` | 고객상담·TM |
+| `purchase_logistics` | 구매·자재·물류 |
+| `md_planning` | 상품기획·MD |
+| `driving_delivery` | 운전·운송·배송 |
+| `service` | 서비스 |
+| `production` | 생산 |
+| `construction` | 건설·건축 |
+| `medical` | 의료 |
+| `research` | 연구·R&D |
+| `education` | 교육 |
+| `media_culture_sport` | 미디어·문화·스포츠 |
+| `finance_insurance` | 금융·보험 |
+| `public_welfare` | 공공·복지 |
+
+안드로이드는 첫 진입에 1회 호출 후 캐시. "기타" 카테고리는 v0.2 이후 사람인 분류 외 공고용으로 별도 검토.
 
 ---
 
