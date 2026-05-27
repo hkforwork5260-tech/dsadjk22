@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
 
@@ -46,7 +47,7 @@ private fun styleFor(variant: HiFiButtonVariant, size: HiFiButtonSize): ButtonSt
         HiFiButtonVariant.Ghost -> Triple(Color.Transparent, HiFiColors.Text2, Color.Transparent)
     }
     return when (size) {
-        HiFiButtonSize.Sm -> ButtonStyle(bg, fg, shadow, 14.dp, 10.dp, HiFiType.body2, 3.dp, 1.dp, 14.dp)
+        HiFiButtonSize.Sm -> ButtonStyle(bg, fg, shadow, 10.dp, 9.dp, HiFiType.body2.copy(fontSize = 15.sp), 3.dp, 1.dp, 14.dp)
         HiFiButtonSize.Md -> ButtonStyle(bg, fg, shadow, 22.dp, 14.dp, HiFiType.body, 4.dp, 2.dp, 16.dp)
         HiFiButtonSize.Lg -> ButtonStyle(bg, fg, shadow, 26.dp, 18.dp, HiFiType.h2, 4.dp, 2.dp, 16.dp)
     }

@@ -3,11 +3,13 @@ package com.jobalert.app.ui.screens.onboarding
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,9 +94,13 @@ fun OnboardingCompanySwipeScreen(
             }
         }
 
-        // LazyColumn으로 페이지 카드 스택. fillParentMaxSize로 한 화면에 한 카드.
-        // VerticalPager는 에뮬레이터 마우스 드래그가 잘 안 잡혀서 LazyColumn으로 대체.
+        // LazyColumn + SnapFlingBehavior → 50% 넘기면 다음 페이지로 자동 snap (릴스 느낌).
+        // VerticalPager 대신 LazyColumn 쓰는 이유: 에뮬레이터 마우스 휠/드래그 호환성.
+        val listState = rememberLazyListState()
+        val snapFling = rememberSnapFlingBehavior(listState)
         LazyColumn(
+            state = listState,
+            flingBehavior = snapFling,
             modifier = Modifier.weight(1f).fillMaxWidth(),
         ) {
             items(companies, key = { it.id }) { c ->
