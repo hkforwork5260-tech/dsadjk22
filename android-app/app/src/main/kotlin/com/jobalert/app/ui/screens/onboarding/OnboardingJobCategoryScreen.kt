@@ -2,10 +2,9 @@ package com.jobalert.app.ui.screens.onboarding
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -89,25 +88,34 @@ fun OnboardingJobCategoryScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            // 21개 카테고리 2열 그리드
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            // 21개 카테고리 2열 그리드 (수동, 일관성을 위해 다른 화면들과 동일 패턴)
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(JobCategories) { category ->
-                    val idx = JobCategories.indexOf(category)
-                    HiFiButton(
-                        text = category,
-                        onClick = {
-                            selected = if (idx in selected) selected - idx else selected + idx
-                        },
-                        variant = if (idx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
-                        size = HiFiButtonSize.Sm,
-                        fullWidth = true,
-                        maxLines = 1,
-                    )
+                JobCategories.chunked(2).forEachIndexed { rIdx, row ->
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        row.forEachIndexed { cIdx, category ->
+                            val idx = rIdx * 2 + cIdx
+                            HiFiButton(
+                                text = category,
+                                onClick = {
+                                    selected = if (idx in selected) selected - idx else selected + idx
+                                },
+                                variant = if (idx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
+                                size = HiFiButtonSize.Sm,
+                                fullWidth = true,
+                                maxLines = 1,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                        if (row.size == 1) Spacer(Modifier.weight(1f))
+                    }
                 }
             }
 
