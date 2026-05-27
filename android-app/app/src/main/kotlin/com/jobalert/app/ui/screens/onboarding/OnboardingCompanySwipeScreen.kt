@@ -99,16 +99,18 @@ fun OnboardingCompanySwipeScreen(
 
         // VerticalPager + 낮은 snapPositionalThreshold → 살짝만 스와이프해도 다음 페이지로 snap.
         // 유튜브 쇼츠/릴스 감각: 15% 넘기면 자동 다음 페이지로, 빠른 spring으로 슉.
+        // beyondViewportPageCount=1: 인접 페이지 1개 미리 그려둠 (위/아래 스크롤 양쪽 부드럽게).
         val flingBehavior = PagerDefaults.flingBehavior(
             state = pagerState,
             snapPositionalThreshold = 0.15f,
-            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium),
+            snapAnimationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioNoBouncy),
         )
         VerticalPager(
             state = pagerState,
             modifier = Modifier.weight(1f).fillMaxWidth(),
             pageSize = PageSize.Fill,
             flingBehavior = flingBehavior,
+            beyondViewportPageCount = 1,
         ) { page ->
             if (page < companies.size) {
                 val c = companies[page]
