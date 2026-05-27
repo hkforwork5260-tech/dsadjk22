@@ -275,11 +275,12 @@ private fun SwipeCompanyCard(
         }
 
         // 우측 액션 (관심/저장)
+        // 액션 버튼 (관심/저장) — 카드 우측 아래에 배치 (Reels 느낌)
         Column(
             Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 14.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+                .align(Alignment.BottomEnd)
+                .padding(end = 14.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CircleActionButton(
@@ -292,11 +293,11 @@ private fun SwipeCompanyCard(
             )
             CircleActionButton(
                 icon = Icons.Outlined.BookmarkBorder,
-                contentDesc = "공고 저장",
+                contentDesc = "저장",
                 activeColor = HiFiColors.Update,
                 active = isSaved,
                 onClick = onToggleSave,
-                label = "공고 저장",
+                label = "저장",
             )
         }
 

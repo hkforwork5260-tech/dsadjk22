@@ -89,9 +89,12 @@ fun HiFiButton(
                     .background(s.shadow)
             )
         }
-        // 본체
+        // 본체 — fullWidth일 땐 본체도 fillMaxWidth로 펼쳐서 텍스트가 진짜 가운데에 오게 함.
+        // 안 그러면 본체가 wrap content라 outer Box 안에서 좌측에 정렬돼 텍스트도 좌측에 치우쳐 보임.
+        val bodyWidthMod = if (fullWidth) Modifier.fillMaxWidth() else Modifier
         Box(
             modifier = Modifier
+                .then(bodyWidthMod)
                 .offset(y = bodyOffset)
                 .clip(shape)
                 .background(s.bg)
