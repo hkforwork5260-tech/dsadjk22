@@ -37,6 +37,7 @@ dependencies {
         exclude(group = "org.mockito", module = "mockito-core")
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    testImplementation("io.mockk:mockk:1.13.13")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
