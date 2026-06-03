@@ -104,15 +104,17 @@
 **예상 시간**: 1 세션 (4~6시간)
 
 **Tasks**:
-1. 사람인 API 키 발급 (사용자가 dev.saramin.co.kr 가입 후 키 제공)
-2. mock 모드 → 실 API 호출 전환 (환경변수 토글)
+1. 사람인 API 키 발급 (사용자가 dev.saramin.co.kr 가입 후 키 제공) — **2026-05-27 신청 완료, 승인 대기**
+2. mock 모드 → 실 API 호출 전환 (환경변수 토글) — **2026-05-28 SaraminRealClient 사전 구현 완료** (`c346dae`)
 3. 매일 18시 cron 실 호출 검증 (단발 수동 실행)
-4. dedup·정규화 로직 (회사명 normalize + alias 테이블)
-5. Clearbit 로고 fetch (회사 도메인 추정 → API 호출 → 캐시 DB 저장)
+4. dedup·정규화 로직 (회사명 normalize + alias 테이블) — **2026-05-28 사전 구현 완료** (`88304be`, CompanyNameNormalizer + CompanyMatcher)
+5. Clearbit 로고 fetch (회사 도메인 추정 → API 호출 → 캐시 DB 저장) — **2026-05-28 사전 구현 완료** (`4704a23`, CompanyLogoResolver)
 6. Claude Haiku 통합 (공고 본문 → 한줄 요약 + 태그 추출)
 7. FCM 서버 키 설정 + 디바이스 토큰 등록 엔드포인트
 8. 매일 9·21시 푸시 발송 cron (관심기업 매칭 사용자에게)
 9. 호출량 모니터링 (api_call_log 테이블 + 일일 사용량 대시보드 endpoint)
+
+**사전 작업 (2026-05-28, 백엔드 v3 세션)**: SaraminRealClient·dedup·로고 리졸버 3개 컴포넌트 사전 구현 + 단위 테스트 39개. 키 도착 시 환경변수 토글만으로 사람인 호출 → 회사명 매칭 → 로고 URL 빌드까지 풀스택 동작.
 
 **Done when**: 실제 사람인 공고 데이터가 DB에 들어옴, 푸시 발송 1회 성공, `/api/v1/jobs/today` 실 데이터 응답.
 

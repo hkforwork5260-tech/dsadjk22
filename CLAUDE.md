@@ -88,6 +88,12 @@
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
 - **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
   - **bootRun 실 검증 (2026-05-27)**: postgres+redis 도커 + Spring Boot 2.3초 부팅 + 주요 5개 엔드포인트 200. `NoResourceFoundException` 404 매핑 fix (`d1a0529`).
+- **Phase 3 사전 작업 (2026-05-28, 백엔드 v3 세션)** — 사람인 키 도착 전 키 없이 가능한 작업 풀스택 사전 구현 (단위 테스트 39개 PASS):
+  - 카테고리 코드 키 sync — 백엔드↔안드로이드 6개 코드 키 통일, API_CONTRACT에 정식 21개 표 추가 (`74c4a85`)
+  - SaraminRealClient 본구현 — 공식 명세 정확 반영 / RestClient 3s·7s 타임아웃 / 4xx·5xx + 사람인 자체 에러코드(1/2/3/4/99) 매핑 / ApiCallLogger 연동 / JobCollectorService 페이지네이션 + 5xx 1회 재시도 + 일일 한도 도달 시 중단 (`c346dae`)
+  - 회사명 정규화 + dedup 매처 — `(주)`·`㈜`·`주식회사`·`Corp` 등 마커 안정상태까지 제거 + NFKC + 영문 lowercase, exact match → alias fallback (`88304be`)
+  - Clearbit 로고 리졸버 — homepage URL > 한글 회사명 dictionary(30+) > 영문 slug 휴리스틱 (`4704a23`)
+  - 의존성: MockK 1.13.13 추가 (testImplementation, Kotlin 친화 모킹)
 - **Phase 2.A + 2.B + 2.C 안드로이드 화면 20개 완료** (`android-app/`):
   - 온보딩 ①②③④, 메인, 메인 빈 상태, 공고 상세, 필터, 검색, 검색 결과,
     회사 상세 (공고 있음/없음 2종), 관심기업, 마이페이지, 알림 히스토리, 마감 캘린더
@@ -98,10 +104,12 @@
 
 ### 🚧 진행
 - 사람인 API 키 — 신청 완료 (2026-05-27), 승인 메일 대기 중
-- 사람인 실 API 호출 — `SaraminRealClient` 스텁만 (Phase 3)
+- 사람인 실 API 호출 — 본구현 완료 (`c346dae`), 키 도착 시 환경변수 토글로 즉시 동작
+- 회사명 매칭 — Normalizer + Matcher 완료, 1000개 시드 채우면 운용 시작
+- Clearbit 로고 — Resolver 완료, dictionary 30+ 기반
 - FCM·푸시 — 미작업 (Phase 3)
 - Claude Haiku 한줄 요약 — 미작업 (Phase 3)
-- 1000개 회사 시드 (공정위 공시) — placeholder만 (Phase 3)
+- 1000개 회사 시드 (공정위 공시) — placeholder 57개만 (Phase 3에서 확장)
 - Play Store — 미작업 (Phase 5)
 
 ### 📋 다음 단계
