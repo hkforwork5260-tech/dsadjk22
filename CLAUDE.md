@@ -140,7 +140,8 @@
 ### 📋 다음 단계 (2026-06-05 기준 우선순위)
 1. **안드로이드 화면 백엔드 연결** — ✅ 메인·검색·캘린더·회사상세·직군필터·**관심기업** 연결 완료(Repository+ViewModel+UiState, 실 DB). 관심기업은 익명 기기ID(SharedPreferences UUID + X-Device-Id 인터셉터) 기반 user_favorites DB, 별표 토글+목록+회사page isFavorited 반영. 회사상세 `/companies/{id}/page`, 직군필터 `ActiveFilter`+`?categories=`, 검색 BasicTextField.
    ✅ **온보딩 관심직군**(고른 직군→메인 피드 기본필터, SharedPreferences 영속) + **알림 히스토리**(다이제스트 생성·저장·조회) + **FCM 푸시**(백엔드 firebase-admin 발송 + 앱 토큰등록·수신) 연결 완료.
-   **미연결(저가치만 남음)**: 온보딩 추천회사 스와이프, MainEmptyScreen — mock 유지.
+   ✅ **(2026-06-06) 나머지 화면·필터 거의 전부 연결**: 공고상세(/jobs/{id})·지원버튼(원본URL)·찾아보기·비슷한공고·온보딩추천회사·알림설정토글·관심직군표시·검색(회사명)·알림읽음·회사상세평균마감. 필터는 **직군+경력+규모** 작동(경력=ExperienceClassifier 공공기관recrutSeNm+제목, 규모=출처기준 public). **신입 필터 404건**.
+   **미연결**: 꽁이요약(비용보류+본문미수집), 메인빈상태(중복), 마이페이지 위젯·피드백(백엔드없음), 필터 지역·마감(데이터 형식편차). 온보딩추천회사·MainEmpty 외 mock 거의 없음.
    **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단). 필터는 직군만 적용(규모·경력·지역·마감 facet은 백엔드 미지원).
 
 ### 🔥 FCM 푸시 운영 메모 (2026-06-05)
