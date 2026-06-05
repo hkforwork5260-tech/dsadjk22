@@ -34,8 +34,8 @@ import com.jobalert.app.ui.theme.HiFiType
 
 /**
  * 알림 설정.
- * v0.1: 토글 UI만. 실제 FCM 채널 연동은 백엔드 Phase 3 이후.
- * 모든 토글 상태는 화면 로컬 (Persistence는 v0.2).
+ * 아침/저녁 푸시 토글은 백엔드 기기 설정(PATCH /devices/{id}/preferences)에 반영됨.
+ * 소리·진동·전체화면 등 OS 알림 옵션은 화면 로컬(시스템 알림 채널 설정은 별도).
  */
 @Composable
 fun NotifSettingsScreen(onBack: () -> Unit) {

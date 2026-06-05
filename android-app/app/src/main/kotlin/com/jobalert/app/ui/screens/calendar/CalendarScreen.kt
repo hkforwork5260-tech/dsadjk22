@@ -39,7 +39,7 @@ import java.time.ZoneId
  * 마감 캘린더 (기본형).
  * HiFi_Calendar 대응. 월 그리드 + 마감일 셀에 회사 라벨 + 오늘/이번주 마감 리스트.
  *
- * v0.1는 2026년 5월 고정. 월 이동(< >) 버튼은 v0.2로.
+ * 현재 달 기준(백엔드 /jobs/upcoming 연결됨). 월 이동(< >) 버튼만 미구현.
  */
 @Composable
 fun CalendarScreen(

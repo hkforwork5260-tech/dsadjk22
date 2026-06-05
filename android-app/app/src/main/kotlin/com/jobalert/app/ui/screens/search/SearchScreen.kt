@@ -36,7 +36,7 @@ import com.jobalert.app.ui.theme.HiFiType
 /**
  * 검색 진입 화면.
  * HiFi_Search 대응. 검색 입력박스 + 최근/인기/직군별/추천 키워드.
- * v0.1에서는 입력박스 탭 시 바로 검색 결과 화면으로 이동 (실제 입력 처리는 v0.2).
+ * 검색박스에 직접 입력 → 결과 화면(백엔드 /jobs/search 연결됨).
  */
 @Composable
 fun SearchScreen(
