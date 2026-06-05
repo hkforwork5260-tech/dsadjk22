@@ -55,6 +55,9 @@ interface ApiService {
     @GET("api/v1/notifications/history")
     suspend fun notifications(@Query("limit") limit: Int = 30): NotificationsResponse
 
+    @POST("api/v1/notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: String): NotificationReadResponse
+
     @POST("api/v1/devices/register")
     suspend fun registerDevice(@Body req: DeviceRegisterRequest): DeviceRegisterResponse
 }

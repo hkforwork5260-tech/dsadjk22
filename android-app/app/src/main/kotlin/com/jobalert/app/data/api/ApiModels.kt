@@ -191,6 +191,12 @@ data class NotificationDto(
     val read: Boolean = false,
 )
 
+@Serializable
+data class NotificationReadResponse(
+    val id: String,
+    val read: Boolean,
+)
+
 /** GET /jobs/upcoming (캘린더용) */
 @Serializable
 data class UpcomingResponse(

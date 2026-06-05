@@ -60,6 +60,9 @@ class JobRepository(
     /** 알림 히스토리 (현재 기기 기준 다이제스트 기록). */
     suspend fun notifications(): NotificationsResponse = api.notifications()
 
+    /** 알림 읽음 처리. */
+    suspend fun markNotificationRead(id: String) = api.markNotificationRead(id)
+
     /** /jobs/{id} — 공고 상세. 도메인 Job + 상세 텍스트(요약·설명·원본URL). */
     suspend fun jobDetail(id: String): Job = api.jobDetail(id).toDomain()
 

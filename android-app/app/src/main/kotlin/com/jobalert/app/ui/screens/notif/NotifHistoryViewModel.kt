@@ -29,6 +29,11 @@ class NotifHistoryViewModel : ViewModel() {
             }
         }
     }
+
+    /** 읽음 처리(백엔드 동기화, best-effort). */
+    fun markRead(id: String) {
+        viewModelScope.launch { runCatching { repository.markNotificationRead(id) } }
+    }
 }
 
 sealed interface NotifUiState {

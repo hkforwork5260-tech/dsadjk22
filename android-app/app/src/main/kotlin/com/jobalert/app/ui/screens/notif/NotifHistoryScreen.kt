@@ -65,7 +65,10 @@ fun NotifHistoryScreen(
             action = {
                 HiFiButton(
                     text = "모두 읽음",
-                    onClick = { items = items.map { it.copy(read = true) } },
+                    onClick = {
+                        items.filterNot { it.read }.forEach { viewModel.markRead(it.id) }
+                        items = items.map { it.copy(read = true) }
+                    },
                     variant = HiFiButtonVariant.Ghost,
                     size = HiFiButtonSize.Sm,
                 )
@@ -87,6 +90,7 @@ fun NotifHistoryScreen(
                         NotifCard(
                             n = n,
                             onClick = {
+                                viewModel.markRead(n.id)
                                 items = items.map { if (it.id == n.id) it.copy(read = true) else it }
                                 onItemClick(n)
                             },
