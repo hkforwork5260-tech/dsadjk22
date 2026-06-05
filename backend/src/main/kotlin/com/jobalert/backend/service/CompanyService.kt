@@ -80,6 +80,13 @@ class CompanyService(
         val region = active.mapNotNull { it.location?.takeIf { l -> l.isNotBlank() } }
             .groupingBy { it }.eachCount().maxByOrNull { it.value }?.key ?: "—"
 
+        // 평균 마감기간: 등록~마감 일수 평균(active+closed 중 둘 다 있는 공고). 없으면 "—".
+        val spans = (active + closed).mapNotNull { j ->
+            val p = j.postingDate; val d = j.deadline
+            if (p != null && d != null && d.isAfter(p)) java.time.Duration.between(p, d).toDays() else null
+        }
+        val avgCloseLabel = if (spans.isEmpty()) "—" else "${(spans.average() / 7).toInt().coerceAtLeast(1)}주"
+
         return CompanyPageResponse(
             company = CompanyPageCompany(
                 id = c.id!!,
@@ -95,8 +102,8 @@ class CompanyService(
             stats = CompanyPageStats(
                 // "올해 신규" 근사값 = 현재 진행중 공고 수(전부 올해 수집분). 정밀 집계는 후속.
                 thisYearCount = active.size,
-                avgCloseLabel = "—",   // 평균 마감기간 미산출
-                passRateLabel = "—",   // 합격률 데이터 없음
+                avgCloseLabel = avgCloseLabel,
+                passRateLabel = "—",   // 합격률 데이터 없음(지원결과 미수집)
             ),
             postings = active.map { mapper.toDto(it, c) },
             history = closed.map { JobHistoryItem(role = it.title, period = periodLabel(it)) },

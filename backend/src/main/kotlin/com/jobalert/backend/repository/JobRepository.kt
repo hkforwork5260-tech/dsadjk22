@@ -30,9 +30,12 @@ interface JobRepository : JpaRepository<Job, String> {
     fun findUpcoming(@Param("from") from: OffsetDateTime, @Param("to") to: OffsetDateTime): List<Job>
 
     @Query("""
-        SELECT j FROM Job j
-        WHERE j.isActive = true
-          AND (LOWER(j.title) LIKE LOWER(CONCAT('%', :q, '%')))
+        SELECT j FROM Job j, Company c
+        WHERE j.companyId = c.id
+          AND j.isActive = true
+          AND (LOWER(j.title) LIKE LOWER(CONCAT('%', :q, '%'))
+               OR LOWER(c.name) LIKE LOWER(CONCAT('%', :q, '%')))
+        ORDER BY j.firstSeenAt DESC
     """)
     fun searchByKeyword(@Param("q") q: String, pageable: Pageable): List<Job>
 
