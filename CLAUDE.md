@@ -138,7 +138,7 @@
 - Play Store — 미작업 (Phase 5)
 
 ### 📋 다음 단계 (2026-06-05 기준 우선순위)
-1. **나머지 안드로이드 화면 백엔드 연결** — 검색·캘린더·회사상세·관심기업·알림은 아직 MockApi(동기). 메인과 같은 패턴(Repository+ViewModel+UiState) 복제. ⚠️ company/notification은 백엔드 응답 모양이 FE DTO와 달라 엔드포인트 추가 전 백엔드 실 DB화 선행 필요. **안드로이드 빌드 검증은 사용자 PC에서만 가능**(이 환경은 Google Maven 차단).
+1. **안드로이드 화면 백엔드 연결** — ✅ 메인·검색·캘린더 연결 완료(Repository+ViewModel+UiState 패턴, 실 DB). 캘린더는 디자인기 2026-05 하드코딩을 현재 달로 일반화함. **미연결(백엔드 선행 필요)**: 회사상세(응답 모양이 FE DTO와 상이 — 엔드포인트 추가 필요), 관심기업(인증), 알림(푸시), 온보딩 추천회사(큐레이션). MainEmptyScreen은 mock 유지. **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단).
 2. **수집 소스 확장** — ✅ 기재부 공공기관 활성화 완료(188곳). 남은 것: Greenhouse 한국 토큰은 추측 불가(검증 5곳이 전부) → 회사별 채용페이지 수동 확인하거나 보류. pubinst는 max-pages 5(500건) 캡 — 더 받으려면 늘리기. **활성화 방법**: `JOBALERT_PUBINST_KEY=<data.go.kr 키> PUBINST_ENABLED=true ./gradlew bootRun` (키는 사용자 보유, 저장소엔 미커밋).
 3. **직군 분류** — 수집 공고의 `jobCategoryCodes`가 null이라 카테고리 필터 무동작. 제목·부서로 21개 직군 자동분류 필요.
 4. FCM 푸시 / Haiku 한줄요약 (Phase 3 잔여).
