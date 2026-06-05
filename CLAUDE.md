@@ -140,7 +140,7 @@
 ### 📋 다음 단계 (2026-06-05 기준 우선순위)
 1. **안드로이드 화면 백엔드 연결** — ✅ 메인·검색·캘린더 연결 완료(Repository+ViewModel+UiState 패턴, 실 DB). 캘린더는 디자인기 2026-05 하드코딩을 현재 달로 일반화함. **미연결(백엔드 선행 필요)**: 회사상세(응답 모양이 FE DTO와 상이 — 엔드포인트 추가 필요), 관심기업(인증), 알림(푸시), 온보딩 추천회사(큐레이션). MainEmptyScreen은 mock 유지. **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단).
 2. **수집 소스 확장** — ✅ 기재부 공공기관 활성화 완료(188곳). 남은 것: Greenhouse 한국 토큰은 추측 불가(검증 5곳이 전부) → 회사별 채용페이지 수동 확인하거나 보류. pubinst는 max-pages 5(500건) 캡 — 더 받으려면 늘리기. **활성화 방법**: `JOBALERT_PUBINST_KEY=<data.go.kr 키> PUBINST_ENABLED=true ./gradlew bootRun` (키는 사용자 보유, 저장소엔 미커밋).
-3. **직군 분류** — 수집 공고의 `jobCategoryCodes`가 null이라 카테고리 필터 무동작. 제목·부서로 21개 직군 자동분류 필요.
+3. ✅ **직군 분류 완료** — `JobCategoryClassifier`(제목+부서+키워드 규칙 매칭)로 21개 직군 자동 태깅. 적재 시 newJob/applyDiff에서 분류. `/jobs/today?categories=`로 필터. 21개 직군 전부 채워짐(미분류 14%). 정확도 개선(AI 분류)은 v0.2. **FE 필터 화면 연결은 미완**(나머지 화면 작업에 포함).
 4. FCM 푸시 / Haiku 한줄요약 (Phase 3 잔여).
 
 수동 수집: `POST /api/v1/admin/collect`. 일일 자동수집 cron은 `jobalert.collector.enabled=true`로 활성(기본 false).
