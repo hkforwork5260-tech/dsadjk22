@@ -18,17 +18,22 @@ import org.springframework.stereotype.Component
 @Component
 class SourceRegistry {
 
-    /** Greenhouse 보드. token = board token. */
+    /**
+     * Greenhouse 보드. token = board token.
+     * 아래는 모두 2026-06-05 실측으로 한국 공고 수 확인됨 (koreaOnly 필터 적용 후).
+     */
     val greenhouseBoards: List<SourceBoard> = listOf(
-        // 동작 검증됨(2026-06-04): boards-api.greenhouse.io/v1/boards/databricks/jobs → 747건
-        SourceBoard(token = "databricks", displayName = "Databricks", homepage = "databricks.com"),
-        // TODO(리서치): 한국 오피스 글로벌 빅테크 Greenhouse 토큰 채우기
+        SourceBoard(token = "coupang", displayName = "쿠팡", homepage = "coupang.com"),     // 한국 267건
+        SourceBoard(token = "krafton", displayName = "크래프톤", homepage = "krafton.com"),  // 한국 50건
+        SourceBoard(token = "daangn", displayName = "당근마켓", homepage = "daangn.com"),     // 한국 40건
+        SourceBoard(token = "moloco", displayName = "몰로코", homepage = "moloco.com"),       // 한국 20건
+        SourceBoard(token = "sendbird", displayName = "센드버드", homepage = "sendbird.com"), // 한국 9건
+        // TODO: 한국 회사 Greenhouse 토큰 추가 발굴 (확인법: 회사 채용페이지 URL이 job-boards.greenhouse.io/{token})
     )
 
-    /** Lever 보드. token = company slug. */
-    val leverBoards: List<SourceBoard> = listOf(
-        // 동작 검증됨(2026-06-04): api.lever.co/v0/postings/spotify → 168건
-        SourceBoard(token = "spotify", displayName = "Spotify", homepage = "spotify.com"),
-        // TODO(리서치): 한국 오피스 글로벌 빅테크 Lever slug 채우기
-    )
+    /**
+     * Lever 보드. token = company slug.
+     * TODO: 한국 회사 Lever slug 발굴 (확인법: jobs.lever.co/{slug}). 현재 확인된 한국 회사 없음.
+     */
+    val leverBoards: List<SourceBoard> = emptyList()
 }

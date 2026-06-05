@@ -42,6 +42,22 @@ class SourceUtilTest {
     }
 
     @Test
+    fun `yyyyMMdd를 KST epoch seconds로 변환한다`() {
+        // 2026-06-19 00:00:00 KST == 2026-06-18 15:00:00 UTC == 1781794800
+        assertEquals(1781794800L, SourceUtil.yyyymmddToEpochSeconds("20260619"))
+        // endOfDay=true → 23:59:59 KST == +86399초
+        assertEquals(1781794800L + 86399L, SourceUtil.yyyymmddToEpochSeconds("20260619", endOfDay = true))
+    }
+
+    @Test
+    fun `잘못된 yyyyMMdd는 null`() {
+        assertNull(SourceUtil.yyyymmddToEpochSeconds(null))
+        assertNull(SourceUtil.yyyymmddToEpochSeconds(""))
+        assertNull(SourceUtil.yyyymmddToEpochSeconds("2026-06-19"))
+        assertNull(SourceUtil.yyyymmddToEpochSeconds("notadate"))
+    }
+
+    @Test
     fun `epoch millis를 seconds로 변환한다`() {
         // Lever createdAt 예시: 1778529611285 ms → 1778529611 s
         assertEquals(1778529611L, SourceUtil.millisToEpochSeconds(1778529611285L))

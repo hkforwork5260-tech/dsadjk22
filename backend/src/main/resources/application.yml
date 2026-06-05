@@ -37,11 +37,23 @@ management:
 
 jobalert:
   saramin:
-    # mock = no real API call. real = use api-key. Phase 1 uses mock.
+    # 사람인 거절(2026-06-04)로 휴면. mock 유지.
     mode: ${SARAMIN_MODE:mock}
     api-key: ${SARAMIN_API_KEY:}
     base-url: https://oapi.saramin.co.kr/job-search
     daily-call-limit: 500
+  # 하이브리드 수집 소스 (2026-06-04 전환). 각 소스는 JobSource 빈으로 자동 등록됨.
+  sources:
+    greenhouse:
+      enabled: ${GREENHOUSE_ENABLED:true}   # 공개 API, 키 불필요
+    lever:
+      enabled: ${LEVER_ENABLED:true}        # 공개 API, 키 불필요
+    public-institution:
+      # 기재부 공공기관 채용 API. data.go.kr serviceKey 필요(JOBALERT_PUBINST_KEY).
+      enabled: ${PUBINST_ENABLED:false}
+      service-key: ${JOBALERT_PUBINST_KEY:}
+      max-pages: 5
+      page-size: 100
   collector:
     # Daily 18:00 KST = 09:00 UTC. cron is in server timezone (UTC).
     cron: "0 0 9 * * *"
