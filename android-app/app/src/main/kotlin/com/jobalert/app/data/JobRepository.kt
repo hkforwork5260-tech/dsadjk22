@@ -3,6 +3,8 @@ package com.jobalert.app.data
 import com.jobalert.app.data.api.ApiClient
 import com.jobalert.app.data.api.ApiService
 import com.jobalert.app.data.api.JobDto
+import com.jobalert.app.data.api.JobsSearchResponse
+import com.jobalert.app.data.api.UpcomingResponse
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.ui.theme.JobKind
 import java.time.OffsetDateTime
@@ -32,6 +34,13 @@ class JobRepository(
         val counts: Map<JobKind, Int>,
         val jobs: List<Job>,
     )
+
+    /** /jobs/search — 검색 결과. 화면이 DTO 그대로 쓰므로 응답을 그대로 반환.
+     *  (백엔드는 현재 제목 검색만 → companies는 빈 리스트로 옴) */
+    suspend fun search(query: String): JobsSearchResponse = api.jobsSearch(query)
+
+    /** /jobs/upcoming — 마감 임박(캘린더용). days일 내 마감 공고를 날짜별로. */
+    suspend fun upcoming(days: Int = 40): UpcomingResponse = api.upcoming(days)
 
     private val kst = ZoneId.of("Asia/Seoul")
 

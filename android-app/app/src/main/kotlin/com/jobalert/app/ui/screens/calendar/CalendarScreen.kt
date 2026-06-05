@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,10 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.JobDto
-import com.jobalert.app.data.api.MockApi
+import com.jobalert.app.data.api.UpcomingResponse
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.*
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 
 /**
  * 마감 캘린더 (기본형).
@@ -40,16 +46,25 @@ fun CalendarScreen(
     onBack: () -> Unit,
     onJobClick: (String) -> Unit,
 ) {
-    val upcoming = remember { MockApi.upcoming() }
-    // 캘린더 데이터를 일 → JobDto 리스트로 변환 (2026년 5/6월만)
-    val byDay: Map<Int, List<JobDto>> = remember(upcoming) {
-        upcoming.byDate
-            .filterKeys { it.startsWith("2026-05") }
-            .mapKeys { it.key.substringAfterLast('-').toInt() }
-    }
-    val today = 26
-    val totalDays = 31
-    val firstDow = 5  // 2026-05-01 = 금요일 (일=0,월=1,...,금=5,토=6)
+    // 백엔드 /jobs/upcoming(40일) 연결. 로딩·에러 시엔 빈 맵으로 렌더.
+    val viewModel: CalendarViewModel = viewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val upcoming = (state as? CalendarUiState.Success)?.data
+        ?: UpcomingResponse(days = 40, byDate = emptyMap())
+
+    // 현재 달 기준으로 그리드 구성 (KST). 디자인 단계의 2026-05 하드코딩을 일반화.
+    val nowDate = remember { LocalDate.now(ZoneId.of("Asia/Seoul")) }
+    val ym = remember(nowDate) { YearMonth.from(nowDate) }
+    val today = nowDate.dayOfMonth
+    val totalDays = ym.lengthOfMonth()
+    // java.time: 월=1..일=7 → 디자인 요일(일=0,월=1,...,토=6)로 변환
+    val firstDow = ym.atDay(1).dayOfWeek.value % 7
+    val monthPrefix = "%04d-%02d".format(ym.year, ym.monthValue)
+
+    // 마감일(byDate) → 해당 달의 일(day) → JobDto 리스트
+    val byDay: Map<Int, List<JobDto>> = upcoming.byDate
+        .filterKeys { it.startsWith(monthPrefix) }
+        .mapKeys { it.key.substringAfterLast('-').toInt() }
 
     // 6주 × 7일 = 42셀
     val cells = (0 until 42).map { i ->
@@ -83,7 +98,7 @@ fun CalendarScreen(
             ) {
                 Icon(Icons.Outlined.ChevronLeft, contentDescription = "이전 달", tint = HiFiColors.Text2, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(16.dp))
-                Text("2026년 5월", style = HiFiType.h2, color = HiFiColors.Text)
+                Text("${ym.year}년 ${ym.monthValue}월", style = HiFiType.h2, color = HiFiColors.Text)
                 Spacer(Modifier.width(16.dp))
                 Icon(Icons.Outlined.ChevronRight, contentDescription = "다음 달", tint = HiFiColors.Text2, modifier = Modifier.size(20.dp))
             }
@@ -153,7 +168,7 @@ fun CalendarScreen(
                         .padding(14.dp),
                 ) {
                     Column {
-                        Text("오늘 마감 · 5/26", style = HiFiType.caption, color = HiFiColors.BrandDark)
+                        Text("오늘 마감 · ${ym.monthValue}/$today", style = HiFiType.caption, color = HiFiColors.BrandDark)
                         Spacer(Modifier.height(4.dp))
                         Text("${todayJobs.size}개 공고", style = HiFiType.h2, color = HiFiColors.Text)
                         Spacer(Modifier.height(10.dp))
@@ -299,7 +314,8 @@ private fun kindOf(s: String): JobKind = when (s.uppercase()) {
     else -> JobKind.NEW
 }
 
-private fun displayDeadlineShort(iso: String): String {
+private fun displayDeadlineShort(iso: String?): String {
+    if (iso.isNullOrBlank()) return ""   // 상시채용(마감일 없음) 대응
     val date = iso.substringBefore('T')
     val parts = date.split('-')
     if (parts.size < 3) return ""

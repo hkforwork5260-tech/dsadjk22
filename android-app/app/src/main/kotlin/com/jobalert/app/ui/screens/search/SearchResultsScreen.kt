@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,8 +29,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.CompanyDto
-import com.jobalert.app.data.api.MockApi
+import com.jobalert.app.data.api.JobsSearchResponse
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -48,7 +51,12 @@ fun SearchResultsScreen(
     onTabClick: (HomeTab) -> Unit,
 ) {
     val effectiveQuery = if (query.isBlank()) "삼성" else query
-    val response = remember(effectiveQuery) { MockApi.jobsSearch(effectiveQuery) }
+    // 백엔드 /jobs/search 연결. 로딩·에러 시엔 빈 결과로 렌더(화면은 그대로 동작).
+    val viewModel: SearchViewModel = viewModel()
+    LaunchedEffect(effectiveQuery) { viewModel.search(effectiveQuery) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val response = (state as? SearchUiState.Success)?.response
+        ?: JobsSearchResponse(query = effectiveQuery, totalEstimate = 0, jobs = emptyList())
     var section by remember { mutableStateOf(ResultSection.All) }
     var favSet by remember { mutableStateOf(setOf(response.companies.firstOrNull()?.id ?: -1)) }
 
@@ -259,8 +267,9 @@ private fun kindOf(s: String): JobKind = when (s.uppercase()) {
 }
 
 /** ISO8601 마감 → "6/15" 같은 짧은 표기 */
-private fun displayDeadline(iso: String): String {
+private fun displayDeadline(iso: String?): String {
     // 단순 파싱: "2026-06-15T14:59:59Z" → "6/15"
+    if (iso.isNullOrBlank()) return ""   // 상시채용(마감일 없음) 대응
     val date = iso.substringBefore('T')
     val parts = date.split('-')
     if (parts.size < 3) return ""
