@@ -13,13 +13,17 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.components.*
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
 
@@ -70,10 +74,14 @@ fun InterestsScreen(
 
             Spacer(Modifier.height(22.dp))
 
+            // 실제 관심 직군(ActiveFilter) 반영 — 온보딩/필터에서 고른 직군.
+            val jobLabels = ActiveFilter.categories.mapNotNull { code ->
+                JobCategoryCodes.indexOf(code).takeIf { it >= 0 }?.let { JobCategories[it] }
+            }
             SectionCard(
                 title = "직군",
-                count = "3개 선택",
-                chips = listOf("IT개발·데이터", "디자인", "마케팅·홍보·조사"),
+                count = if (jobLabels.isEmpty()) "전체" else "${jobLabels.size}개 선택",
+                chips = jobLabels.ifEmpty { listOf("전체 직군") },
                 chipColor = HiFiColors.Brand,
                 chipSoft = HiFiColors.BrandSoft,
                 onEdit = onEditJobCategory,
