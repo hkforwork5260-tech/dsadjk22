@@ -125,6 +125,7 @@
   - **조회 API 실 DB화** — `JobService`·`CompanyService`가 MockDataProvider→Repository. `JobMapper`(엔티티→DTO, 회사임베드 N+1회피, D-day KST 파생계산·마감없으면 "상시"). `AdminController` POST `/api/v1/admin/collect` 수동 수집 트리거(v0.1 무인증).
   - **안드로이드 메인 화면 백엔드 연결** — Retrofit+OkHttp+kotlinx.serialization 도입. `ApiClient`(Json SnakeCase 네이밍전략으로 camelCase↔snake_case 자동, BASE_URL=10.0.2.2:8080 에뮬레이터), `ApiService`(jobs 엔드포인트만), `JobRepository`(DTO→도메인), `MainViewModel`(Loading/Success/Error, @JvmOverloads로 viewModel() 호환), `MainScreen` 3상태 렌더. ApiModels @Serializable + deadline/postingDate nullable.
   - **라이브 검증**: docker postgres + Greenhouse 실호출 → 388건 적재(쿠팡268·크래프톤51·당근40·Moloco20·Sendbird9), 회사3곳 자동생성, 2회차 멱등성(inserted=0 unchanged=388), **에뮬레이터 메인 화면에 실 쿠팡 공고 표시 성공**.
+  - **★ 기재부 공공기관 소스 활성화 (2026-06-05 같은 세션)** — `JOBALERT_PUBINST_KEY` + `PUBINST_ENABLED=true`로 켜서 검증. 500건 수집 → **회사 5곳→188곳**(근로복지공단·국립공원공단·한전KPS·대한적십자사·국립중앙의료원 등 공기업 대거 자동생성, isApproved=false). 마감일 있어 `/jobs/upcoming` 캘린더 실동작(14일내 369건, D-day 정확). 단 Greenhouse 한국 토큰은 추측 발굴 실패 — 검증 5곳이 사실상 전부(회사별 채용페이지 수동 확인 필요).
 
 ### 🚧 진행
 - **데이터 소스 하이브리드 전환 (2026-06-04 진행 중)** — 사람인 거절로 ①Greenhouse/Lever 공개 API + ③국내 대기업 페이지(검증 후) 합치는 수집기로 재설계. 소스 어댑터 패턴(`JobSource` 인터페이스 + `RawJobPosting` 공통 모델).
@@ -138,7 +139,7 @@
 
 ### 📋 다음 단계 (2026-06-05 기준 우선순위)
 1. **나머지 안드로이드 화면 백엔드 연결** — 검색·캘린더·회사상세·관심기업·알림은 아직 MockApi(동기). 메인과 같은 패턴(Repository+ViewModel+UiState) 복제. ⚠️ company/notification은 백엔드 응답 모양이 FE DTO와 달라 엔드포인트 추가 전 백엔드 실 DB화 선행 필요. **안드로이드 빌드 검증은 사용자 PC에서만 가능**(이 환경은 Google Maven 차단).
-2. **수집 소스 확장** — 현재 `SourceRegistry`에 Greenhouse 5곳(coupang·krafton·daangn·moloco·sendbird)뿐. 한국 회사 Greenhouse/Lever 토큰 발굴 + 기재부 공공기관 API(JOBALERT_PUBINST_KEY) 붙이면 회사 수 급증. **메인이 쿠팡만 보이는 건 버그 아님** — 쿠팡이 388중 268(69%) + 첫수집이라 전부 동일시각 NEW → "최신50"이 쿠팡으로 채워짐. 소스 늘고 일일수집 돌면 자연 해소.
+2. **수집 소스 확장** — ✅ 기재부 공공기관 활성화 완료(188곳). 남은 것: Greenhouse 한국 토큰은 추측 불가(검증 5곳이 전부) → 회사별 채용페이지 수동 확인하거나 보류. pubinst는 max-pages 5(500건) 캡 — 더 받으려면 늘리기. **활성화 방법**: `JOBALERT_PUBINST_KEY=<data.go.kr 키> PUBINST_ENABLED=true ./gradlew bootRun` (키는 사용자 보유, 저장소엔 미커밋).
 3. **직군 분류** — 수집 공고의 `jobCategoryCodes`가 null이라 카테고리 필터 무동작. 제목·부서로 21개 직군 자동분류 필요.
 4. FCM 푸시 / Haiku 한줄요약 (Phase 3 잔여).
 
