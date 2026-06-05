@@ -1,18 +1,25 @@
 package com.jobalert.app.data.api
 
+import kotlinx.serialization.Serializable
+
 /**
  * API_CONTRACT.md 의 JSON 형식을 Kotlin data class로 미러링.
- * 백엔드 연동 시 Retrofit + kotlinx.serialization 로 deserialize 가능.
  *
- * v0.1 mock 단계에서는 [MockApi]가 이 객체들을 직접 생성해서 반환.
+ * 백엔드(Jackson)는 snake_case로 직렬화하고, 여기 프로퍼티는 camelCase다.
+ * → [ApiClient]의 Json 설정에서 `JsonNamingStrategy.SnakeCase`로 전역 매핑하므로
+ *   필드마다 @SerialName을 붙일 필요 없다. (logoUrl ↔ logo_url 자동)
+ *
+ * 누락 필드 주의: 백엔드는 null 필드를 JSON에서 아예 빼버린다(non_null inclusion).
+ * → null 가능 필드는 nullable로(deadline 등), 그 외는 기본값을 둬서 누락돼도 안전하게.
  */
 
 /** 공통 Company 요약/상세 공용 */
+@Serializable
 data class CompanyDto(
     val id: Int,
     val name: String,
     val logo: String,                    // 로고용 짧은 텍스트 ("삼성")
-    val logoUrl: String? = null,         // Clearbit URL (v0.1 미사용)
+    val logoUrl: String? = null,         // Clearbit URL
     val industry: String = "",
     val group: String = "",
     val size: String = "",               // "large_corp" | "mid_corp" | ...
@@ -24,13 +31,14 @@ data class CompanyDto(
 )
 
 /** Job 요약형 (카드용) */
+@Serializable
 data class JobDto(
     val id: String,
     val company: CompanyDto,
     val title: String,
     val kind: String,                    // "NEW" | "UPDATE" | "CLOSING" | "EXPIRED"
     val dday: String,
-    val deadline: String,                // ISO8601
+    val deadline: String? = null,        // ISO8601. 상시채용(Greenhouse 등)은 null
     val location: String = "",
     val experience: String = "",
     val education: String = "",
@@ -39,17 +47,18 @@ data class JobDto(
 )
 
 /** JobDetail 상세형 */
+@Serializable
 data class JobDetailDto(
     val id: String,
     val company: CompanyDto,
     val title: String,
     val kind: String,
     val dday: String,
-    val deadline: String,
-    val postingDate: String,
-    val location: String,
-    val experience: String,
-    val education: String,
+    val deadline: String? = null,
+    val postingDate: String? = null,
+    val location: String = "",
+    val experience: String = "",
+    val education: String = "",
     val salary: String = "회사내규",
     val jobCategories: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
@@ -63,6 +72,7 @@ data class JobDetailDto(
 )
 
 /** GET /jobs/today */
+@Serializable
 data class JobsTodayResponse(
     val date: String,
     val counts: Map<String, Int>,        // {"new":6, "update":2, "closing":1}
@@ -71,6 +81,7 @@ data class JobsTodayResponse(
 )
 
 /** GET /jobs/search */
+@Serializable
 data class JobsSearchResponse(
     val query: String,
     val totalEstimate: Int,
@@ -80,13 +91,18 @@ data class JobsSearchResponse(
 )
 
 /** GET /onboarding/categories */
+@Serializable
 data class JobCategoryDto(val code: String, val label: String)
+
+@Serializable
 data class CategoriesResponse(val categories: List<JobCategoryDto>)
 
 /** GET /onboarding/popular-companies */
+@Serializable
 data class PopularCompaniesResponse(val companies: List<CompanyDto>)
 
 /** GET /companies/{id} */
+@Serializable
 data class CompanyDetailResponse(
     val company: CompanyDto,
     val region: String,                       // "서울/수원" 등 사람 친화 표기
@@ -96,23 +112,27 @@ data class CompanyDetailResponse(
     val history: List<JobHistoryDto>,         // 마감된 최근 공고 (공고 없을 때 노출)
 )
 
+@Serializable
 data class CompanyStats(
     val thisYearCount: Int,
     val avgCloseLabel: String,                // "3주"
     val passRateLabel: String,                // "4%"
 )
 
+@Serializable
 data class JobHistoryDto(
     val role: String,
     val period: String,                       // "5/1 ~ 5/14 마감"
 )
 
 /** GET /users/me/favorites */
+@Serializable
 data class FavoritesResponse(
     val companies: List<FavoriteCompanyDto>,
 )
 
 /** Favorites 목록용. activeJobCount + hasAlarm 추가 표시. */
+@Serializable
 data class FavoriteCompanyDto(
     val company: CompanyDto,
     val newCount: Int,                        // 오늘 새 공고 N건 (badge)
@@ -120,11 +140,13 @@ data class FavoriteCompanyDto(
 )
 
 /** GET /notifications/history */
+@Serializable
 data class NotificationsResponse(
     val notifications: List<NotificationDto>,
     val nextCursor: String? = null,
 )
 
+@Serializable
 data class NotificationDto(
     val id: String,
     val sentAt: String,                       // ISO8601
@@ -136,6 +158,7 @@ data class NotificationDto(
 )
 
 /** GET /jobs/upcoming (캘린더용) */
+@Serializable
 data class UpcomingResponse(
     val days: Int,
     val byDate: Map<String, List<JobDto>>,    // "2026-05-28" → [...]
