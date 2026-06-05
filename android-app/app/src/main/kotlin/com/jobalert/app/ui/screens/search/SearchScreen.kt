@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -21,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.components.*
@@ -38,14 +43,16 @@ fun SearchScreen(
     onSearch: (String) -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
-    var recent by remember { mutableStateOf(listOf("삼성전자", "UX 디자이너", "대전", "신입 개발", "LG")) }
+    var queryText by remember { mutableStateOf("") }
+    var recent by remember { mutableStateOf(listOf("간호", "행정", "연구", "쿠팡", "사무")) }
 
+    // 인기 검색어 — 현재 수집 데이터(공공기관·쿠팡 등)에서 실제로 결과가 나오는 키워드
     val popular = listOf(
-        Triple("1", "삼성전자 상반기 공채", PopularTrend.Up),
-        Triple("2", "네이버 백엔드", PopularTrend.Up),
-        Triple("3", "LG에너지 R&D", PopularTrend.New),
-        Triple("4", "현대차", PopularTrend.Flat),
-        Triple("5", "카카오 경력", PopularTrend.Down),
+        Triple("1", "간호", PopularTrend.Up),
+        Triple("2", "연구", PopularTrend.Up),
+        Triple("3", "행정", PopularTrend.New),
+        Triple("4", "쿠팡", PopularTrend.Flat),
+        Triple("5", "운영", PopularTrend.Down),
     )
     val byCategory = listOf(
         "IT개발·데이터", "디자인", "마케팅·홍보·조사",
@@ -58,26 +65,48 @@ fun SearchScreen(
         HiFiStatusBar()
         HiFiAppBar(title = "검색")
 
-        // 검색 입력박스
+        // 검색 입력박스 (실제 입력 가능). 키보드 검색(↵) 누르면 결과로 이동.
+        val submit = { val q = queryText.trim(); if (q.isNotEmpty()) onSearch(q) }
         Box(Modifier.padding(horizontal = 20.dp, vertical = 4.dp).fillMaxWidth()) {
             Row(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
                     .background(HiFiColors.Bg2)
-                    .clickable { onSearch("") }
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(Icons.Outlined.Search, contentDescription = null, tint = HiFiColors.Text, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
-                Text(
-                    "기업명·직무·키워드",
-                    style = HiFiType.body.copy(fontWeight = FontWeight.SemiBold),
-                    color = HiFiColors.Text2,
-                    modifier = Modifier.weight(1f),
-                )
-                Icon(Icons.Outlined.Mic, contentDescription = null, tint = HiFiColors.Text2, modifier = Modifier.size(18.dp))
+                Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    if (queryText.isEmpty()) {
+                        Text(
+                            "기업명·직무·키워드",
+                            style = HiFiType.body.copy(fontWeight = FontWeight.SemiBold),
+                            color = HiFiColors.Text2,
+                        )
+                    }
+                    BasicTextField(
+                        value = queryText,
+                        onValueChange = { queryText = it },
+                        singleLine = true,
+                        textStyle = HiFiType.body.copy(fontWeight = FontWeight.SemiBold, color = HiFiColors.Text),
+                        cursorBrush = SolidColor(HiFiColors.Brand),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { submit() }),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                if (queryText.isNotEmpty()) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = "지우기",
+                        tint = HiFiColors.Text2,
+                        modifier = Modifier.size(18.dp).clickable { queryText = "" },
+                    )
+                } else {
+                    Icon(Icons.Outlined.Mic, contentDescription = null, tint = HiFiColors.Text2, modifier = Modifier.size(18.dp))
+                }
             }
         }
 
