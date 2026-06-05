@@ -40,6 +40,7 @@ class JobPersistenceService(
     private val companyMatcher: CompanyMatcher,
     private val logoResolver: CompanyLogoResolver,
     private val classifier: JobCategoryClassifier,
+    private val experienceClassifier: ExperienceClassifier,
     private val clock: Clock,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -121,6 +122,8 @@ class JobPersistenceService(
             homepageUrl = raw.companyHomepage,
             domain = logoResolver.resolveDomain(raw.companyName, raw.companyHomepage),
             logoUrl = logoResolver.resolveLogoUrl(raw.companyName, raw.companyHomepage),
+            // 규모는 출처로 판단: 기재부 공공기관 소스 → 공기업(public). 그 외(Greenhouse)는 미상(null).
+            size = if (raw.source == "public-institution") "public" else null,
             isApproved = false,
             createdAt = now,
             updatedAt = now,
@@ -139,6 +142,7 @@ class JobPersistenceService(
         title = raw.title,
         kind = "NEW",
         location = raw.location,
+        experience = experienceClassifier.classify(raw.experience, raw.title),
         jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
         deadline = raw.deadlineEpoch?.toUtcOdt(),
@@ -162,6 +166,7 @@ class JobPersistenceService(
         job.deadline = newDeadline
         job.location = raw.location
         job.originalUrl = raw.originalUrl
+        job.experience = experienceClassifier.classify(raw.experience, raw.title)
         // 기존 공고도 재분류 — 분류 규칙이 개선되면 다음 수집에서 반영됨.
         job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords)
         raw.postingDateEpoch?.toUtcOdt()?.let { job.postingDate = it }

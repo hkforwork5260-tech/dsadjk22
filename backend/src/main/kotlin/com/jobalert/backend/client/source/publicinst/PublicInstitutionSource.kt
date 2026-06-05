@@ -112,6 +112,7 @@ class PublicInstitutionSource(
             companyName = inst,
             location = job.workRgnNmLst,
             department = job.ncsCdNmLst,
+            experience = job.recrutSeNm,   // 채용구분: 신입/경력/인턴 (구조화 데이터)
             postingDateEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancBgngYmd),
             deadlineEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancEndYmd, endOfDay = true),
             originalUrl = job.srcUrl,

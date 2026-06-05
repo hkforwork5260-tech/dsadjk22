@@ -31,7 +31,7 @@ class JobPersistenceServiceTest {
     private val clock = Clock.fixed(Instant.parse("2026-06-05T00:00:00Z"), ZoneOffset.UTC)
     private val now = OffsetDateTime.now(clock)
 
-    private val service = JobPersistenceService(jobRepo, companyRepo, matcher, logoResolver, JobCategoryClassifier(), clock)
+    private val service = JobPersistenceService(jobRepo, companyRepo, matcher, logoResolver, JobCategoryClassifier(), ExperienceClassifier(), clock)
 
     // save 로 넘어온 엔티티를 들여다보기 위한 캡처 버퍼.
     private val savedJobs = mutableListOf<Job>()

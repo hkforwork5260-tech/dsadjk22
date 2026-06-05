@@ -24,6 +24,8 @@ data class RawJobPosting(
     val location: String? = null,
     /** 직군/부서/팀. 소스에 따라 있을 수도 없을 수도. */
     val department: String? = null,
+    /** 채용구분 원시값(공공기관 recrutSeNm 등: "신입"/"경력"/"인턴"). 없으면 제목에서 추출. */
+    val experience: String? = null,
     /** 등록일시 (epoch seconds, UTC). 없으면 null. */
     val postingDateEpoch: Long? = null,
     /** 마감일시 (epoch seconds, UTC). Greenhouse·Lever는 마감 개념이 없어 대개 null. */
