@@ -36,3 +36,6 @@ application-local-secret.yml
 # Test reports
 **/test-results/
 **/reports/
+
+# Playwright MCP session artifacts (robots 검증 등 일회성 로그)
+.playwright-mcp/

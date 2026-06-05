@@ -13,6 +13,9 @@ interface JobRepository : JpaRepository<Job, String> {
 
     fun findBySourceAndSourceExternalId(source: String, sourceExternalId: String): Job?
 
+    /** 만료 스윕용: 특정 소스의 현재 활성 공고 전부. 이번 수집에서 안 보이면 닫는다. */
+    fun findAllBySourceAndIsActiveTrue(source: String): List<Job>
+
     fun findAllByIsActiveTrueOrderByFirstSeenAtDesc(pageable: Pageable): List<Job>
 
     fun findAllByKindAndIsActiveTrue(kind: String, pageable: Pageable): List<Job>
