@@ -62,6 +62,10 @@ jobalert:
     morning-cron: "0 0 0 * * *"   # 00:00 UTC = 09:00 KST
     evening-cron: "0 0 12 * * *"  # 12:00 UTC = 21:00 KST
     enabled: ${PUSH_ENABLED:false}
+  fcm:
+    # FCM 푸시 발송. 서비스 계정 키 필요(secrets/, gitignore). 활성화: FCM_ENABLED=true
+    enabled: ${FCM_ENABLED:false}
+    credentials-path: ${FCM_CREDENTIALS_PATH:secrets/fcm-service-account.json}
 
 logging:
   level:

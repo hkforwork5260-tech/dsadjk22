@@ -1,5 +1,6 @@
 package com.jobalert.app.data.api
 
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -50,4 +51,7 @@ interface ApiService {
 
     @GET("api/v1/notifications/history")
     suspend fun notifications(@Query("limit") limit: Int = 30): NotificationsResponse
+
+    @POST("api/v1/devices/register")
+    suspend fun registerDevice(@Body req: DeviceRegisterRequest): DeviceRegisterResponse
 }

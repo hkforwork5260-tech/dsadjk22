@@ -39,3 +39,6 @@ application-local-secret.yml
 
 # Playwright MCP session artifacts (robots 검증 등 일회성 로그)
 .playwright-mcp/
+
+# FCM 서비스 계정 키 등 비밀
+secrets/

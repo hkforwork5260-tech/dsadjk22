@@ -30,6 +30,7 @@ class NotificationService(
     private val jobRepository: JobRepository,
     private val companyRepository: CompanyRepository,
     private val deviceRepository: DeviceRepository,
+    private val fcmSender: FcmSender,
     private val clock: Clock,
 ) {
     @Transactional(readOnly = true)
@@ -83,6 +84,15 @@ class NotificationService(
             isRead = false,
             delivered = false,
         )
+
+        // 실제 잠금화면 푸시 — 기기에 FCM 토큰이 있고 FCM 활성일 때만(best-effort).
+        val token = deviceRepository.findById(deviceId).orElse(null)?.fcmToken
+        if (!token.isNullOrBlank()) {
+            fcmSender.sendToToken(token, title, body)?.let { msgId ->
+                rec.delivered = true
+                rec.fcmMessageId = msgId
+            }
+        }
         return notificationRepository.save(rec).toDto()
     }
 
