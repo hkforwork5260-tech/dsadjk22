@@ -90,6 +90,7 @@ class JobRepository(
     private fun JobDetailDto.toDomain(): Job = Job(
         id = id,
         company = company.name,
+        companyId = company.id,
         logo = company.logo,
         role = title,
         kind = kindOf(kind) ?: JobKind.NEW,

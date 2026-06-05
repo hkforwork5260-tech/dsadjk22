@@ -8,6 +8,7 @@ import com.jobalert.app.ui.theme.JobKind
 data class Job(
     val id: String,
     val company: String,
+    val companyId: Int? = null,        // 회사 상세 이동용 (상세 화면에서 사용)
     val logo: String,                  // 로고용 짧은 텍스트 (e.g. "삼성", "N")
     val role: String,
     val kind: JobKind,

@@ -162,6 +162,7 @@ fun JobAlertNavHost() {
                 onBack = { nav.popBackStack() },
                 onShare = { nav.navigate(Routes.ShareSheet) },
                 onSimilarTab = { nav.navigate(Routes.similar(jobId)) },
+                onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
                 onApply = { job -> openUrl(job.originalUrl) },
             )
         }

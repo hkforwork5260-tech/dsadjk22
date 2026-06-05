@@ -209,33 +209,6 @@ private fun ReelsJobCard(
                 job.tags.forEach { HiFiChip("#$it", small = true) }
             }
 
-            Spacer(Modifier.height(18.dp))
-
-            // 꽁이 한줄 요약
-            Box(
-                Modifier
-                    .padding(horizontal = 20.dp)
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(HiFiColors.BrandSoft)
-                    .border(2.dp, HiFiColors.Brand, RoundedCornerShape(16.dp))
-                    .padding(14.dp),
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("✨", style = HiFiType.h2.copy(fontSize = 18.sp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("꽁이의 한줄 요약", style = HiFiType.caption, color = HiFiColors.BrandDark)
-                    }
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        job.summary.ifBlank { "이 공고의 AI 요약은 곧 생성됩니다." },
-                        style = HiFiType.body.copy(fontWeight = FontWeight.SemiBold),
-                        color = HiFiColors.Text,
-                    )
-                }
-            }
-
             Spacer(Modifier.weight(1f))
 
             // 안내 + 자세히 보기 CTA

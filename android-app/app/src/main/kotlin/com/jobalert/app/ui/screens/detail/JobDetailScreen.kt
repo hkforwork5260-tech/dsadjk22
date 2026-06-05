@@ -32,7 +32,7 @@ import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.*
 
 private enum class DetailTab(val label: String) {
-    Summary("요약"), Original("원문"), Company("회사"), Similar("비슷한")
+    Info("정보"), Similar("비슷한")
 }
 
 @Composable
@@ -41,6 +41,7 @@ fun JobDetailScreen(
     onBack: () -> Unit,
     onShare: () -> Unit,
     onSimilarTab: () -> Unit,
+    onCompanyClick: (Int) -> Unit,
     onApply: (Job) -> Unit,
 ) {
     // 백엔드 /jobs/{id} 연결. 로딩·에러 시엔 빈 공고로 렌더.
@@ -49,7 +50,7 @@ fun JobDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val job = (state as? JobDetailUiState.Success)?.job
         ?: Job(id = jobId, company = "", logo = "", role = "불러오는 중…", kind = JobKind.NEW, dday = "", dateText = "")
-    var tab by remember { mutableStateOf(DetailTab.Summary) }
+    var tab by remember { mutableStateOf(DetailTab.Info) }
     var saved by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
@@ -120,14 +121,10 @@ fun JobDetailScreen(
                 .padding(horizontal = 20.dp, vertical = 16.dp),
         ) {
             when (tab) {
-                DetailTab.Summary -> SummaryContent(job)
-                DetailTab.Original -> Text(
-                    "원문 보기: ${job.originalUrl.ifBlank { "(URL 미정)" }}",
-                    style = HiFiType.body, color = HiFiColors.Text2,
-                )
-                DetailTab.Company -> Text(
-                    "${job.company} 회사 정보. 회사 상세 화면으로 이동 가능.",
-                    style = HiFiType.body, color = HiFiColors.Text2,
+                DetailTab.Info -> InfoContent(
+                    job = job,
+                    onOpenOriginal = { onApply(job) },
+                    onOpenCompany = { job.companyId?.let(onCompanyClick) },
                 )
                 DetailTab.Similar -> Unit  // 도달하지 않음 (위 onSimilarTab으로 라우트)
             }
@@ -202,62 +199,53 @@ private fun DetailTabRow(active: DetailTab, onSelect: (DetailTab) -> Unit) {
     }
 }
 
+/**
+ * 정보 탭 — 핵심정보(수집한 메타데이터) + 원문 링크 + 회사 링크.
+ * (AI 한줄요약·우대사항은 데이터 미수집이라 제거 — 실제 있는 정보만 보여줌)
+ */
 @Composable
-private fun SummaryContent(job: Job) {
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
-            .background(HiFiColors.BrandSoft)
-            .border(2.dp, HiFiColors.Brand, RoundedCornerShape(18.dp))
-            .padding(16.dp)
-    ) {
-        Row(verticalAlignment = Alignment.Top) {
-            Text("✨", style = HiFiType.h2.copy(fontSize = 22.sp))
-            Spacer(Modifier.width(8.dp))
-            Column {
-                Text("꽁이의 한줄 요약", style = HiFiType.caption, color = HiFiColors.BrandDark)
-                Spacer(Modifier.height(4.dp))
+private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () -> Unit) {
+    Text("📋 핵심 정보", style = HiFiType.h2, color = HiFiColors.Text)
+    Spacer(Modifier.height(10.dp))
+    val info = listOf(
+        "마감" to job.dateText.removePrefix("~").ifBlank { "상시" },
+        "경력" to job.experience,
+        "학력" to job.education,
+        "근무지" to job.location,
+        "태그" to job.tags.joinToString(", "),
+    )
+    info.forEach { (k, v) ->
+        if (v.isNotBlank()) {
+            Row(Modifier.padding(vertical = 5.dp)) {
+                Text(k, style = HiFiType.body2, color = HiFiColors.Text2, modifier = Modifier.width(60.dp))
                 Text(
-                    job.summary.ifBlank { "이 공고에 대한 AI 요약이 곧 생성됩니다." },
-                    style = HiFiType.h2, color = HiFiColors.Text,
+                    v,
+                    style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
+                    color = HiFiColors.Text,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
     }
-    Spacer(Modifier.height(22.dp))
-
-    Text("📋 핵심 정보", style = HiFiType.h2, color = HiFiColors.Text)
-    Spacer(Modifier.height(10.dp))
-    val info = listOf(
-        "마감" to "${job.dateText.removePrefix("~")} 23:59",
-        "자격" to listOfNotNull(
-            job.education.takeIf { it.isNotBlank() },
-            job.experience.takeIf { it.isNotBlank() },
-        ).joinToString(", "),
-        "근무지" to job.location,
-        "전형" to "서류 → 코딩 → 면접",
-    )
-    info.forEach { (k, v) ->
-        Row(Modifier.padding(vertical = 5.dp)) {
-            Text(k, style = HiFiType.body2, modifier = Modifier.width(60.dp))
-            Text(
-                if (v.isBlank()) "-" else v,
-                style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
-                color = HiFiColors.Text,
-                modifier = Modifier.weight(1f),
-            )
-        }
-    }
 
     Spacer(Modifier.height(22.dp))
-    Text("🎯 우대사항", style = HiFiType.h2, color = HiFiColors.Text)
+    LinkRow(label = "원문 공고 보기", onClick = onOpenOriginal)
     Spacer(Modifier.height(10.dp))
-    listOf(
-        "대규모 분산 시스템 경험",
-        "Spring Boot / Kotlin 능숙자",
-        "오픈소스 기여 경험",
-    ).forEach {
-        Text("• $it", style = HiFiType.body, color = HiFiColors.Text, modifier = Modifier.padding(vertical = 3.dp))
+    LinkRow(label = "${job.company} 회사 정보", onClick = onOpenCompany)
+}
+
+@Composable
+private fun LinkRow(label: String, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(HiFiColors.Bg2)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, style = HiFiType.body.copy(fontWeight = FontWeight.Bold), color = HiFiColors.Text, modifier = Modifier.weight(1f))
+        Text("↗", style = HiFiType.body, color = HiFiColors.Text2)
     }
 }
