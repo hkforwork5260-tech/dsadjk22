@@ -35,11 +35,18 @@ class JobService(
     private val kst = ZoneId.of("Asia/Seoul")
 
     fun today(kind: String?, categories: List<String>, limit: Int): JobsTodayResponse {
-        val page = PageRequest.of(0, limit)
-        val jobs = if (kind == null) {
+        // 카테고리 필터가 있으면 충분히 넓게 가져와 직군 교집합으로 거른 뒤 limit만큼 자른다.
+        // 적은 직군이 누락되지 않게 넉넉히(2000). v0.1 규모(<1천)에선 사실상 전체. 대규모 시 jsonb 인덱스 쿼리로 전환.
+        val fetch = if (categories.isEmpty()) limit else 2000
+        val page = PageRequest.of(0, fetch)
+        var jobs = if (kind == null) {
             jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(page)
         } else {
             jobRepository.findAllByKindAndIsActiveTrue(kind, page)
+        }
+        if (categories.isNotEmpty()) {
+            val wanted = categories.toSet()
+            jobs = jobs.filter { job -> job.jobCategoryCodes?.any { it in wanted } == true }.take(limit)
         }
         val counts = JobKindCounts(
             new = jobRepository.countByKindAndIsActiveTrue("NEW").toInt(),

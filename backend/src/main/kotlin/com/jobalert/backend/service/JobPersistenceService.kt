@@ -39,6 +39,7 @@ class JobPersistenceService(
     private val companyRepository: CompanyRepository,
     private val companyMatcher: CompanyMatcher,
     private val logoResolver: CompanyLogoResolver,
+    private val classifier: JobCategoryClassifier,
     private val clock: Clock,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -138,6 +139,7 @@ class JobPersistenceService(
         title = raw.title,
         kind = "NEW",
         location = raw.location,
+        jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
         deadline = raw.deadlineEpoch?.toUtcOdt(),
         originalUrl = raw.originalUrl,
@@ -160,6 +162,8 @@ class JobPersistenceService(
         job.deadline = newDeadline
         job.location = raw.location
         job.originalUrl = raw.originalUrl
+        // 기존 공고도 재분류 — 분류 규칙이 개선되면 다음 수집에서 반영됨.
+        job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords)
         raw.postingDateEpoch?.toUtcOdt()?.let { job.postingDate = it }
         job.lastSeenAt = now
         job.updatedAt = now
