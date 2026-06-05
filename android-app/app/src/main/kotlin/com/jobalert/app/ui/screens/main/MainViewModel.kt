@@ -24,11 +24,15 @@ class MainViewModel @JvmOverloads constructor(
     val state: StateFlow<MainUiState> = _state.asStateFlow()
 
     // 화면이 LaunchedEffect(필터)로 load를 호출한다(진입·필터변경 시).
-    fun load(categories: List<String> = emptyList()) {
+    fun load(
+        categories: List<String> = emptyList(),
+        experiences: List<String> = emptyList(),
+        sizes: List<String> = emptyList(),
+    ) {
         _state.value = MainUiState.Loading
         viewModelScope.launch {
             _state.value = try {
-                MainUiState.Success(repository.todayFeed(categories))
+                MainUiState.Success(repository.todayFeed(categories, experiences, sizes))
             } catch (e: Exception) {
                 MainUiState.Error(e.message ?: "공고를 불러오지 못했어요")
             }

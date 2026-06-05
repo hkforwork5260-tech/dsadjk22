@@ -44,9 +44,11 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // 적용된 직군 필터를 구독 → 진입·필터 변경 시 재조회 (빈 리스트면 전체).
-    val filterCategories = ActiveFilter.categories
-    LaunchedEffect(filterCategories) { viewModel.load(filterCategories) }
+    // 적용된 필터(직군·경력·규모) 구독 → 진입·변경 시 재조회 (빈 리스트면 전체).
+    val cats = ActiveFilter.categories
+    val exps = ActiveFilter.experiences
+    val szs = ActiveFilter.sizes
+    LaunchedEffect(cats, exps, szs) { viewModel.load(cats, exps, szs) }
     var section by remember { mutableStateOf(JobKind.NEW) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {

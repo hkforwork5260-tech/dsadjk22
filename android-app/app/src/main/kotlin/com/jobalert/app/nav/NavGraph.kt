@@ -170,9 +170,16 @@ fun JobAlertNavHost() {
             FilterScreen(
                 onClose = { nav.popBackStack() },
                 onApply = { sel ->
-                    // 선택한 직군 인덱스 → 백엔드 코드. 메인이 ActiveFilter를 구독해 재조회.
-                    // (규모·경력·지역·마감 facet은 백엔드 미지원 — 직군만 적용)
-                    ActiveFilter.set(sel.jobs.mapNotNull { JobCategoryCodes.getOrNull(it) })
+                    // 선택 → 백엔드 필터값으로 변환. 메인이 ActiveFilter를 구독해 재조회.
+                    // (지역·마감 facet은 데이터 형식 편차로 v0.1 미적용)
+                    val categories = sel.jobs.mapNotNull { JobCategoryCodes.getOrNull(it) }
+                    val experiences = when (sel.experience) {
+                        "신입" -> listOf("신입")
+                        "", "무관" -> emptyList()
+                        else -> listOf("경력")   // 1~3년/3~5년/5년+ → 경력
+                    }
+                    val sizes = sel.sizes.mapNotNull { sizeCode(it) }
+                    ActiveFilter.set(categories = categories, experiences = experiences, sizes = sizes)
                     nav.popBackStack()
                 },
             )
@@ -323,5 +330,16 @@ private fun goMain(nav: androidx.navigation.NavHostController) {
         popUpTo(Routes.Onboarding1) { inclusive = true }
         launchSingleTop = true
     }
+}
+
+/** 필터 화면의 한글 규모 라벨 → 백엔드 size 코드. 모르면 null(필터에서 제외). */
+private fun sizeCode(label: String): String? = when (label) {
+    "대기업" -> "large_corp"
+    "공기업" -> "public"
+    "중견" -> "mid_corp"
+    "중소" -> "sme"
+    "외국계" -> "foreign"
+    "스타트업" -> "startup_unicorn"
+    else -> null
 }
 

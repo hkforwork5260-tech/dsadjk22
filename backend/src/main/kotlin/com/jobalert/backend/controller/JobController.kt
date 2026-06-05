@@ -22,8 +22,10 @@ class JobController(
     fun today(
         @RequestParam(required = false) kind: String?,
         @RequestParam(required = false, defaultValue = "") categories: List<String>,
+        @RequestParam(required = false, defaultValue = "") experiences: List<String>,
+        @RequestParam(required = false, defaultValue = "") sizes: List<String>,
         @RequestParam(defaultValue = "30") limit: Int,
-    ): JobsTodayResponse = jobService.today(kind, categories, limit)
+    ): JobsTodayResponse = jobService.today(kind, categories, experiences, sizes, limit)
 
     @GetMapping("/upcoming")
     fun upcoming(@RequestParam(defaultValue = "14") days: Int): JobUpcomingResponse =

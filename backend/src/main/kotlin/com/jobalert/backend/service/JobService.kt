@@ -34,19 +34,33 @@ class JobService(
 ) {
     private val kst = ZoneId.of("Asia/Seoul")
 
-    fun today(kind: String?, categories: List<String>, limit: Int): JobsTodayResponse {
-        // 카테고리 필터가 있으면 충분히 넓게 가져와 직군 교집합으로 거른 뒤 limit만큼 자른다.
-        // 적은 직군이 누락되지 않게 넉넉히(2000). v0.1 규모(<1천)에선 사실상 전체. 대규모 시 jsonb 인덱스 쿼리로 전환.
-        val fetch = if (categories.isEmpty()) limit else 2000
-        val page = PageRequest.of(0, fetch)
+    fun today(
+        kind: String?,
+        categories: List<String>,
+        experiences: List<String>,
+        sizes: List<String>,
+        limit: Int,
+    ): JobsTodayResponse {
+        // 필터(직군·경력·규모)가 하나라도 있으면 넓게 가져와 교집합으로 거른 뒤 limit만큼 자른다.
+        // v0.1 규모(<1천)에선 사실상 전체 스캔. 대규모 시 인덱스 쿼리로 전환.
+        val hasFilter = categories.isNotEmpty() || experiences.isNotEmpty() || sizes.isNotEmpty()
+        val page = PageRequest.of(0, if (hasFilter) 2000 else limit)
         var jobs = if (kind == null) {
             jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(page)
         } else {
             jobRepository.findAllByKindAndIsActiveTrue(kind, page)
         }
-        if (categories.isNotEmpty()) {
-            val wanted = categories.toSet()
-            jobs = jobs.filter { job -> job.jobCategoryCodes?.any { it in wanted } == true }.take(limit)
+        if (hasFilter) {
+            val cats = categories.toSet()
+            val exps = experiences.toSet()
+            val szs = sizes.toSet()
+            // 규모 필터가 있을 때만 회사 로드(N+1 회피).
+            val companies = if (szs.isEmpty()) emptyMap() else loadCompanies(jobs)
+            jobs = jobs.filter { job ->
+                (cats.isEmpty() || job.jobCategoryCodes?.any { it in cats } == true) &&
+                    (exps.isEmpty() || job.experience in exps) &&
+                    (szs.isEmpty() || companies[job.companyId]?.size in szs)
+            }.take(limit)
         }
         val counts = JobKindCounts(
             new = jobRepository.countByKindAndIsActiveTrue("NEW").toInt(),

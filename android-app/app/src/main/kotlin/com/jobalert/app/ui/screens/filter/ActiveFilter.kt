@@ -7,35 +7,56 @@ import androidx.compose.runtime.setValue
 import com.jobalert.app.data.fcm.FcmRegistrar
 
 /**
- * 현재 적용된 직군 필터를 보관하는 전역 상태 홀더 + 로컬 영속.
+ * 현재 적용된 필터(직군·경력·규모)를 보관하는 전역 상태 홀더 + 로컬 영속.
  *
- * 필터 화면·온보딩 직군 선택에서 고른 직군을 메인 피드로 전달하는 통로.
- * Compose State라 메인 화면이 [categories]를 읽으면 자동 구독 → 변경 시 재조회된다.
- * SharedPreferences에 저장해 앱 재시작에도 유지(온보딩은 1회만 뜨므로 필수).
- * MainActivity.onCreate에서 [init]을 먼저 호출.
+ * 필터 화면·온보딩에서 고른 조건을 메인 피드로 전달하는 통로. Compose State라 메인이 읽으면
+ * 자동 구독 → 변경 시 재조회. SharedPreferences 영속(앱 재시작 유지).
+ * MainActivity.onCreate에서 [init] 먼저 호출.
  */
 object ActiveFilter {
     private const val PREFS = "jobalert_prefs"
-    private const val KEY = "filter_categories"
+    private const val KEY_CAT = "filter_categories"
+    private const val KEY_EXP = "filter_experiences"
+    private const val KEY_SIZE = "filter_sizes"
 
     private var appContext: Context? = null
 
-    /** 적용된 직군 코드들. 빈 리스트면 전체. */
-    var categories by mutableStateOf<List<String>>(emptyList())
-        private set
+    /** 직군 코드들. 빈 리스트면 전체. */
+    var categories by mutableStateOf<List<String>>(emptyList()); private set
+
+    /** 경력 버킷(신입/경력/인턴). 빈 리스트면 전체. */
+    var experiences by mutableStateOf<List<String>>(emptyList()); private set
+
+    /** 회사 규모 코드(large_corp/public/…). 빈 리스트면 전체. */
+    var sizes by mutableStateOf<List<String>>(emptyList()); private set
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        val saved = prefs()?.getString(KEY, null)
-        categories = saved?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+        categories = load(KEY_CAT)
+        experiences = load(KEY_EXP)
+        sizes = load(KEY_SIZE)
     }
 
-    /** 직군 필터 설정 + 영속 + 백엔드 재동기화(개인화 다이제스트 반영). */
-    fun set(codes: List<String>) {
-        categories = codes
-        prefs()?.edit()?.putString(KEY, codes.joinToString(","))?.apply()
-        // 바뀐 관심직군을 백엔드 기기 등록에 즉시 반영(다음 다이제스트부터 개인화).
-        FcmRegistrar.refresh(codes)
+    /** 필터 설정 + 영속 + 백엔드 재동기화(직군 변경 시 개인화 다이제스트 반영). 미지정 인자는 현재값 유지. */
+    fun set(
+        categories: List<String> = this.categories,
+        experiences: List<String> = this.experiences,
+        sizes: List<String> = this.sizes,
+    ) {
+        this.categories = categories
+        this.experiences = experiences
+        this.sizes = sizes
+        save(KEY_CAT, categories)
+        save(KEY_EXP, experiences)
+        save(KEY_SIZE, sizes)
+        FcmRegistrar.refresh(categories)
+    }
+
+    private fun load(key: String): List<String> =
+        prefs()?.getString(key, null)?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
+
+    private fun save(key: String, values: List<String>) {
+        prefs()?.edit()?.putString(key, values.joinToString(","))?.apply()
     }
 
     private fun prefs() = appContext?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

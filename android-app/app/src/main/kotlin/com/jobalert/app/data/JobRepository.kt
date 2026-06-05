@@ -28,8 +28,14 @@ class JobRepository(
 ) {
     /** /jobs/today — 오늘 피드(전체 kind) + kind별 카운트. 화면이 섹션 토글로 로컬 필터.
      *  categories 지정 시 해당 직군만(서버 필터). */
-    suspend fun todayFeed(categories: List<String> = emptyList()): TodayFeed {
-        val res = api.jobsToday(kind = null, categories = categories, limit = 50)
+    suspend fun todayFeed(
+        categories: List<String> = emptyList(),
+        experiences: List<String> = emptyList(),
+        sizes: List<String> = emptyList(),
+    ): TodayFeed {
+        val res = api.jobsToday(
+            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 50,
+        )
         return TodayFeed(
             counts = res.counts.entries.associate { (k, v) -> kindOf(k) to v }
                 .filterKeys { it != null }
