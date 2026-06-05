@@ -18,6 +18,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -123,7 +125,11 @@ fun OnboardingJobCategoryScreen(
 
             HiFiButton(
                 text = "다음 ($count 개 선택됨) →",
-                onClick = onNext,
+                onClick = {
+                    // 고른 관심 직군을 저장 → 메인 피드가 이 직군으로 기본 필터됨
+                    ActiveFilter.set(selected.mapNotNull { JobCategoryCodes.getOrNull(it) })
+                    onNext()
+                },
                 variant = if (count > 0) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                 enabled = count > 0,
                 fullWidth = true,

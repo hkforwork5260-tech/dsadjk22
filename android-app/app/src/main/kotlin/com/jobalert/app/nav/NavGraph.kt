@@ -162,7 +162,7 @@ fun JobAlertNavHost() {
                 onApply = { sel ->
                     // 선택한 직군 인덱스 → 백엔드 코드. 메인이 ActiveFilter를 구독해 재조회.
                     // (규모·경력·지역·마감 facet은 백엔드 미지원 — 직군만 적용)
-                    ActiveFilter.categories = sel.jobs.mapNotNull { JobCategoryCodes.getOrNull(it) }
+                    ActiveFilter.set(sel.jobs.mapNotNull { JobCategoryCodes.getOrNull(it) })
                     nav.popBackStack()
                 },
             )

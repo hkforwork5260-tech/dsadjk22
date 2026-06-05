@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.Modifier
 import com.jobalert.app.data.api.DeviceId
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.nav.JobAlertNavHost
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.JobAlertTheme
@@ -18,7 +19,8 @@ import com.jobalert.app.ui.theme.JobAlertTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DeviceId.init(applicationContext)   // 관심기업 등 기기ID 헤더 준비
+        DeviceId.init(applicationContext)      // 관심기업 등 기기ID 헤더 준비
+        ActiveFilter.init(applicationContext)  // 저장된 관심 직군 필터 로드
         enableEdgeToEdge()
         setContent {
             JobAlertTheme {
