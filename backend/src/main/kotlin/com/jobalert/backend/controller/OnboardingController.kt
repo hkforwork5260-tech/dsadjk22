@@ -1,7 +1,7 @@
 package com.jobalert.backend.controller
 
 import com.jobalert.backend.dto.CategoriesResponse
-import com.jobalert.backend.dto.CompanyListResponse
+import com.jobalert.backend.dto.PopularCompaniesResponse
 import com.jobalert.backend.service.OnboardingService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,5 +20,5 @@ class OnboardingController(
     @GetMapping("/popular-companies")
     fun popularCompanies(
         @RequestParam(required = false, defaultValue = "") categories: List<String>,
-    ): CompanyListResponse = onboardingService.popularCompanies(categories)
+    ): PopularCompaniesResponse = onboardingService.popularCompanies(categories)
 }

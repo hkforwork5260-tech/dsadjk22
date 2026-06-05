@@ -167,6 +167,13 @@ data class DevicePreferences(
     val categories: List<String> = emptyList(),
 )
 
+/** PATCH /devices/{id}/preferences — 알림 시간 on/off 등 부분 갱신. */
+@Serializable
+data class DevicePreferencesUpdate(
+    val pushMorning: Boolean? = null,
+    val pushEvening: Boolean? = null,
+)
+
 @Serializable
 data class DeviceRegisterResponse(
     val deviceId: String,

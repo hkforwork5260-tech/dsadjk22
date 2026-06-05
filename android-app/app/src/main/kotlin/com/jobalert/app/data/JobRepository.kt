@@ -5,9 +5,12 @@ import com.jobalert.app.data.api.ApiService
 import com.jobalert.app.data.api.JobDetailDto
 import com.jobalert.app.data.api.JobDto
 import com.jobalert.app.data.api.CompanyDetailResponse
+import com.jobalert.app.data.api.DeviceId
+import com.jobalert.app.data.api.DevicePreferencesUpdate
 import com.jobalert.app.data.api.FavoritesResponse
 import com.jobalert.app.data.api.JobsSearchResponse
 import com.jobalert.app.data.api.NotificationsResponse
+import com.jobalert.app.data.api.PopularCompaniesResponse
 import com.jobalert.app.data.api.UpcomingResponse
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.ui.theme.JobKind
@@ -50,6 +53,9 @@ class JobRepository(
     /** /companies/{id}/page — 회사 상세(회사·지역·통계·진행공고·이력). */
     suspend fun companyDetail(id: Int): CompanyDetailResponse = api.companyPage(id)
 
+    /** 온보딩 추천 회사(공고 많은 순). */
+    suspend fun popularCompanies(): PopularCompaniesResponse = api.popularCompanies()
+
     /** 관심기업 목록 (현재 기기 기준). */
     suspend fun favorites(): FavoritesResponse = api.favorites()
 
@@ -62,6 +68,10 @@ class JobRepository(
 
     /** 알림 읽음 처리. */
     suspend fun markNotificationRead(id: String) = api.markNotificationRead(id)
+
+    /** 아침/저녁 푸시 on/off 갱신(이 기기). */
+    suspend fun updatePushPreferences(morning: Boolean, evening: Boolean) =
+        api.updatePreferences(DeviceId.value, DevicePreferencesUpdate(pushMorning = morning, pushEvening = evening))
 
     /** /jobs/{id} — 공고 상세. 도메인 Job + 상세 텍스트(요약·설명·원본URL). */
     suspend fun jobDetail(id: String): Job = api.jobDetail(id).toDomain()

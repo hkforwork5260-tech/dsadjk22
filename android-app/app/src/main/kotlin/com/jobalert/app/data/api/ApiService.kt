@@ -3,6 +3,7 @@ package com.jobalert.app.data.api
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -42,6 +43,9 @@ interface ApiService {
     @GET("api/v1/companies/{id}/page")
     suspend fun companyPage(@Path("id") id: Int): CompanyDetailResponse
 
+    @GET("api/v1/onboarding/popular-companies")
+    suspend fun popularCompanies(): PopularCompaniesResponse
+
     // 관심기업 — 기기ID는 ApiClient 인터셉터가 X-Device-Id 헤더로 자동 첨부.
     @GET("api/v1/users/me/favorites")
     suspend fun favorites(): FavoritesResponse
@@ -60,4 +64,10 @@ interface ApiService {
 
     @POST("api/v1/devices/register")
     suspend fun registerDevice(@Body req: DeviceRegisterRequest): DeviceRegisterResponse
+
+    @PATCH("api/v1/devices/{deviceId}/preferences")
+    suspend fun updatePreferences(
+        @Path("deviceId") deviceId: String,
+        @Body req: DevicePreferencesUpdate,
+    ): DevicePreferences
 }

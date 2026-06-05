@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.ui.components.HiFiAppBar
 import com.jobalert.app.ui.components.HiFiGestureNav
 import com.jobalert.app.ui.components.HiFiIconBtn
@@ -38,9 +39,12 @@ import com.jobalert.app.ui.theme.HiFiType
  */
 @Composable
 fun NotifSettingsScreen(onBack: () -> Unit) {
+    val viewModel: NotifSettingsViewModel = viewModel()
     var pushEnabled by remember { mutableStateOf(true) }
     var morningEnabled by remember { mutableStateOf(true) }
     var eveningEnabled by remember { mutableStateOf(true) }
+    // 아침/저녁 토글 변경 시 백엔드 기기 설정에 반영(전체 푸시 끄면 둘 다 off로 동기화).
+    fun syncPush() = viewModel.setPush(morning = morningEnabled && pushEnabled, evening = eveningEnabled && pushEnabled)
     var closingEnabled by remember { mutableStateOf(true) }
     var soundEnabled by remember { mutableStateOf(true) }
     var vibrationEnabled by remember { mutableStateOf(false) }
@@ -65,7 +69,7 @@ fun NotifSettingsScreen(onBack: () -> Unit) {
                 title = "전체 푸시 알림",
                 sub = "끄면 모든 알림이 차단돼요",
                 checked = pushEnabled,
-                onCheckedChange = { pushEnabled = it },
+                onCheckedChange = { pushEnabled = it; syncPush() },
             )
 
             Spacer(Modifier.height(18.dp))
@@ -75,7 +79,7 @@ fun NotifSettingsScreen(onBack: () -> Unit) {
                 sub = "새로 올라온 공고 요약",
                 checked = morningEnabled && pushEnabled,
                 enabled = pushEnabled,
-                onCheckedChange = { morningEnabled = it },
+                onCheckedChange = { morningEnabled = it; syncPush() },
             )
             Divider()
             ToggleRow(
@@ -83,7 +87,7 @@ fun NotifSettingsScreen(onBack: () -> Unit) {
                 sub = "마감 임박 공고",
                 checked = eveningEnabled && pushEnabled,
                 enabled = pushEnabled,
-                onCheckedChange = { eveningEnabled = it },
+                onCheckedChange = { eveningEnabled = it; syncPush() },
             )
             Divider()
             ToggleRow(

@@ -34,8 +34,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.CompanyDto
-import com.jobalert.app.data.api.MockApi
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -51,7 +53,9 @@ fun OnboardingCompanySwipeScreen(
     onSkip: () -> Unit,
     onBack: () -> Unit,
 ) {
-    val companies = remember { MockApi.popularCompanies().companies }
+    val viewModel: OnboardingCompanySwipeViewModel = viewModel()
+    LaunchedEffect(Unit) { viewModel.load() }
+    val companies by viewModel.companies.collectAsStateWithLifecycle()
     var favSet by remember { mutableStateOf(setOf<Int>()) }
     var savedJobs by remember { mutableStateOf(setOf<String>()) }
     val pageCount = companies.size + 1

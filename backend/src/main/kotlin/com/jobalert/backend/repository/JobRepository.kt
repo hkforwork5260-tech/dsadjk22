@@ -41,6 +41,10 @@ interface JobRepository : JpaRepository<Job, String> {
 
     fun countByKindAndIsActiveTrue(kind: String): Long
 
+    /** 추천 회사 — 진행중 공고 많은 순 회사 id. */
+    @Query("SELECT j.companyId FROM Job j WHERE j.isActive = true GROUP BY j.companyId ORDER BY COUNT(j) DESC")
+    fun findTopCompanyIdsByActiveJobs(pageable: Pageable): List<Long>
+
     fun countByCompanyIdAndIsActiveTrue(companyId: Long): Long
 
     fun countByCompanyIdAndKindAndIsActiveTrue(companyId: Long, kind: String): Long

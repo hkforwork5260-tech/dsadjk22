@@ -99,3 +99,8 @@ data class CompanyBriefDto(
     val activeJobCount: Int,
     val isFavorited: Boolean = true,
 )
+
+/** 온보딩 추천 회사(공고 많은 순). */
+data class PopularCompaniesResponse(
+    val companies: List<CompanyBriefDto>,
+)
