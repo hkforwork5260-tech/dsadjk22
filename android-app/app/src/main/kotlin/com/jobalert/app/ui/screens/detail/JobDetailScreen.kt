@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,8 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.model.Job
-import com.jobalert.app.data.sample.SampleJobs
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.*
 
@@ -41,7 +43,12 @@ fun JobDetailScreen(
     onSimilarTab: () -> Unit,
     onApply: (Job) -> Unit,
 ) {
-    val job = remember(jobId) { SampleJobs.find { it.id == jobId } ?: SampleJobs[1] }
+    // 백엔드 /jobs/{id} 연결. 로딩·에러 시엔 빈 공고로 렌더.
+    val viewModel: JobDetailViewModel = viewModel()
+    LaunchedEffect(jobId) { viewModel.load(jobId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val job = (state as? JobDetailUiState.Success)?.job
+        ?: Job(id = jobId, company = "", logo = "", role = "불러오는 중…", kind = JobKind.NEW, dday = "", dateText = "")
     var tab by remember { mutableStateOf(DetailTab.Summary) }
     var saved by remember { mutableStateOf(false) }
 

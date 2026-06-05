@@ -80,6 +80,13 @@ data class JobsTodayResponse(
     val nextCursor: String? = null,
 )
 
+/** GET /jobs/{id}/similar */
+@Serializable
+data class JobListResponse(
+    val jobs: List<JobDto>,
+    val nextCursor: String? = null,
+)
+
 /** GET /jobs/search */
 @Serializable
 data class JobsSearchResponse(

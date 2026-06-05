@@ -26,6 +26,9 @@ interface ApiService {
     @GET("api/v1/jobs/{id}")
     suspend fun jobDetail(@Path("id") id: String): JobDetailDto
 
+    @GET("api/v1/jobs/{id}/similar")
+    suspend fun similar(@Path("id") id: String): JobListResponse
+
     @GET("api/v1/jobs/search")
     suspend fun jobsSearch(
         @Query("q") query: String,

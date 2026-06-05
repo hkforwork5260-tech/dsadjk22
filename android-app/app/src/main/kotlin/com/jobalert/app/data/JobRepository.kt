@@ -2,6 +2,7 @@ package com.jobalert.app.data
 
 import com.jobalert.app.data.api.ApiClient
 import com.jobalert.app.data.api.ApiService
+import com.jobalert.app.data.api.JobDetailDto
 import com.jobalert.app.data.api.JobDto
 import com.jobalert.app.data.api.CompanyDetailResponse
 import com.jobalert.app.data.api.FavoritesResponse
@@ -59,7 +60,29 @@ class JobRepository(
     /** 알림 히스토리 (현재 기기 기준 다이제스트 기록). */
     suspend fun notifications(): NotificationsResponse = api.notifications()
 
+    /** /jobs/{id} — 공고 상세. 도메인 Job + 상세 텍스트(요약·설명·원본URL). */
+    suspend fun jobDetail(id: String): Job = api.jobDetail(id).toDomain()
+
+    /** /jobs/{id}/similar — 비슷한 공고(같은 업종). */
+    suspend fun similar(id: String): List<Job> = api.similar(id).jobs.map { it.toDomain() }
+
     private val kst = ZoneId.of("Asia/Seoul")
+
+    private fun JobDetailDto.toDomain(): Job = Job(
+        id = id,
+        company = company.name,
+        logo = company.logo,
+        role = title,
+        kind = kindOf(kind) ?: JobKind.NEW,
+        dday = dday,
+        dateText = deadline?.let { formatDeadline(it) } ?: "상시",
+        location = location,
+        experience = experience,
+        education = education,
+        summary = summary,            // 꽁이 한줄요약(없으면 빈 문자열)
+        tags = tags,
+        originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
+    )
 
     private fun JobDto.toDomain(): Job = Job(
         id = id,

@@ -1,6 +1,9 @@
 package com.jobalert.app.nav
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -73,6 +76,13 @@ object Routes {
 @Composable
 fun JobAlertNavHost() {
     val nav = rememberNavController()
+    val context = LocalContext.current
+
+    // 지원하기 → 원본 채용 URL을 브라우저로 열기.
+    fun openUrl(url: String) {
+        if (url.isBlank()) return
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+    }
 
     NavHost(navController = nav, startDestination = Routes.Onboarding1) {
         composable(Routes.Onboarding1) {
@@ -152,7 +162,7 @@ fun JobAlertNavHost() {
                 onBack = { nav.popBackStack() },
                 onShare = { nav.navigate(Routes.ShareSheet) },
                 onSimilarTab = { nav.navigate(Routes.similar(jobId)) },
-                onApply = { /* TODO: 외부 URL Intent */ },
+                onApply = { job -> openUrl(job.originalUrl) },
             )
         }
 

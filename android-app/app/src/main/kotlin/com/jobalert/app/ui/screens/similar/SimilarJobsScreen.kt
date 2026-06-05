@@ -10,20 +10,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.model.Job
-import com.jobalert.app.data.sample.SampleJobs
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
-import com.jobalert.app.ui.theme.color
-import com.jobalert.app.ui.theme.label
+import com.jobalert.app.ui.theme.JobKind
 
 /**
  * 비슷한 공고 리스트.
@@ -36,12 +37,13 @@ fun SimilarJobsScreen(
     onBack: () -> Unit,
     onJobClick: (String) -> Unit,
 ) {
-    val current = remember(jobId) { SampleJobs.find { it.id == jobId } ?: SampleJobs[1] }
-    val others = remember(jobId) {
-        SampleJobs
-            .filter { it.id != current.id }
-            .sortedByDescending { similarityScore(current, it) }
-    }
+    // 백엔드 /jobs/{id} + /jobs/{id}/similar 연결.
+    val viewModel: SimilarJobsViewModel = viewModel()
+    LaunchedEffect(jobId) { viewModel.load(jobId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val current = (state as? SimilarUiState.Success)?.current
+        ?: Job(id = jobId, company = "", logo = "", role = "", kind = JobKind.NEW, dday = "", dateText = "")
+    val others = (state as? SimilarUiState.Success)?.others ?: emptyList()
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -121,14 +123,3 @@ fun SimilarJobsScreen(
     }
 }
 
-/**
- * 같은 회사면 +3, 같은 종류(NEW/UPDATE/CLOSING)면 +1, 태그 겹치면 각 +2.
- */
-private fun similarityScore(a: Job, b: Job): Int {
-    var score = 0
-    if (a.company == b.company) score += 3
-    if (a.kind == b.kind) score += 1
-    val overlap = a.tags.toSet().intersect(b.tags.toSet()).size
-    score += overlap * 2
-    return score
-}
