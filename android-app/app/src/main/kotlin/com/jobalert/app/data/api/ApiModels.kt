@@ -146,12 +146,18 @@ data class FavoriteToggleResponse(
     val companyId: Int,
 )
 
-/** POST /devices/register — FCM 토큰을 기기ID와 함께 백엔드에 등록(푸시 발송 대상 등록). */
+/** POST /devices/register — FCM 토큰 + 관심직군을 기기ID와 함께 등록(개인화 다이제스트 근거). */
 @Serializable
 data class DeviceRegisterRequest(
     val fcmToken: String,
     val platform: String = "android",
     val deviceId: String,
+    val preferences: DevicePreferences,
+)
+
+@Serializable
+data class DevicePreferences(
+    val categories: List<String> = emptyList(),
 )
 
 @Serializable

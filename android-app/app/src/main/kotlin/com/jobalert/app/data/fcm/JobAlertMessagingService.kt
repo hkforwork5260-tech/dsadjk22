@@ -2,6 +2,7 @@ package com.jobalert.app.data.fcm
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 
 /**
  * FCM 수신 서비스.
@@ -13,7 +14,9 @@ import com.google.firebase.messaging.RemoteMessage
 class JobAlertMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
-        FcmRegistrar.register(token)
+        // 저장된 관심직군을 함께 보냄(빈 값 보내면 백엔드 직군이 지워지므로 prefs 로드 후 등록).
+        ActiveFilter.init(applicationContext)
+        FcmRegistrar.register(token, ActiveFilter.categories)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {

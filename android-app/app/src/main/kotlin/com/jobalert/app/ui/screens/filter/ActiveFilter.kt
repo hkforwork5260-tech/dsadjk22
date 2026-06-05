@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.jobalert.app.data.fcm.FcmRegistrar
 
 /**
  * 현재 적용된 직군 필터를 보관하는 전역 상태 홀더 + 로컬 영속.
@@ -29,10 +30,12 @@ object ActiveFilter {
         categories = saved?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
     }
 
-    /** 직군 필터 설정 + 영속. */
+    /** 직군 필터 설정 + 영속 + 백엔드 재동기화(개인화 다이제스트 반영). */
     fun set(codes: List<String>) {
         categories = codes
         prefs()?.edit()?.putString(KEY, codes.joinToString(","))?.apply()
+        // 바뀐 관심직군을 백엔드 기기 등록에 즉시 반영(다음 다이제스트부터 개인화).
+        FcmRegistrar.refresh(codes)
     }
 
     private fun prefs() = appContext?.getSharedPreferences(PREFS, Context.MODE_PRIVATE)

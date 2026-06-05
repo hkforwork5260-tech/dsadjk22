@@ -5,6 +5,8 @@ import com.jobalert.backend.dto.DevicePreferencesUpdateRequest
 import com.jobalert.backend.dto.DeviceRegisterRequest
 import com.jobalert.backend.dto.DeviceRegisterResponse
 import com.jobalert.backend.entity.Device
+import com.jobalert.backend.entity.DeviceCategory
+import com.jobalert.backend.repository.DeviceCategoryRepository
 import com.jobalert.backend.repository.DeviceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -21,6 +23,7 @@ import java.util.UUID
 @Transactional
 class DeviceService(
     private val deviceRepository: DeviceRepository,
+    private val deviceCategoryRepository: DeviceCategoryRepository,
     private val clock: Clock,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -37,7 +40,14 @@ class DeviceService(
         device.lastSeenAt = now
         device.updatedAt = now
         deviceRepository.save(device)
-        log.info("device registered: {} platform={}", req.deviceId, req.platform)
+
+        // 관심 직군 저장(개인화 다이제스트용) — 기존 것 비우고 새로 세팅.
+        deviceCategoryRepository.deleteByDeviceId(req.deviceId)
+        req.preferences.categories.distinct().forEach {
+            deviceCategoryRepository.save(DeviceCategory(deviceId = req.deviceId, categoryCode = it, createdAt = now))
+        }
+
+        log.info("device registered: {} platform={} categories={}", req.deviceId, req.platform, req.preferences.categories)
         return DeviceRegisterResponse(deviceId = req.deviceId, registeredAt = now)
     }
 

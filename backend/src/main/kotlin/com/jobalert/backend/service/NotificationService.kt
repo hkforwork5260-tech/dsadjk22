@@ -9,6 +9,7 @@ import com.jobalert.backend.exception.NotFoundException
 import com.jobalert.backend.repository.CompanyRepository
 import com.jobalert.backend.repository.DeviceRepository
 import com.jobalert.backend.repository.JobRepository
+import com.jobalert.backend.repository.DeviceCategoryRepository
 import com.jobalert.backend.repository.NotificationHistoryRepository
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -31,6 +32,7 @@ class NotificationService(
     private val jobRepository: JobRepository,
     private val companyRepository: CompanyRepository,
     private val deviceRepository: DeviceRepository,
+    private val deviceCategoryRepository: DeviceCategoryRepository,
     private val fcmSender: FcmSender,
     private val clock: Clock,
 ) {
@@ -77,14 +79,28 @@ class NotificationService(
         val evening = kind == "evening_digest"
         val targetKind = if (evening) "CLOSING" else "NEW"
 
-        val jobs = jobRepository.findAllByKindAndIsActiveTrue(targetKind, PageRequest.of(0, 50))
-        val total = jobRepository.countByKindAndIsActiveTrue(targetKind).toInt()
+        // 기기의 관심 직군. 있으면 그 직군만, 없으면 전체(전역 다이제스트).
+        val myCategories = deviceCategoryRepository.findAllByDeviceId(deviceId).map { it.categoryCode }.toSet()
+        val personalized = myCategories.isNotEmpty()
+
+        val pool = jobRepository.findAllByKindAndIsActiveTrue(targetKind, PageRequest.of(0, 2000))
+        val jobs = if (personalized) {
+            pool.filter { j -> j.jobCategoryCodes?.any { it in myCategories } == true }
+        } else {
+            pool
+        }
+        val total = jobs.size
         val companyById = companyRepository.findAllById(jobs.map { it.companyId }.toSet()).associateBy { it.id }
         val names = jobs.mapNotNull { companyById[it.companyId]?.name }.distinct().take(3)
 
-        val title = if (evening) "마감 임박 ${total}건 🔥" else "오늘 새 공고 ${total}건 ☀️"
+        val title = when {
+            evening && personalized -> "내 직군 마감 임박 ${total}건 🔥"
+            evening -> "마감 임박 ${total}건 🔥"
+            personalized -> "내 직군 새 공고 ${total}건 ☀️"
+            else -> "오늘 새 공고 ${total}건 ☀️"
+        }
         val body = when {
-            names.isEmpty() -> "새 소식을 확인해보세요"
+            names.isEmpty() -> "오늘은 새 소식이 없어요"
             total > names.size -> names.joinToString("·") + " 외 ${total - names.size}건"
             else -> names.joinToString("·")
         }
