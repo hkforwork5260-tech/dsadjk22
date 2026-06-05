@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059526736833",
+    "project_id": "jobjob-533ca",
+    "storage_bucket": "jobjob-533ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059526736833:android:d5f31f2bcaa4b88806cd40",
+        "android_client_info": {
+          "package_name": "com.jobalert.app.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeE9LOI3BenYsC2TrxQ_GjQoATYLbL_Fk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

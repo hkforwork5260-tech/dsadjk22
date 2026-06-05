@@ -6,6 +6,7 @@ import com.jobalert.app.data.api.JobDto
 import com.jobalert.app.data.api.CompanyDetailResponse
 import com.jobalert.app.data.api.FavoritesResponse
 import com.jobalert.app.data.api.JobsSearchResponse
+import com.jobalert.app.data.api.NotificationsResponse
 import com.jobalert.app.data.api.UpcomingResponse
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.ui.theme.JobKind
@@ -54,6 +55,9 @@ class JobRepository(
     /** 관심기업 추가/삭제. */
     suspend fun addFavorite(companyId: Int) = api.addFavorite(companyId)
     suspend fun removeFavorite(companyId: Int) = api.removeFavorite(companyId)
+
+    /** 알림 히스토리 (현재 기기 기준 다이제스트 기록). */
+    suspend fun notifications(): NotificationsResponse = api.notifications()
 
     private val kst = ZoneId.of("Asia/Seoul")
 

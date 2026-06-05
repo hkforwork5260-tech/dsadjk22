@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,7 +28,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jobalert.app.data.api.MockApi
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.NotificationDto
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
@@ -42,8 +44,13 @@ fun NotifHistoryScreen(
     onBack: () -> Unit,
     onItemClick: (NotificationDto) -> Unit,
 ) {
-    val initial = remember { MockApi.notifications().notifications }
-    var items by remember { mutableStateOf(initial) }
+    // 백엔드 알림 히스토리(기기 기준). 진입할 때마다 새로고침.
+    val viewModel: NotifHistoryViewModel = viewModel()
+    LaunchedEffect(Unit) { viewModel.load() }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val initial = (state as? NotifUiState.Success)?.notifications ?: emptyList()
+    // 로드되면 items 갱신. '모두 읽음' 등 읽음 토글은 로컬 시각 처리.
+    var items by remember(initial) { mutableStateOf(initial) }
 
     // 날짜 그룹핑 (오늘 / 어제 / 이번 주 / 그 외)
     val grouped: List<Pair<String, List<NotificationDto>>> = remember(items) {

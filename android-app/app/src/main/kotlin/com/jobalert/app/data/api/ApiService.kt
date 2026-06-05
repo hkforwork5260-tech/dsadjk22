@@ -47,4 +47,7 @@ interface ApiService {
 
     @DELETE("api/v1/users/me/favorites/{companyId}")
     suspend fun removeFavorite(@Path("companyId") companyId: Int): FavoriteToggleResponse
+
+    @GET("api/v1/notifications/history")
+    suspend fun notifications(@Query("limit") limit: Int = 30): NotificationsResponse
 }
