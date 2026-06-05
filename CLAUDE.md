@@ -120,6 +120,11 @@
     비슷한 공고, 마이페이지 서브 4개 (알림 설정 / 위젯 설정 / 관심 직군 / 피드백)
   - `data/api/MockApi.kt` — API_CONTRACT.md 형식 그대로 mock 응답 (백엔드 붙기 전 임시)
   - 디자인 시스템 컴포넌트 10개 + 라우트 16개
+- **★ 수집→DB→API→앱 엔드투엔드 연결 (2026-06-05, 백엔드 v5 + FE 세션)** — 4개 부품이 처음으로 끝까지 실연결. 단위 57개 + 라이브 검증 PASS. 커밋 3개(`adfed35`·`a12ab17`·`99d4ac1`):
+  - **적재·diff 파이프라인** (`JobPersistenceService`) — RawJobPosting → jobs upsert + 어제 대비 diff(INSERT=NEW / 제목·마감변경=UPDATE / 마감3일내=CLOSING우선 / 사라짐=만료 isActive=false). 회사 매칭 미스 시 **자동 생성(isApproved=false)** — 사장님 결정. 안전장치: 회사 중복생성 방지(정규화명 캐시+재매칭), **0건 받은 소스는 만료 스윕 제외**(API 장애가 전체 공고 닫는 사고 방지). `TimeConfig` Clock 빈 주입.
+  - **조회 API 실 DB화** — `JobService`·`CompanyService`가 MockDataProvider→Repository. `JobMapper`(엔티티→DTO, 회사임베드 N+1회피, D-day KST 파생계산·마감없으면 "상시"). `AdminController` POST `/api/v1/admin/collect` 수동 수집 트리거(v0.1 무인증).
+  - **안드로이드 메인 화면 백엔드 연결** — Retrofit+OkHttp+kotlinx.serialization 도입. `ApiClient`(Json SnakeCase 네이밍전략으로 camelCase↔snake_case 자동, BASE_URL=10.0.2.2:8080 에뮬레이터), `ApiService`(jobs 엔드포인트만), `JobRepository`(DTO→도메인), `MainViewModel`(Loading/Success/Error, @JvmOverloads로 viewModel() 호환), `MainScreen` 3상태 렌더. ApiModels @Serializable + deadline/postingDate nullable.
+  - **라이브 검증**: docker postgres + Greenhouse 실호출 → 388건 적재(쿠팡268·크래프톤51·당근40·Moloco20·Sendbird9), 회사3곳 자동생성, 2회차 멱등성(inserted=0 unchanged=388), **에뮬레이터 메인 화면에 실 쿠팡 공고 표시 성공**.
 
 ### 🚧 진행
 - **데이터 소스 하이브리드 전환 (2026-06-04 진행 중)** — 사람인 거절로 ①Greenhouse/Lever 공개 API + ③국내 대기업 페이지(검증 후) 합치는 수집기로 재설계. 소스 어댑터 패턴(`JobSource` 인터페이스 + `RawJobPosting` 공통 모델).
@@ -127,12 +132,17 @@
 - 회사명 매칭(Normalizer/Matcher), Clearbit 로고 Resolver — 소스 무관 자산이라 그대로 재활용
 - ③ 국내 대기업 robots/약관 검증 — 미착수 (코딩 전 선행 필요)
 - FCM·푸시 — 미작업 (Phase 3)
-- Claude Haiku 한줄 요약 — 미작업 (Phase 3)
+- Claude Haiku 한줄 요약 — 미작업 (Phase 3). Job 엔티티 summary 필드는 있으나 null
 - 회사 시드 — placeholder 57개. 하이브리드 전환으로 "Greenhouse/Lever 토큰 보유 회사" + "수집 가능 국내 대기업" 리스트로 재정의 필요
 - Play Store — 미작업 (Phase 5)
 
-### 📋 다음 단계
-`PHASE_PLAN.md` 참고. 백엔드(Window A)와 안드로이드(Window B)를 병렬 세션으로 진행.
+### 📋 다음 단계 (2026-06-05 기준 우선순위)
+1. **나머지 안드로이드 화면 백엔드 연결** — 검색·캘린더·회사상세·관심기업·알림은 아직 MockApi(동기). 메인과 같은 패턴(Repository+ViewModel+UiState) 복제. ⚠️ company/notification은 백엔드 응답 모양이 FE DTO와 달라 엔드포인트 추가 전 백엔드 실 DB화 선행 필요. **안드로이드 빌드 검증은 사용자 PC에서만 가능**(이 환경은 Google Maven 차단).
+2. **수집 소스 확장** — 현재 `SourceRegistry`에 Greenhouse 5곳(coupang·krafton·daangn·moloco·sendbird)뿐. 한국 회사 Greenhouse/Lever 토큰 발굴 + 기재부 공공기관 API(JOBALERT_PUBINST_KEY) 붙이면 회사 수 급증. **메인이 쿠팡만 보이는 건 버그 아님** — 쿠팡이 388중 268(69%) + 첫수집이라 전부 동일시각 NEW → "최신50"이 쿠팡으로 채워짐. 소스 늘고 일일수집 돌면 자연 해소.
+3. **직군 분류** — 수집 공고의 `jobCategoryCodes`가 null이라 카테고리 필터 무동작. 제목·부서로 21개 직군 자동분류 필요.
+4. FCM 푸시 / Haiku 한줄요약 (Phase 3 잔여).
+
+수동 수집: `POST /api/v1/admin/collect`. 일일 자동수집 cron은 `jobalert.collector.enabled=true`로 활성(기본 false).
 
 ## 컨벤션
 
