@@ -10,6 +10,7 @@ import com.jobalert.backend.repository.CompanyRepository
 import com.jobalert.backend.repository.DeviceRepository
 import com.jobalert.backend.repository.JobRepository
 import com.jobalert.backend.repository.NotificationHistoryRepository
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,6 +34,21 @@ class NotificationService(
     private val fcmSender: FcmSender,
     private val clock: Clock,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
+    /**
+     * 등록된 모든 기기에 다이제스트 발송(매일 9시·21시 스케줄러가 호출).
+     * 기기별 push 설정(pushMorning/pushEvening) 존중. v0.1은 전역 다이제스트(직군 개인화는 추후).
+     */
+    fun sendDailyDigestToAll(kind: String): Int {
+        val morning = kind != "evening_digest"
+        val targets = deviceRepository.findAllByFcmTokenIsNotNull()
+            .filter { if (morning) it.pushMorning else it.pushEvening }
+        targets.forEach { generateDigest(it.deviceId, kind) }
+        log.info("daily digest 발송: kind={} 대상기기={}", kind, targets.size)
+        return targets.size
+    }
+
     @Transactional(readOnly = true)
     fun history(deviceId: UUID, limit: Int): NotificationHistoryResponse {
         val list = notificationRepository

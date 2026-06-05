@@ -37,4 +37,10 @@ class AdminController(
         @RequestHeader("X-Device-Id") deviceId: String,
         @RequestParam(defaultValue = "morning_digest") kind: String,
     ): NotificationDto = notificationService.generateDigest(UUID.fromString(deviceId), kind)
+
+    /** 매일 스케줄과 동일하게 등록된 전체 기기에 다이제스트 발송(테스트용). 발송 대상 기기 수 반환. */
+    @PostMapping("/digest-all")
+    fun digestAll(@RequestParam(defaultValue = "morning_digest") kind: String): Map<String, Any> =
+        mapOf("kind" to kind, "sentToDevices" to notificationService.sendDailyDigestToAll(kind))
 }
+
