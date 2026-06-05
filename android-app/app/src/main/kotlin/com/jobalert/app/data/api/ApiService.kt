@@ -16,6 +16,7 @@ interface ApiService {
     @GET("api/v1/jobs/today")
     suspend fun jobsToday(
         @Query("kind") kind: String? = null,
+        @Query("categories") categories: List<String> = emptyList(),
         @Query("limit") limit: Int = 30,
     ): JobsTodayResponse
 

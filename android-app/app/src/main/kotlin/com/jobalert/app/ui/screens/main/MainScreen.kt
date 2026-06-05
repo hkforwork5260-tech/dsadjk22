@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.JobRepository
 import com.jobalert.app.ui.components.*
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.*
 
 /**
@@ -42,6 +44,9 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    // 적용된 직군 필터를 구독 → 진입·필터 변경 시 재조회 (빈 리스트면 전체).
+    val filterCategories = ActiveFilter.categories
+    LaunchedEffect(filterCategories) { viewModel.load(filterCategories) }
     var section by remember { mutableStateOf(JobKind.NEW) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {

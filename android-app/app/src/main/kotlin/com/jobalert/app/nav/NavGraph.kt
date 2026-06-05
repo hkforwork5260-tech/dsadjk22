@@ -12,6 +12,8 @@ import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
 import com.jobalert.app.ui.screens.discover.DiscoverScreen
 import com.jobalert.app.ui.screens.favorites.FavoritesScreen
+import com.jobalert.app.data.model.JobCategoryCodes
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.screens.filter.FilterScreen
 import com.jobalert.app.ui.screens.main.MainEmptyScreen
 import com.jobalert.app.ui.screens.main.MainScreen
@@ -157,7 +159,12 @@ fun JobAlertNavHost() {
         composable(Routes.Filter) {
             FilterScreen(
                 onClose = { nav.popBackStack() },
-                onApply = { _ -> nav.popBackStack() },
+                onApply = { sel ->
+                    // 선택한 직군 인덱스 → 백엔드 코드. 메인이 ActiveFilter를 구독해 재조회.
+                    // (규모·경력·지역·마감 facet은 백엔드 미지원 — 직군만 적용)
+                    ActiveFilter.categories = sel.jobs.mapNotNull { JobCategoryCodes.getOrNull(it) }
+                    nav.popBackStack()
+                },
             )
         }
 

@@ -34,3 +34,17 @@ val JobCategories: List<String> = listOf(
     "미디어·문화·스포츠", "금융·보험", "공공·복지",
     "기타",
 )
+
+/**
+ * [JobCategories]와 같은 순서의 백엔드 직군 코드. 필터 화면의 인덱스 선택을 코드로 변환할 때 사용.
+ * 마지막 "기타"(index 21)는 백엔드 코드가 없어 제외됨(getOrNull → null).
+ */
+val JobCategoryCodes: List<String> = listOf(
+    "plan_strategy", "marketing_pr", "accounting_finance",
+    "hr_hrd", "admin_legal", "it_dev_data",
+    "design", "sales_trade", "customer_tm",
+    "purchase_logistics", "md_planning", "driving_delivery",
+    "service", "production", "construction",
+    "medical", "research", "education",
+    "media_culture_sport", "finance_insurance", "public_welfare",
+)
