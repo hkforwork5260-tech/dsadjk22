@@ -33,6 +33,13 @@ object ApiClient {
     private val client = OkHttpClient.Builder()
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(10, TimeUnit.SECONDS)
+        // 모든 요청에 익명 기기ID 헤더 — 관심기업 등 기기 기준 저장에 사용.
+        .addInterceptor { chain ->
+            val req = chain.request().newBuilder()
+                .header("X-Device-Id", DeviceId.value)
+                .build()
+            chain.proceed(req)
+        }
         .addInterceptor(
             HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BASIC },
         )

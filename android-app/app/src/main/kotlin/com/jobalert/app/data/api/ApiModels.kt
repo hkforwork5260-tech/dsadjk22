@@ -139,6 +139,13 @@ data class FavoriteCompanyDto(
     val hasAlarm: Boolean = true,
 )
 
+/** POST/DELETE 관심기업 토글 응답. */
+@Serializable
+data class FavoriteToggleResponse(
+    val favorited: Boolean,
+    val companyId: Int,
+)
+
 /** GET /notifications/history */
 @Serializable
 data class NotificationsResponse(

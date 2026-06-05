@@ -1,6 +1,6 @@
 package com.jobalert.backend.controller
 
-import com.jobalert.backend.dto.CompanyListResponse
+import com.jobalert.backend.dto.FavoritesListResponse
 import com.jobalert.backend.dto.FavoriteToggleResponse
 import com.jobalert.backend.exception.BadRequestException
 import com.jobalert.backend.service.FavoriteService
@@ -20,7 +20,7 @@ class FavoriteController(
 ) {
 
     @GetMapping
-    fun list(@RequestHeader("X-Device-Id", required = false) deviceId: String?): CompanyListResponse =
+    fun list(@RequestHeader("X-Device-Id", required = false) deviceId: String?): FavoritesListResponse =
         favoriteService.list(parseDeviceId(deviceId))
 
     @PostMapping("/{companyId}")

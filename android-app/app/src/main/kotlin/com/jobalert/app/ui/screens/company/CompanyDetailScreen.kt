@@ -51,6 +51,8 @@ fun CompanyDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val data = (state as? CompanyUiState.Success)?.data ?: emptyCompanyPage(companyId)
     var starred by remember(companyId) { mutableStateOf(false) }
+    // 백엔드가 알려준 즐겨찾기 상태로 별표 초기 동기화(로드 완료 시).
+    LaunchedEffect(data.company.isFavorited) { starred = data.company.isFavorited }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -104,7 +106,7 @@ fun CompanyDetailScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     HiFiButton(
                         text = if (starred) "✓ 관심기업" else "+ 관심기업",
-                        onClick = { starred = !starred },
+                        onClick = { starred = !starred; viewModel.setFavorite(companyId, starred) },
                         variant = if (starred) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                     )

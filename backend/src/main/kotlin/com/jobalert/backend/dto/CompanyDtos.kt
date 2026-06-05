@@ -76,3 +76,26 @@ data class JobHistoryItem(
     val role: String,
     val period: String,          // "~6/15 마감" 등
 )
+
+// ── 관심기업 목록 (안드로이드 FavoritesScreen 응답 모양) ──
+
+data class FavoritesListResponse(
+    val companies: List<FavoriteCompanyItem>,
+)
+
+data class FavoriteCompanyItem(
+    val company: CompanyBriefDto,
+    val newCount: Int,                 // 오늘 새 공고(NEW) 수
+    val hasAlarm: Boolean = true,
+)
+
+data class CompanyBriefDto(
+    val id: Long,
+    val name: String,
+    val logo: String,                  // 로고용 짧은 텍스트
+    val logoUrl: String?,
+    val industry: String?,
+    val size: String?,
+    val activeJobCount: Int,
+    val isFavorited: Boolean = true,
+)

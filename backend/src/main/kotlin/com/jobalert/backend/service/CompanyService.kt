@@ -11,16 +11,19 @@ import com.jobalert.backend.entity.Job
 import com.jobalert.backend.exception.NotFoundException
 import com.jobalert.backend.repository.CompanyRepository
 import com.jobalert.backend.repository.JobRepository
+import com.jobalert.backend.repository.UserFavoriteRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneId
+import java.util.UUID
 
 @Service
 @Transactional(readOnly = true)
 class CompanyService(
     private val companyRepository: CompanyRepository,
     private val jobRepository: JobRepository,
+    private val favoriteRepository: UserFavoriteRepository,
     private val mapper: JobMapper,
 ) {
     private val kst = ZoneId.of("Asia/Seoul")
@@ -65,10 +68,11 @@ class CompanyService(
     }
 
     /** 회사 상세 페이지 — 안드로이드 CompanyDetailScreen 응답 모양으로 실데이터 조립. */
-    fun page(id: Long): CompanyPageResponse {
+    fun page(id: Long, deviceId: UUID? = null): CompanyPageResponse {
         val c = companyRepository.findById(id).orElseThrow {
             NotFoundException("COMPANY_NOT_FOUND", "회사를 찾을 수 없습니다.")
         }
+        val favorited = deviceId != null && favoriteRepository.existsByDeviceIdAndCompanyId(deviceId, id)
         val active = jobRepository.findAllByCompanyIdAndIsActiveTrueOrderByFirstSeenAtDesc(id, PageRequest.of(0, 50))
         val closed = jobRepository.findAllByCompanyIdAndIsActiveFalseOrderByClosedAtDesc(id, PageRequest.of(0, 10))
 
@@ -84,7 +88,7 @@ class CompanyService(
                 logoUrl = c.logoUrl,
                 industry = c.industry,
                 size = c.size,
-                isFavorited = false,
+                isFavorited = favorited,
             ),
             region = region,
             about = c.description ?: "${c.name} 채용 정보입니다. 자세한 내용은 각 공고 원문을 확인하세요.",

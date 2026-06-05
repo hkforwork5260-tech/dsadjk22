@@ -40,6 +40,8 @@ interface JobRepository : JpaRepository<Job, String> {
 
     fun countByCompanyIdAndIsActiveTrue(companyId: Long): Long
 
+    fun countByCompanyIdAndKindAndIsActiveTrue(companyId: Long, kind: String): Long
+
     fun findAllByCompanyIdAndIsActiveTrueOrderByFirstSeenAtDesc(companyId: Long, pageable: Pageable): List<Job>
 
     fun findAllByCompanyIdAndKindAndIsActiveTrue(companyId: Long, kind: String, pageable: Pageable): List<Job>

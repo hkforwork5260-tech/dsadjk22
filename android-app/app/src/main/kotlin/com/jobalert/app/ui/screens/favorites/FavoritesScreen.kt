@@ -15,6 +15,8 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,8 +30,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.FavoriteCompanyDto
-import com.jobalert.app.data.api.MockApi
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -45,7 +48,11 @@ fun FavoritesScreen(
     onAddCompany: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
-    val favs = remember { MockApi.favorites().companies }
+    // 백엔드 관심기업(기기 기준). 진입할 때마다 새로고침(추가/삭제 반영).
+    val viewModel: FavoritesViewModel = viewModel()
+    LaunchedEffect(Unit) { viewModel.load() }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val favs = (state as? FavoritesUiState.Success)?.companies ?: emptyList()
     val totalNew = favs.sumOf { it.newCount }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {

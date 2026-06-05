@@ -33,6 +33,15 @@ class CompanyDetailViewModel : ViewModel() {
             }
         }
     }
+
+    /** 관심기업 추가/삭제. UI는 낙관적으로 먼저 토글되고, 실패해도 best-effort. */
+    fun setFavorite(companyId: Int, favorite: Boolean) {
+        viewModelScope.launch {
+            runCatching {
+                if (favorite) repository.addFavorite(companyId) else repository.removeFavorite(companyId)
+            }
+        }
+    }
 }
 
 sealed interface CompanyUiState {
