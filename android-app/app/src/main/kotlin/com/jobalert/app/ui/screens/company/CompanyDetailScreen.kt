@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,8 +22,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jobalert.app.data.api.CompanyDto
+import com.jobalert.app.data.api.CompanyDetailResponse
+import com.jobalert.app.data.api.CompanyStats
 import com.jobalert.app.data.api.JobHistoryDto
-import com.jobalert.app.data.api.MockApi
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.*
 
@@ -40,8 +45,12 @@ fun CompanyDetailScreen(
     onJobClick: (String) -> Unit,
     onShare: () -> Unit,
 ) {
-    val data = remember(companyId) { MockApi.companyDetail(companyId) }
-    var starred by remember(companyId) { mutableStateOf(data.company.isFavorited) }
+    // 백엔드 /companies/{id}/page 연결. 로딩·에러 시엔 빈 회사 페이지로 렌더.
+    val viewModel: CompanyDetailViewModel = viewModel()
+    LaunchedEffect(companyId) { viewModel.load(companyId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val data = (state as? CompanyUiState.Success)?.data ?: emptyCompanyPage(companyId)
+    var starred by remember(companyId) { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -194,6 +203,16 @@ fun CompanyDetailScreen(
         HiFiGestureNav()
     }
 }
+
+/** 로딩·에러 중 화면이 깨지지 않게 쓰는 빈 회사 페이지. */
+private fun emptyCompanyPage(id: Int) = CompanyDetailResponse(
+    company = CompanyDto(id = id, name = "", logo = ""),
+    region = "",
+    about = "",
+    stats = CompanyStats(thisYearCount = 0, avgCloseLabel = "—", passRateLabel = "—"),
+    postings = emptyList(),
+    history = emptyList(),
+)
 
 @Composable
 private fun StatBox(label: String, value: String, color: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {

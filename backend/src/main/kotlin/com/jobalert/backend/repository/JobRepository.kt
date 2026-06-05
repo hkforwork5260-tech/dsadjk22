@@ -44,6 +44,9 @@ interface JobRepository : JpaRepository<Job, String> {
 
     fun findAllByCompanyIdAndKindAndIsActiveTrue(companyId: Long, kind: String, pageable: Pageable): List<Job>
 
+    /** 마감(비활성) 공고 — 회사 상세의 "최근 채용 이력"용. */
+    fun findAllByCompanyIdAndIsActiveFalseOrderByClosedAtDesc(companyId: Long, pageable: Pageable): List<Job>
+
     /** 비슷한 공고: 같은 업종(회사 industry)의 다른 active 공고. */
     @Query("""
         SELECT j FROM Job j, Company c

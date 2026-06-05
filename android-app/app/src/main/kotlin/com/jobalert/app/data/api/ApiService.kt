@@ -31,4 +31,7 @@ interface ApiService {
 
     @GET("api/v1/jobs/upcoming")
     suspend fun upcoming(@Query("days") days: Int = 14): UpcomingResponse
+
+    @GET("api/v1/companies/{id}/page")
+    suspend fun companyPage(@Path("id") id: Int): CompanyDetailResponse
 }
