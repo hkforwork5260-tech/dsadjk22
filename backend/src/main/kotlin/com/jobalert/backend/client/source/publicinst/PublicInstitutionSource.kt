@@ -119,7 +119,8 @@ class PublicInstitutionSource(
             experience = job.recrutSeNm,   // 채용구분: 신입/경력/인턴 (구조화 데이터)
             postingDateEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancBgngYmd),
             deadlineEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancEndYmd, endOfDay = true),
-            originalUrl = job.srcUrl,
+            // 기관별 srcUrl은 목록/개별이 뒤죽박죽이라 부정확 → JOB-ALIO 통합 상세로 통일(항상 해당 공고).
+            originalUrl = "https://job.alio.go.kr/recruitview.do?recrutPblntSn=$sn",
             keywords = listOfNotNull(job.recrutSeNm, job.hireTypeNmLst).filter { it.isNotBlank() },
             description = detail?.let(::buildDescription),
             education = detail?.acbgCondNmLst?.trim()?.takeIf { it.isNotBlank() },
