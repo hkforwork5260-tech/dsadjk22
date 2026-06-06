@@ -6,9 +6,6 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
-  data:
-    redis:
-      url: ${REDIS_URL}
   jpa:
     properties:
       hibernate:
@@ -16,8 +13,9 @@ spring:
 
 jobalert:
   saramin:
-    mode: ${SARAMIN_MODE:real}
-    api-key: ${SARAMIN_API_KEY}
+    # 사람인 거절(2026-06-04)로 휴면. 키 없이도 부팅되도록 prod도 mock 기본.
+    mode: ${SARAMIN_MODE:mock}
+    api-key: ${SARAMIN_API_KEY:}
   collector:
     enabled: ${COLLECTOR_ENABLED:true}
   push:
