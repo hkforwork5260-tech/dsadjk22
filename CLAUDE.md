@@ -133,7 +133,7 @@
 - 회사명 매칭(Normalizer/Matcher), Clearbit 로고 Resolver — 소스 무관 자산이라 그대로 재활용
 - ③ 국내 대기업 robots/약관 검증 — 미착수 (코딩 전 선행 필요)
 - FCM·푸시 — 미작업 (Phase 3)
-- Claude Haiku 한줄 요약 — 미작업 (Phase 3). Job 엔티티 summary 필드는 있으나 null
+- ~~Claude Haiku 한줄 요약~~ — **폐기 (2026-06-06, 사용자 결정: Anthropic API 비용 부담)**. 실제 호출 코드는 원래 없었음. DTO·mock·안드 잔재 전부 제거, DB 컬럼·엔티티 `Job.summary`만 null로 잔존(되돌리기 비용). 비전 5번 항목도 무효.
 - 회사 시드 — placeholder 57개. 하이브리드 전환으로 "Greenhouse/Lever 토큰 보유 회사" + "수집 가능 국내 대기업" 리스트로 재정의 필요
 - Play Store — 미작업 (Phase 5)
 
@@ -143,6 +143,14 @@
    ✅ **(2026-06-06) 나머지 화면·필터 거의 전부 연결**: 공고상세(/jobs/{id})·지원버튼(원본URL)·찾아보기·비슷한공고·온보딩추천회사·알림설정토글·관심직군표시·검색(회사명)·알림읽음·회사상세평균마감. 필터는 **직군+경력+규모** 작동(경력=ExperienceClassifier 공공기관recrutSeNm+제목, 규모=출처기준 public). **신입 필터 404건**.
    **미연결**: 꽁이요약(비용보류+본문미수집), 메인빈상태(중복), 마이페이지 위젯·피드백(백엔드없음), 필터 지역·마감(데이터 형식편차). 온보딩추천회사·MainEmpty 외 mock 거의 없음.
    **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단). 필터는 직군만 적용(규모·경력·지역·마감 facet은 백엔드 미지원).
+
+### ✅ UX 개선 6건 (2026-06-06, 커밋 0662e36·cda0ba9·c1a06c8·bec5186·54f0218) — 사용자 실사용 피드백 반영
+- **G1 찾아보기 진행바 제거** + **검색 기업탭 제거(공고만)** + **한줄요약 흔적 정리**
+- **G3 쿠팡 편중 해소 + 개인화 피드** — `JobService.today()`에 회사 라운드로빈 interleave(한 회사 연속 노출 차단) + 관심기업(+2)·관심직군(+1) 가점. `/jobs/today`에 X-Device-Id 선택 헤더. 라이브: 30건 전부 다른 회사·연속중복 0, 관심기업 11→1위.
+- **G4 관심기업 추가 버그** — 관심기업 화면 "기업 추가" 버튼이 빈 람다(NavGraph TODO)였음 → 검색 연결. setFavorite runCatching silent 실패 → 결과 콜백+롤백+토스트. ⚠️ **남은 트레이드오프**: 검색 결과에서 회사 섹션을 빼서, "기업 추가"→검색 시 회사가 안 나옴(공고만). 회사 검색 전용 경로는 미구현.
+- **G5 저장한 공고(북마크) 풀스택 신규** — `saved_jobs` 테이블(V2) + SavedJob 엔티티/repo/service/controller(`/users/me/saved`). JobDetailDto.isSaved. 안드: 상세 북마크 서버연동, `SavedJobsScreen` 신규, 마이페이지 "저장한 공고"→실화면. 마이페 카운트는 🔖 아이콘(실수치 추후).
+- **G2 카드/상세 충실화** — JobDto.jobCategories + CompanyEmbedDto.size 추가. 찾아보기 카드·공고상세에 직군·회사규모 배지(빈 학력/태그 대신 채워진 것만).
+- **G6(보류, 별도 의논)** — 카드 빈약 근본해결=공고 본문·급여 실수집. RawJobPosting에 필드 자체가 없음 + Greenhouse content=false. 작업량 커서 분리.
 
 ### 🔥 FCM 푸시 운영 메모 (2026-06-05)
 - Firebase 프로젝트 `jobjob-533ca`(Spark 무료). `google-services.json`(패키지 `com.jobalert.app.debug`) 앱에 배치·커밋됨.
