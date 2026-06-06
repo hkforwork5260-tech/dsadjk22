@@ -11,13 +11,16 @@ import com.jobalert.backend.entity.Company
 import com.jobalert.backend.entity.Job
 import com.jobalert.backend.exception.NotFoundException
 import com.jobalert.backend.repository.CompanyRepository
+import com.jobalert.backend.repository.DeviceCategoryRepository
 import com.jobalert.backend.repository.JobRepository
+import com.jobalert.backend.repository.UserFavoriteRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Clock
 import java.time.OffsetDateTime
 import java.time.ZoneId
+import java.util.UUID
 
 /**
  * 공고 조회 서비스. Phase 3에서 mock → 실제 DB(JobRepository)로 교체.
@@ -29,6 +32,8 @@ import java.time.ZoneId
 class JobService(
     private val jobRepository: JobRepository,
     private val companyRepository: CompanyRepository,
+    private val userFavoriteRepository: UserFavoriteRepository,
+    private val deviceCategoryRepository: DeviceCategoryRepository,
     private val mapper: JobMapper,
     private val clock: Clock,
 ) {
@@ -40,28 +45,43 @@ class JobService(
         experiences: List<String>,
         sizes: List<String>,
         limit: Int,
+        deviceId: UUID? = null,
     ): JobsTodayResponse {
-        // 필터(직군·경력·규모)가 하나라도 있으면 넓게 가져와 교집합으로 거른 뒤 limit만큼 자른다.
-        // v0.1 규모(<1천)에선 사실상 전체 스캔. 대규모 시 인덱스 쿼리로 전환.
-        val hasFilter = categories.isNotEmpty() || experiences.isNotEmpty() || sizes.isNotEmpty()
-        val page = PageRequest.of(0, if (hasFilter) 2000 else limit)
+        val cats = categories.toSet()
+        val exps = experiences.toSet()
+        val szs = sizes.toSet()
+        val hasFilter = cats.isNotEmpty() || exps.isNotEmpty() || szs.isNotEmpty()
+
+        // 회사 다양성(interleave)·개인화 가점을 적용하려면 limit보다 넉넉한 후보가 필요하다.
+        // v0.1 규모(<1천)에선 사실상 전체 스캔. 대규모 시 인덱스/페이지네이션으로 전환.
+        val pool = PageRequest.of(0, maxOf(limit, 1000))
         var jobs = if (kind == null) {
-            jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(page)
+            jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(pool)
         } else {
-            jobRepository.findAllByKindAndIsActiveTrue(kind, page)
+            jobRepository.findAllByKindAndIsActiveTrue(kind, pool)
         }
+
+        // 회사 정보: 규모 필터·회사 다양성에 모두 필요하므로 한 번에 로드(N+1 회피).
+        val companies = loadCompanies(jobs)
+
         if (hasFilter) {
-            val cats = categories.toSet()
-            val exps = experiences.toSet()
-            val szs = sizes.toSet()
-            // 규모 필터가 있을 때만 회사 로드(N+1 회피).
-            val companies = if (szs.isEmpty()) emptyMap() else loadCompanies(jobs)
             jobs = jobs.filter { job ->
                 (cats.isEmpty() || job.jobCategoryCodes?.any { it in cats } == true) &&
                     (exps.isEmpty() || job.experience in exps) &&
                     (szs.isEmpty() || companies[job.companyId]?.size in szs)
-            }.take(limit)
+            }
         }
+
+        // 개인화 신호(기기 기준). 헤더 없으면 빈 집합 → 가점 없이 회사 다양성(interleave)만 적용.
+        val myCategories = deviceId?.let { dev ->
+            deviceCategoryRepository.findAllByDeviceId(dev).map { it.categoryCode }.toSet()
+        } ?: emptySet()
+        val myCompanies = deviceId?.let { dev ->
+            userFavoriteRepository.findAllByDeviceId(dev).map { it.companyId }.toSet()
+        } ?: emptySet()
+
+        val ranked = rankFeed(jobs, myCategories, myCompanies, limit)
+
         val counts = JobKindCounts(
             new = jobRepository.countByKindAndIsActiveTrue("NEW").toInt(),
             update = jobRepository.countByKindAndIsActiveTrue("UPDATE").toInt(),
@@ -70,9 +90,53 @@ class JobService(
         return JobsTodayResponse(
             date = OffsetDateTime.now(clock).atZoneSameInstant(kst).toLocalDate().toString(),
             counts = counts,
-            jobs = toDtos(jobs),
+            jobs = toDtos(ranked),
             nextCursor = null,
         )
+    }
+
+    /**
+     * 찾아보기 피드 랭킹.
+     *
+     * 1) 개인화 가점: 관심기업 공고 +2, 관심직군 매칭 공고 +1 (헤더 없으면 모두 0점).
+     * 2) 회사 라운드로빈 interleave: 같은 회사가 연달아 나오지 않도록 회사별로 한 건씩 번갈아 뽑는다.
+     *    쿠팡처럼 공고가 많은 회사가 피드 앞을 독식하던 문제를 직접 해소한다.
+     * 그룹(회사) 순서는 그룹 내 최고 가점 desc → 개인화 신호가 있으면 관심 회사·직군이 앞으로 온다.
+     */
+    private fun rankFeed(
+        jobs: List<Job>,
+        myCategories: Set<String>,
+        myCompanies: Set<Long>,
+        limit: Int,
+    ): List<Job> {
+        if (jobs.isEmpty()) return emptyList()
+
+        fun score(job: Job): Int {
+            var s = 0
+            if (job.companyId in myCompanies) s += 2
+            if (myCategories.isNotEmpty() && job.jobCategoryCodes?.any { it in myCategories } == true) s += 1
+            return s
+        }
+
+        // 회사별 그룹(삽입순=firstSeenAt desc 유지) → 그룹 내부 가점 desc(안정정렬) → 그룹을 대표 가점 desc로.
+        val groups = jobs.groupBy { it.companyId }
+            .values
+            .map { list -> list.sortedByDescending { score(it) } }
+            .sortedByDescending { group -> group.maxOf { score(it) } }
+        val queues = groups.map { ArrayDeque(it) }
+
+        val result = ArrayList<Job>(minOf(limit, jobs.size))
+        while (result.size < limit) {
+            var progressed = false
+            for (q in queues) {
+                val next = q.removeFirstOrNull() ?: continue
+                result.add(next)
+                progressed = true
+                if (result.size >= limit) break
+            }
+            if (!progressed) break
+        }
+        return result
     }
 
     fun detail(id: String): JobDetailDto {
