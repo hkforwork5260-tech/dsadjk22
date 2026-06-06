@@ -106,6 +106,9 @@ class SeoulJobSource(
         // 최근 진행중 위주: 마감일이 있고 이미 지났으면 제외. 마감 없음(상시)은 포함.
         if (deadlineEpoch != null && deadlineEpoch < now.toEpochSecond()) return null
 
+        // 노인·중장년 전용 일자리(요양·경비·청소 등)는 타겟(취준생)과 안 맞아 제외. (사용자 결정 2026-06-06)
+        if (isElderlyOrCareJob(title, job.dtyCn)) return null
+
         return RawJobPosting(
             source = sourceId,
             externalId = "seoul-$id",
@@ -122,6 +125,12 @@ class SeoulJobSource(
             education = clean(job.acdmcrNm),
             salary = clean(job.hopeWage),
         )
+    }
+
+    /** 노인·중장년 전용 일자리인가(요양·간병·경비·미화·청소·가사 등). 제목/본문 키워드로 판정. */
+    private fun isElderlyOrCareJob(title: String, dtyCn: String?): Boolean {
+        val hay = title + " " + (dtyCn ?: "")
+        return EXCLUDE_KEYWORDS.any { hay.contains(it) }
     }
 
     /** "마감일 (2026-08-04)" 등에서 날짜 추출 → KST 그날 끝. 없으면(상시/채용시) null. */
@@ -171,5 +180,11 @@ class SeoulJobSource(
         private const val USER_AGENT = "JobAlert/0.1 (job-alert app; contact: lhgdlagusurd@naver.com)"
         private const val JOB_PORTAL_SEARCH = "https://job.seoul.go.kr/hmpg/rmim/rsmg/rsmgListPage.do"
         private val DATE_RE = Regex("""(\d{4})-(\d{2})-(\d{2})""")
+
+        /** 노인·중장년 전용 일자리 제외 키워드(제목/본문). 취준생 타겟과 안 맞는 직무. */
+        private val EXCLUDE_KEYWORDS = listOf(
+            "요양", "재가", "어르신", "할머니", "할아버지", "방문요양", "돌봄", "간병", "노인", "시니어",
+            "경비", "미화", "청소", "환경미화", "가사", "산모", "베이비", "입주",
+        )
     }
 }
