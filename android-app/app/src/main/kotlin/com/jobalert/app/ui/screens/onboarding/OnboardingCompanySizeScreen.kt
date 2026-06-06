@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.components.*
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
 
@@ -28,7 +29,9 @@ fun OnboardingCompanySizeScreen(
     onSkip: () -> Unit,
     onBack: () -> Unit,
 ) {
-    val scales = listOf("대기업", "공기업", "중견기업", "중소기업", "외국계", "스타트업")
+    // 실제 수집 데이터에 있는 규모만(중견·외국계·스타트업은 데이터 0). 인덱스 = scaleCodes와 1:1.
+    val scales = listOf("대기업", "공기업", "중소기업")
+    val scaleCodes = listOf("large_corp", "public", "small")
     // 산업군 — 사람인 기준 주요 분야 + 기타. 더보기 칸 없이 한눈에 다 보임.
     val sectors = listOf(
         "IT/플랫폼", "반도체", "금융",
@@ -114,7 +117,11 @@ fun OnboardingCompanySizeScreen(
                 )
                 HiFiButton(
                     text = "다음 →",
-                    onClick = onNext,
+                    onClick = {
+                        // 선택한 규모를 백엔드 코드로 변환해 저장 → 메인 피드 필터에 반영.
+                        ActiveFilter.set(sizes = selectedScales.sorted().mapNotNull { scaleCodes.getOrNull(it) })
+                        onNext()
+                    },
                     variant = HiFiButtonVariant.Primary,
                     modifier = Modifier.weight(2f),
                     fullWidth = true,

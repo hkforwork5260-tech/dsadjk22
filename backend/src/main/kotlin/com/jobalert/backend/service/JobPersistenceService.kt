@@ -111,9 +111,18 @@ class JobPersistenceService(
         cache[normalized]?.let { return it }
         // matchOrNull 은 승인 여부와 무관하게 name_normalized 로 찾으므로,
         // 지난 수집에서 자동 생성한(미승인) 회사도 여기서 재매칭된다 → 중복 생성 없음.
-        companyMatcher.matchOrNull(raw.companyName)?.let {
-            cache[normalized] = it
-            return it
+        companyMatcher.matchOrNull(raw.companyName)?.let { id ->
+            cache[normalized] = id
+            // 기존 회사 규모가 비어 있으면 소스 기반으로 보정(서울 441건 등 size=null → small).
+            inferSize(raw.source)?.let { inferred ->
+                val co = companyRepository.findById(id).orElse(null)
+                if (co != null && co.size.isNullOrBlank()) {
+                    co.size = inferred
+                    co.updatedAt = now
+                    companyRepository.save(co)
+                }
+            }
+            return id
         }
 
         val company = Company(
@@ -122,8 +131,9 @@ class JobPersistenceService(
             homepageUrl = raw.companyHomepage,
             domain = logoResolver.resolveDomain(raw.companyName, raw.companyHomepage),
             logoUrl = logoResolver.resolveLogoUrl(raw.companyName, raw.companyHomepage),
-            // 규모는 출처로 판단: 기재부 공공기관 소스 → 공기업(public). 그 외(Greenhouse)는 미상(null).
-            size = if (raw.source == "public-institution") "public" else null,
+            // 규모는 출처로 추론(소스에 회사별 규모 데이터가 없어 근사): 공공기관=공기업,
+            // 서울 일자리포털=중소(압도적 다수), Greenhouse/Lever=대기업(빅테크). 그 외 null.
+            size = inferSize(raw.source),
             isApproved = false,
             createdAt = now,
             updatedAt = now,
@@ -132,6 +142,14 @@ class JobPersistenceService(
         cache[normalized] = id
         createdIds += id
         return id
+    }
+
+    /** 소스 → 회사 규모 코드 추론(근사). 회사별 정밀 규모 데이터가 없어 출처로 판단. */
+    private fun inferSize(source: String): String? = when (source) {
+        "public-institution" -> "public"
+        "seoul" -> "small"
+        "greenhouse", "lever" -> "large_corp"
+        else -> null
     }
 
     private fun newJob(raw: RawJobPosting, companyId: Long, now: OffsetDateTime) = Job(

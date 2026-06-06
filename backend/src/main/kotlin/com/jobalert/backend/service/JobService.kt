@@ -54,9 +54,9 @@ class JobService(
         val szs = sizes.toSet()
         val hasFilter = cats.isNotEmpty() || exps.isNotEmpty() || szs.isNotEmpty()
 
-        // 회사 다양성(interleave)·개인화 가점을 적용하려면 limit보다 넉넉한 후보가 필요하다.
-        // v0.1 규모(<1천)에선 사실상 전체 스캔. 대규모 시 인덱스/페이지네이션으로 전환.
-        val pool = PageRequest.of(0, maxOf(limit, 1000))
+        // 회사 다양성(interleave)·개인화·규모 필터를 위해 전체 활성 공고를 후보로 둔다(v0.1 ~1.3천건).
+        // 1000 cap이면 최신순에서 밀린 소스(greenhouse 등)가 규모 필터에서 누락 → 넉넉히.
+        val pool = PageRequest.of(0, maxOf(limit, 3000))
         var jobs = if (kind == null) {
             jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(pool)
         } else {
