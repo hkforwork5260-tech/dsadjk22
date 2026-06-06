@@ -145,7 +145,10 @@
    **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단). 필터는 직군만 적용(규모·경력·지역·마감 facet은 백엔드 미지원).
 
 ### ✅ 데이터 소스 확장 + 관심기업 UX (2026-06-06 후반)
-- **서울시 일자리포털 소스 추가** (커밋 7950821) — `SeoulJobSource`. 총 23,145건(공공누리 1유형, 상업OK), 서울 중소·중견 위주. **급여(HOPE_WAGE)를 주는 첫 소스** + 본문·학력·경력. 활성화: `SEOUL_ENABLED=true JOBALERT_SEOUL_KEY=<data.seoul.go.kr 키> SEOUL_MAX_ROWS=1000`. sample 키는 5건 제한(실대량은 키 발급 필요). 서울 API가 Content-Type을 xml로 잘못 보내 String 받아 직접 파싱. 최근 진행중 위주(마감 지난 건 제외).
+- **서울시 일자리포털 소스 추가** (커밋 7950821·7378fe8) — `SeoulJobSource`. 총 23,145건(공공누리 1유형, 상업OK). **급여(HOPE_WAGE)를 주는 첫 소스** + 본문·학력·경력. 활성화: `SEOUL_ENABLED=true JOBALERT_SEOUL_KEY=<data.seoul.go.kr 키> SEOUL_MAX_ROWS=1000`. 서울 API가 Content-Type을 xml로 잘못 보내 String 받아 직접 파싱. 최근 진행중 위주(마감 지난 건 제외).
+  - **⚠️ 서울시 데이터 실체**: 서울일자리센터 알선이라 요양보호사·경비·청소 등 노인·중장년 일자리 위주(취준생 타겟과 불일치). → `isElderlyOrCareJob` 네거티브 필터로 노인·중장년 전용 제외(1000→441건). 남은 건 용접·영업·사무·생산관리·기사 등 나이무관 직무. 고스펙 대졸 신입 공채는 아님(서울 중소 한계).
+  - **★ 전체 양**: 활성 1,340건(공공기관 500 + 서울 441 + greenhouse 399), 회사 530곳. 더 늘리려면 SEOUL_MAX_ROWS↑(단 노인 비율 높아 실익 체감↓).
+  - 실행(두 키 함께): `JOBALERT_PUBINST_KEY=<키> PUBINST_ENABLED=true JOBALERT_SEOUL_KEY=<키> SEOUL_ENABLED=true ./gradlew bootRun`
 - **★ 리서치 확정 (중요, 재시도 금지)**: 토종 대기업(토스·배민·네이버·카카오·무신사·컬리·야놀자·직방·두나무 등)은 **Greenhouse/Lever 공개 보드 미사용**(35개 후보 전부 404). 자체 ATS/그리팅 사용. → GH/Lever로 한국 대기업 발굴 불가. 양 확보는 서울시 등 공공 소스가 답. 워크넷은 라이선스 상업금지라 보류.
 - **관심기업 UX** (커밋 9e87735) — 찾아보기 "좋아요"→"관심기업"(회사 기준 서버연동), 공고상세 앱바 관심기업 하트(is_favorited). 기업추가는 검색 경로 유지.
 - **공공기관 지원링크** (커밋 d608998) — 기관별 srcUrl 부정확 → JOB-ALIO 통합 URL(`job.alio.go.kr/recruitview.do?recrutPblntSn=`)로 통일.
