@@ -32,6 +32,7 @@ class PublicInstitutionSource(
     private val apiCallLogger: ApiCallLogger,
     @Value("\${jobalert.sources.public-institution.service-key:}") private val serviceKey: String,
     @Value("\${jobalert.sources.public-institution.base-url:https://apis.data.go.kr/1051000/recruitment/list}") private val baseUrl: String,
+    @Value("\${jobalert.sources.public-institution.detail-url:https://apis.data.go.kr/1051000/recruitment/detail}") private val detailUrl: String,
     @Value("\${jobalert.sources.public-institution.max-pages:5}") private val maxPages: Int,
     @Value("\${jobalert.sources.public-institution.page-size:100}") private val pageSize: Int,
 ) : JobSource {
@@ -105,6 +106,9 @@ class PublicInstitutionSource(
         val title = job.recrutPbancTtl?.takeIf { it.isNotBlank() } ?: return null
         val inst = job.instNm?.takeIf { it.isNotBlank() } ?: return null
 
+        // 상세 조회로 본문(응시자격·전형방법·우대) + 학력 보강. best-effort: 실패해도 목록 정보로 적재.
+        val detail = fetchDetail(sn)
+
         return RawJobPosting(
             source = sourceId,
             externalId = "pubinst-$sn",
@@ -117,7 +121,45 @@ class PublicInstitutionSource(
             deadlineEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancEndYmd, endOfDay = true),
             originalUrl = job.srcUrl,
             keywords = listOfNotNull(job.recrutSeNm, job.hireTypeNmLst).filter { it.isNotBlank() },
+            description = detail?.let(::buildDescription),
+            education = detail?.acbgCondNmLst?.trim()?.takeIf { it.isNotBlank() },
         )
+    }
+
+    /** 상세 API 호출(공고당 1회). 공공누리라 본문 자유 활용. 실패 시 null(목록 정보로만 적재). */
+    private fun fetchDetail(sn: Long): PublicInstitutionDetail? {
+        val uri = UriComponentsBuilder.fromUriString(detailUrl)
+            .queryParam("serviceKey", serviceKey)
+            .queryParam("sn", sn)
+            .queryParam("resultType", "json")
+            .build(true)
+            .toUri()
+        return try {
+            restClient.get()
+                .uri(uri)
+                .retrieve()
+                .onStatus(HttpStatusCode::isError) { _, res ->
+                    throw RestClientException("public-institution detail sn=$sn status=${res.statusCode.value()}")
+                }
+                .body(PublicInstitutionDetailResponse::class.java)
+                ?.takeIf { it.resultCode == 200 }
+                ?.result
+        } catch (ex: RestClientException) {
+            log.warn("public-institution detail sn={} 실패(본문 생략): {}", sn, ex.message)
+            null
+        }
+    }
+
+    /** 상세 텍스트 필드를 사람이 읽기 좋은 본문으로 조합. "없음"뿐인 섹션은 생략. */
+    private fun buildDescription(d: PublicInstitutionDetail): String? {
+        fun clean(s: String?): String? = s?.trim()?.takeIf { it.isNotBlank() && it != "없음" }
+        val parts = buildList {
+            clean(d.aplyQlfcCn)?.let { add("[응시자격]\n$it") }
+            clean(d.scrnprcdrMthdExpln)?.let { add("[전형방법]\n$it") }
+            clean(d.prefCn)?.let { add("[우대사항]\n$it") }
+            clean(d.disqlfcRsn)?.let { add("[결격사유]\n$it") }
+        }
+        return parts.joinToString("\n\n").takeIf { it.isNotBlank() }
     }
 
     private fun logCall(

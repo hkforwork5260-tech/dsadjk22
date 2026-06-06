@@ -45,3 +45,29 @@ data class PublicInstitutionJob(
     /** 채용인원. */
     val recrutNope: Int? = null,
 )
+
+/**
+ * 상세 조회 응답. 엔드포인트: GET .../recruitment/detail?sn={recrutPblntSn}
+ * 목록(list)엔 없는 본문 텍스트(응시자격·전형방법·우대·학력)를 준다. 실 응답 확인: 2026-06-06.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class PublicInstitutionDetailResponse(
+    val resultCode: Int? = null,
+    val resultMsg: String? = null,
+    val result: PublicInstitutionDetail? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class PublicInstitutionDetail(
+    val recrutPblntSn: Long? = null,
+    /** 응시자격(본문). */
+    val aplyQlfcCn: String? = null,
+    /** 전형방법 설명(본문). */
+    val scrnprcdrMthdExpln: String? = null,
+    /** 결격사유. */
+    val disqlfcRsn: String? = null,
+    /** 우대사항. */
+    val prefCn: String? = null,
+    /** 학력 조건명 (예: "학력무관"). */
+    val acbgCondNmLst: String? = null,
+)
