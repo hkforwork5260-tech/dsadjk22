@@ -275,6 +275,7 @@ private fun CellLabel(job: JobDto) {
         JobKind.NEW -> HiFiColors.New
         JobKind.UPDATE -> HiFiColors.Update
         JobKind.CLOSING -> HiFiColors.Closing
+        JobKind.ACTIVE -> HiFiColors.Text2
     }
     Box(
         Modifier

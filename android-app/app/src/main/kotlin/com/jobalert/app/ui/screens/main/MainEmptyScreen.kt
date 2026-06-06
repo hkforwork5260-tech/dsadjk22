@@ -80,11 +80,12 @@ fun MainEmptyScreen(
             Modifier.padding(horizontal = 20.dp, vertical = 10.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            JobKind.values().forEach { kind ->
+            listOf(JobKind.NEW, JobKind.UPDATE, JobKind.CLOSING).forEach { kind ->
                 val c = when (kind) {
                     JobKind.NEW -> counts["new"] ?: 0
                     JobKind.UPDATE -> counts["update"] ?: 0
                     JobKind.CLOSING -> counts["closing"] ?: 0
+                    JobKind.ACTIVE -> 0
                 }
                 EmptySectionChip(
                     kind = kind,
