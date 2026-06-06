@@ -144,6 +144,11 @@
    **미연결**: 꽁이요약(비용보류+본문미수집), 메인빈상태(중복), 마이페이지 위젯·피드백(백엔드없음), 필터 지역·마감(데이터 형식편차). 온보딩추천회사·MainEmpty 외 mock 거의 없음.
    **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단). 필터는 직군만 적용(규모·경력·지역·마감 facet은 백엔드 미지원).
 
+### ✅ 온보딩 회사규모 ↔ 데이터 정합화 (2026-06-07, 커밋 c35b639)
+- 온보딩 규모 6개 중 5개가 데이터 0(중소=서울 size null, 중견·외국계·스타트업 없음)이라 정리. 직군 21개는 데이터 다 있어 유지.
+- 백엔드 `JobPersistenceService.inferSize`: 소스 기반 규모 보정(공공기관→public, 서울→small, greenhouse/lever→large_corp). 신규+기존 size=null 회사 재수집 시 보정. `JobService.today` pool 1000→3000(규모 필터 누락 방지). 라이브: large_corp 399·public 500·small 441.
+- 온보딩 `OnboardingCompanySizeScreen` 3개(대기업·공기업·중소)로 + 선택→코드 변환 ActiveFilter 저장(기존엔 선택이 저장 안 됐음).
+
 ### ✅ 데이터 소스 확장 + 관심기업 UX (2026-06-06 후반)
 - **서울시 일자리포털 소스 추가** (커밋 7950821·7378fe8) — `SeoulJobSource`. 총 23,145건(공공누리 1유형, 상업OK). **급여(HOPE_WAGE)를 주는 첫 소스** + 본문·학력·경력. 활성화: `SEOUL_ENABLED=true JOBALERT_SEOUL_KEY=<data.seoul.go.kr 키> SEOUL_MAX_ROWS=1000`. 서울 API가 Content-Type을 xml로 잘못 보내 String 받아 직접 파싱. 최근 진행중 위주(마감 지난 건 제외).
   - **⚠️ 서울시 데이터 실체**: 서울일자리센터 알선이라 요양보호사·경비·청소 등 노인·중장년 일자리 위주(취준생 타겟과 불일치). → `isElderlyOrCareJob` 네거티브 필터로 노인·중장년 전용 제외(1000→441건). 남은 건 용접·영업·사무·생산관리·기사 등 나이무관 직무. 고스펙 대졸 신입 공채는 아님(서울 중소 한계).
