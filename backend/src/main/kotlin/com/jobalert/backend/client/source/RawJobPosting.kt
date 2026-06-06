@@ -33,4 +33,6 @@ data class RawJobPosting(
     /** 원본 공고 URL — 지원은 여기로 보낸다(이탈). ③ 메타데이터 수집의 핵심 필드. */
     val originalUrl: String? = null,
     val keywords: List<String> = emptyList(),
+    /** 공고 본문(평문). 소스가 본문을 주면 HTML 정제 후 채운다(Greenhouse content 등). 없으면 null. */
+    val description: String? = null,
 )

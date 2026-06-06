@@ -1,5 +1,7 @@
 package com.jobalert.backend.client.source
 
+import org.jsoup.Jsoup
+import org.jsoup.parser.Parser
 import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -45,6 +47,17 @@ object SourceUtil {
     /** epoch millis → epoch seconds. null·0 이하는 null. */
     fun millisToEpochSeconds(millis: Long?): Long? =
         if (millis == null || millis <= 0) null else millis / 1000
+
+    /**
+     * 공고 본문 HTML → 평문. Greenhouse content는 HTML이 엔티티 인코딩돼 오므로
+     * (예: `&lt;div&gt;`) 먼저 디코드한 뒤 태그를 제거한다. 비거나 정제 후 빈 문자열이면 null.
+     */
+    fun htmlToText(html: String?): String? {
+        if (html.isNullOrBlank()) return null
+        val unescaped = Parser.unescapeEntities(html, false)
+        val text = Jsoup.parse(unescaped).text().trim()
+        return text.takeIf { it.isNotBlank() }
+    }
 
     private val ZONE_KST = ZoneId.of("Asia/Seoul")
     private val YYYYMMDD = DateTimeFormatter.ofPattern("yyyyMMdd")

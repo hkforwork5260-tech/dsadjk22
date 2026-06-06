@@ -144,6 +144,7 @@ class JobPersistenceService(
         location = raw.location,
         experience = experienceClassifier.classify(raw.experience, raw.title),
         jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
+        description = raw.description,
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
         deadline = raw.deadlineEpoch?.toUtcOdt(),
         originalUrl = raw.originalUrl,
@@ -166,6 +167,8 @@ class JobPersistenceService(
         job.deadline = newDeadline
         job.location = raw.location
         job.originalUrl = raw.originalUrl
+        // 본문은 소스가 주면 갱신, 안 주면(null) 기존 유지 — 다른 소스가 같은 공고를 비우지 않게.
+        raw.description?.let { job.description = it }
         job.experience = experienceClassifier.classify(raw.experience, raw.title)
         // 기존 공고도 재분류 — 분류 규칙이 개선되면 다음 수집에서 반영됨.
         job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords)

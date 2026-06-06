@@ -250,6 +250,18 @@ private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () 
         }
     }
 
+    // 공고 본문 (수집된 경우만 — Greenhouse 등 본문 제공 소스)
+    if (job.description.isNotBlank()) {
+        Spacer(Modifier.height(22.dp))
+        Text("📄 상세 내용", style = HiFiType.h2, color = HiFiColors.Text)
+        Spacer(Modifier.height(10.dp))
+        Text(
+            job.description,
+            style = HiFiType.body.copy(lineHeight = 22.sp),
+            color = HiFiColors.Text,
+        )
+    }
+
     Spacer(Modifier.height(22.dp))
     LinkRow(label = "원문 공고 보기", onClick = onOpenOriginal)
     Spacer(Modifier.height(10.dp))

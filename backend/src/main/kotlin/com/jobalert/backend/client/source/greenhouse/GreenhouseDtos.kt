@@ -35,9 +35,18 @@ data class GreenhouseJob(
     val updated_at: String? = null,
     /** 지원 마감 ISO datetime (있을 수도 없을 수도). */
     val application_deadline: String? = null,
+    /** 공고 본문(HTML, 엔티티 인코딩됨). content=true 호출에서만 채워짐. */
+    val content: String? = null,
+    /** 부서/팀. 직군 분류 정확도에 사용. content=true에서 제공. */
+    val departments: List<GreenhouseDepartment> = emptyList(),
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class GreenhouseLocation(
+    val name: String? = null,
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class GreenhouseDepartment(
     val name: String? = null,
 )

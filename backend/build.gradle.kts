@@ -32,6 +32,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("com.google.firebase:firebase-admin:9.4.1") // FCM 푸시 발송
+    implementation("org.jsoup:jsoup:1.18.1") // 공고 본문 HTML → 텍스트 정제
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

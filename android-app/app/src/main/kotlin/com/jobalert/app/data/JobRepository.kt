@@ -111,6 +111,7 @@ class JobRepository(
         tags = tags,
         categories = categoryLabels(jobCategories),
         companySize = company.size,
+        description = description,
         originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
         isSaved = isSaved,
     )

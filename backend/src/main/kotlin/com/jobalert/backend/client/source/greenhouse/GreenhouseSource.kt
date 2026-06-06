@@ -51,7 +51,8 @@ class GreenhouseSource(
     }
 
     private fun fetchBoard(board: SourceBoard): List<RawJobPosting> {
-        val url = "$baseUrl/${board.token}/jobs?content=false"
+        // content=true: 공고 본문(content)+부서(departments)까지 받는다. 응답이 커지지만 카드/상세 충실화에 필요.
+        val url = "$baseUrl/${board.token}/jobs?content=true"
         val started = System.currentTimeMillis()
         return try {
             val response = restClient.get()
@@ -90,10 +91,11 @@ class GreenhouseSource(
             companyName = job.company_name?.takeIf { it.isNotBlank() } ?: board.displayName,
             companyHomepage = board.homepage,
             location = location,
-            department = null, // content=false에선 부서 미포함
+            department = job.departments.firstOrNull()?.name?.takeIf { it.isNotBlank() },
             postingDateEpoch = SourceUtil.isoToEpochSeconds(job.first_published ?: job.updated_at),
             deadlineEpoch = SourceUtil.isoToEpochSeconds(job.application_deadline),
             originalUrl = job.absolute_url,
+            description = SourceUtil.htmlToText(job.content),
         )
     }
 
