@@ -144,6 +144,14 @@
    **미연결**: 꽁이요약(비용보류+본문미수집), 메인빈상태(중복), 마이페이지 위젯·피드백(백엔드없음), 필터 지역·마감(데이터 형식편차). 온보딩추천회사·MainEmpty 외 mock 거의 없음.
    **안드로이드 빌드 검증은 사용자 PC에서만**(이 환경 Google Maven 차단). 필터는 직군만 적용(규모·경력·지역·마감 facet은 백엔드 미지원).
 
+### ✅ 검색·찾아보기·알림·위젯 대개편 (2026-06-07, 커밋 f80760a~6579307)
+- **검색**: 직군별 둘러보기 = 직군 코드 필터(`/jobs/search?categories=`), 검색어 = 공백 단어분해 제목·회사명 부분일치(OR). 오타교정은 v0.2(형태소/검색엔진 필요).
+- **찾아보기**: 좋아요→관심기업(회사기준 서버연동), 저장 서버연동(마이페이지 저장공고와 동일 소스), 본 공고 후순위(`SeenJobs` 로컬), 카드 제목정제(`displayRole`)+급여칩+근무조건 태그+본문 미리보기.
+- **"오늘 새 공고" NEW 누적 버그 수정**: `JobKind.ACTIVE` 도입. applyDiff UNCHANGED→ACTIVE(NEW는 INSERT만). 메인=오늘 변화(NEW/UPDATE/CLOSING), 찾아보기=전체 진행중(ACTIVE 포함). 메인/캘린더/MainEmpty when에 ACTIVE 분기.
+- **알림**: 듀오링고풍 간단 문구 + 다양 템플릿(`NotificationService` 아침5·저녁4·빈날3), dayOfYear 순환. "꽁이가 새 공고 N개 찾았어요 🐱" 식.
+- **회사상세**: description 없으면 산업·규모·근무지·공고수로 소개문 자동생성(`buildAbout`).
+- **★ 홈 위젯**: 새 공고 수 + 꽁이(상황별 표정 — 0건 Sleep/3일+미방문 Sad/5개+ Wow/그외 Happy). `Mascot`을 `drawMascot`(DrawScope) 추출 → `MascotRenderer`로 Bitmap 렌더(RemoteViews, Glance 미사용). 크기 3레이아웃(tiny 1x1/wide 2x1·4x1/세로 2x2·4x2, getAppWidgetOptions 분기). 큰 위젯에 마감임박. `WidgetState`(SharedPreferences). **위젯 빌드·실기기 검증은 사용자 PC에서 완료(꽁이 정상 렌더 확인)**. 임계 110dp는 기기별 근사.
+
 ### ✅ 온보딩 회사규모 ↔ 데이터 정합화 (2026-06-07, 커밋 c35b639)
 - 온보딩 규모 6개 중 5개가 데이터 0(중소=서울 size null, 중견·외국계·스타트업 없음)이라 정리. 직군 21개는 데이터 다 있어 유지.
 - 백엔드 `JobPersistenceService.inferSize`: 소스 기반 규모 보정(공공기관→public, 서울→small, greenhouse/lever→large_corp). 신규+기존 size=null 회사 재수집 시 보정. `JobService.today` pool 1000→3000(규모 필터 누락 방지). 라이브: large_corp 399·public 500·small 441.
