@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -27,14 +28,23 @@ fun Mascot(
     expression: MascotExpression = MascotExpression.Default,
     modifier: Modifier = Modifier,
 ) {
+    Canvas(modifier = modifier.size(size)) {
+        drawMascot(expression)
+    }
+}
+
+/**
+ * 꽁이를 [DrawScope]에 그린다. Composable Canvas와 위젯용 Bitmap 렌더가 공유.
+ * 좌표는 100×100 viewBox 기준, 현재 size에 비례 환산.
+ */
+fun DrawScope.drawMascot(expression: MascotExpression) {
     val fillColor = Color(0xFFFAD9B0)        // 고양이 베이지
     val earInner = Color(0xFFFFB8C2)
     val outline = Color(0xFF1A1A1A)
     val nosePink = Color(0xFFFF8FA3)
     val cheekPink = Color(0xFFFF8FA3)
-    val tongue = Color(0xFFFF6B8A)
 
-    Canvas(modifier = modifier.size(size)) {
+    run {
         val s = this.size.minDimension
         fun p(x: Float, y: Float) = Offset(x / 100f * s, y / 100f * s)
         fun len(v: Float) = v / 100f * s

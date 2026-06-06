@@ -25,11 +25,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.JobRepository
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.*
+import com.jobalert.app.widget.JobAlertWidgetProvider
+import com.jobalert.app.widget.WidgetState
 
 /**
  * 메인 피드. 상단 헤더(오늘 새 공고 N건 + 꽁이) + NEW/UPDATE/CLOSING 토글 + 공고 리스트.
@@ -50,6 +53,15 @@ fun MainScreen(
     val szs = ActiveFilter.sizes
     LaunchedEffect(cats, exps, szs) { viewModel.load(cats, exps, szs) }
     var section by remember { mutableStateOf(JobKind.NEW) }
+
+    // 오늘 새 공고(NEW) 수를 위젯에 반영(꽁이 표정·카운트).
+    val context = LocalContext.current
+    LaunchedEffect(state) {
+        (state as? MainUiState.Success)?.feed?.let { f ->
+            WidgetState.setNewCount(context, f.counts[JobKind.NEW] ?: 0)
+            JobAlertWidgetProvider.updateAll(context)
+        }
+    }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
