@@ -96,12 +96,30 @@ class JobRepository(
 
     private val kst = ZoneId.of("Asia/Seoul")
 
+    // 공고 제목 끝의 상투어("~채용합니다/모집합니다/모집/채용/공고" 등) 제거용.
+    private val titleTail = Regex("\\s*(을|를)?\\s*(직원\\s*)?(채용\\s*공고|모집\\s*공고|채용합니다|모집합니다|모집중|채용중|구인합니다|채용|모집|구인|공고)\\s*\\.?\\s*$")
+
+    /**
+     * 표시용 제목 통일: 끝의 상투어 제거 + 신입/인턴이면 앞에 "(신입)"·"(인턴)" 접두.
+     * 예: "여행사 영업기획 사무원 채용합니다." → "여행사 영업기획 사무원" / 신입이면 "(신입) ..."
+     */
+    private fun displayRole(rawTitle: String, experience: String): String {
+        val cleaned = rawTitle.trim().replace(titleTail, "").trim().removeSuffix(".").trim()
+        val t = cleaned.ifBlank { rawTitle.trim() }
+        val exp = when {
+            experience.contains("신입") -> "신입"
+            experience.contains("인턴") -> "인턴"
+            else -> null
+        }
+        return if (exp != null) "($exp) $t" else t
+    }
+
     private fun JobDetailDto.toDomain(): Job = Job(
         id = id,
         company = company.name,
         companyId = company.id,
         logo = company.logo,
-        role = title,
+        role = displayRole(title, experience),
         kind = kindOf(kind) ?: JobKind.NEW,
         dday = dday,
         dateText = deadline?.let { formatDeadline(it) } ?: "상시",
@@ -123,16 +141,18 @@ class JobRepository(
         company = company.name,
         companyId = company.id,
         logo = company.logo,
-        role = title,
+        role = displayRole(title, experience),
         kind = kindOf(kind) ?: JobKind.NEW,
         dday = dday,
         dateText = deadline?.let { formatDeadline(it) } ?: "상시",
         location = location,
         experience = experience,
         education = education,
+        salary = salary,
         tags = tags,
         categories = categoryLabels(jobCategories),
         companySize = company.size,
+        description = description,
     )
 
     /** 백엔드 직군 코드(it_dev_data 등) → 한글 라벨(IT개발·데이터). 모르는 코드는 제외. */

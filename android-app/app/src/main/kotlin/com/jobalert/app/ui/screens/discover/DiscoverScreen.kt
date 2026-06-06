@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.data.SeenJobs
@@ -208,11 +209,25 @@ private fun ReelsJobCard(
                     .horizontalScroll(hScroll),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
+                if (job.salary.isNotBlank()) HiFiChip("💰 ${job.salary}", small = true, variant = HiFiChipVariant.Outline)
                 if (job.experience.isNotBlank()) HiFiChip("💼 ${job.experience}", small = true, variant = HiFiChipVariant.Outline)
                 companySizeLabel(job.companySize)?.let { HiFiChip("🏢 $it", small = true, variant = HiFiChipVariant.Outline) }
                 job.categories.take(2).forEach { HiFiChip(it, small = true) }
                 if (job.education.isNotBlank()) HiFiChip("🎓 ${job.education}", small = true, variant = HiFiChipVariant.Outline)
                 job.tags.forEach { HiFiChip("#$it", small = true) }
+            }
+
+            // 본문 미리보기 — 카드 여백을 채우고 공고 감을 준다(수집된 경우만).
+            if (job.description.isNotBlank()) {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    job.description,
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    style = HiFiType.body2.copy(fontSize = 14.sp, lineHeight = 21.sp),
+                    color = HiFiColors.Text2,
+                    maxLines = 6,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
 
             Spacer(Modifier.weight(1f))

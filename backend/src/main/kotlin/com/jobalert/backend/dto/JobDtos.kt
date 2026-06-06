@@ -23,6 +23,8 @@ data class JobDto(
     val education: String?,
     val tags: List<String>,
     val jobCategories: List<String> = emptyList(),
+    val salary: String? = null,
+    val description: String? = null,
     val isFavorited: Boolean = false,
 )
 

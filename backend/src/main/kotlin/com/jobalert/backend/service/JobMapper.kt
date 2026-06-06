@@ -48,6 +48,8 @@ class JobMapper(
             education = job.education,
             tags = job.tags ?: emptyList(),
             jobCategories = job.jobCategoryCodes ?: emptyList(),
+            salary = job.salary,
+            description = job.description,
             isFavorited = isFavorited,
         )
 
