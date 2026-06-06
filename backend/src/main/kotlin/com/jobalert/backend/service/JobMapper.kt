@@ -66,7 +66,6 @@ class JobMapper(
             jobCategories = job.jobCategoryCodes ?: emptyList(),
             tags = job.tags ?: emptyList(),
             description = job.description,
-            summary = job.summary, // 꽁이 한줄요약(Haiku) 미구현 → 당분간 null
             preferred = job.preferred ?: emptyList(),
             process = job.process ?: emptyList(),
             originalUrl = job.originalUrl,

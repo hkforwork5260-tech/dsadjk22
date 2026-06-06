@@ -63,7 +63,6 @@ data class JobDetailDto(
     val jobCategories: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val description: String = "",
-    val summary: String = "",
     val preferred: List<String> = emptyList(),
     val process: List<String> = emptyList(),
     val originalUrl: String = "",

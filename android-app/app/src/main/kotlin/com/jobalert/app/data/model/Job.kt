@@ -17,7 +17,6 @@ data class Job(
     val location: String = "",
     val experience: String = "",       // "신입", "3년+"
     val education: String = "",        // "학사+"
-    val summary: String = "",          // 꽁이의 한줄 요약 (AI)
     val tags: List<String> = emptyList(),
     val originalUrl: String = "",
 )

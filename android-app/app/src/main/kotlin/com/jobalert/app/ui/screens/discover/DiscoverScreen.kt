@@ -273,25 +273,6 @@ private fun ReelsJobCard(
                 onClick = onShare,
             )
         }
-
-        // 좌상단 progress bar
-        Row(
-            Modifier
-                .align(Alignment.TopStart)
-                .padding(start = 18.dp, top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(3.dp),
-        ) {
-            repeat(pageTotal) { i ->
-                val active = i <= pageIndex
-                Box(
-                    Modifier
-                        .width(if (i == pageIndex) 16.dp else 6.dp)
-                        .height(3.dp)
-                        .clip(CircleShape)
-                        .background(if (active) HiFiColors.Brand else HiFiColors.Border),
-                )
-            }
-        }
     }
 }
 

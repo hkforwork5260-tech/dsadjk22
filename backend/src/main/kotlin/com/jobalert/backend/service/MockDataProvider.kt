@@ -121,7 +121,6 @@ class MockDataProvider {
             jobCategories = listOf("IT개발·데이터"),
             tags = j.tags,
             description = "${j.company.name}에서 ${j.title}을 모집합니다. 상세 내용은 원문을 확인하세요.",
-            summary = "꽁이의 한줄 요약 — ${j.company.name} ${j.title}. ${j.experience ?: "조건무관"}, ${j.deadline?.toLocalDate()}까지.",
             preferred = listOf("관련 직무 경험", "팀워크 우수자"),
             process = listOf("서류전형", "1차 면접", "최종 면접"),
             originalUrl = "https://www.saramin.co.kr/zf_user/jobs/relay/view?rec_idx=${j.id}",

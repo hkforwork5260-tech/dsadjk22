@@ -23,7 +23,6 @@ val SampleJobs: List<Job> = listOf(
         kind = JobKind.NEW,
         dday = "D-19", dateText = "~6/10",
         location = "판교", experience = "신입", education = "학사+",
-        summary = "검색·커머스 백엔드. Java/Kotlin 대규모 트래픽 처리. 학사 이상, 신입 가능.",
         tags = listOf("Java", "Kotlin", "Spring"),
         originalUrl = "recruit.navercorp.com/...",
     ),

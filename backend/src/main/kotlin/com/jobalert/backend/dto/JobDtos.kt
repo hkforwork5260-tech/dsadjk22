@@ -39,7 +39,6 @@ data class JobDetailDto(
     val jobCategories: List<String>,
     val tags: List<String>,
     val description: String?,
-    val summary: String?,
     val preferred: List<String>,
     val process: List<String>,
     val originalUrl: String?,

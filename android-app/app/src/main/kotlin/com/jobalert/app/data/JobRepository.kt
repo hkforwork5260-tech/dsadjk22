@@ -99,7 +99,6 @@ class JobRepository(
         location = location,
         experience = experience,
         education = education,
-        summary = summary,            // 꽁이 한줄요약(없으면 빈 문자열)
         tags = tags,
         originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
     )
