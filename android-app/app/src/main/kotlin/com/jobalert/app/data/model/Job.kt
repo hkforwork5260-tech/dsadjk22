@@ -18,6 +18,8 @@ data class Job(
     val experience: String = "",       // "신입", "3년+"
     val education: String = "",        // "학사+"
     val tags: List<String> = emptyList(),
+    val categories: List<String> = emptyList(),  // 직군 한글 라벨 (카드·상세 배지)
+    val companySize: String = "",                // 회사규모 코드 (large_corp/public/...)
     val originalUrl: String = "",
     val isSaved: Boolean = false,       // 저장(북마크) 여부 — 공고 상세에서 사용
 )

@@ -118,8 +118,9 @@ fun JobDetailScreen(
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 DDayChip(job.dday, job.kind)
                 if (job.experience.isNotBlank()) HiFiChip(job.experience, small = true, variant = HiFiChipVariant.Outline)
+                companySizeLabel(job.companySize)?.let { HiFiChip(it, small = true, variant = HiFiChipVariant.Outline) }
+                job.categories.firstOrNull()?.let { HiFiChip(it, small = true, variant = HiFiChipVariant.Outline) }
                 if (job.education.isNotBlank()) HiFiChip(job.education, small = true, variant = HiFiChipVariant.Outline)
-                job.tags.firstOrNull()?.let { HiFiChip(it, small = true, variant = HiFiChipVariant.Outline) }
             }
         }
 
@@ -228,7 +229,9 @@ private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () 
     Spacer(Modifier.height(10.dp))
     val info = listOf(
         "마감" to job.dateText.removePrefix("~").ifBlank { "상시" },
+        "직군" to job.categories.joinToString(", "),
         "경력" to job.experience,
+        "회사규모" to (companySizeLabel(job.companySize) ?: ""),
         "학력" to job.education,
         "근무지" to job.location,
         "태그" to job.tags.joinToString(", "),
@@ -267,4 +270,15 @@ private fun LinkRow(label: String, onClick: () -> Unit) {
         Text(label, style = HiFiType.body.copy(fontWeight = FontWeight.Bold), color = HiFiColors.Text, modifier = Modifier.weight(1f))
         Text("↗", style = HiFiType.body, color = HiFiColors.Text2)
     }
+}
+
+/** 회사규모 코드 → 한글 라벨. 빈/모르는 값은 null(미노출). DB 실제값: large_corp·public·startup_unicorn. */
+private fun companySizeLabel(code: String): String? = when (code) {
+    "large_corp" -> "대기업"
+    "mid_corp" -> "중견기업"
+    "small" -> "중소기업"
+    "public" -> "공기업"
+    "startup", "startup_unicorn" -> "스타트업"
+    "foreign" -> "외국계"
+    else -> null
 }

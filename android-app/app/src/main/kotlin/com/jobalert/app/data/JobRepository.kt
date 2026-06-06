@@ -13,6 +13,8 @@ import com.jobalert.app.data.api.NotificationsResponse
 import com.jobalert.app.data.api.PopularCompaniesResponse
 import com.jobalert.app.data.api.UpcomingResponse
 import com.jobalert.app.data.model.Job
+import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.theme.JobKind
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -107,6 +109,8 @@ class JobRepository(
         experience = experience,
         education = education,
         tags = tags,
+        categories = categoryLabels(jobCategories),
+        companySize = company.size,
         originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
         isSaved = isSaved,
     )
@@ -123,7 +127,16 @@ class JobRepository(
         experience = experience,
         education = education,
         tags = tags,
+        categories = categoryLabels(jobCategories),
+        companySize = company.size,
     )
+
+    /** 백엔드 직군 코드(it_dev_data 등) → 한글 라벨(IT개발·데이터). 모르는 코드는 제외. */
+    private fun categoryLabels(codes: List<String>): List<String> =
+        codes.mapNotNull { code ->
+            val i = JobCategoryCodes.indexOf(code)
+            if (i >= 0) JobCategories[i] else null
+        }
 
     /** "NEW"/"new" → JobKind.NEW. 모르는 값(EXPIRED 등)은 null. */
     private fun kindOf(raw: String): JobKind? =

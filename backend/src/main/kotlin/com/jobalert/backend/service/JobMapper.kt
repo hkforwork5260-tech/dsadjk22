@@ -32,6 +32,7 @@ class JobMapper(
             logo = (company?.name ?: "?").take(2),
             logoUrl = company?.logoUrl,
             industry = company?.industry,
+            size = company?.size,
         )
 
     fun toDto(job: Job, company: Company?, isFavorited: Boolean = false): JobDto =
@@ -46,6 +47,7 @@ class JobMapper(
             experience = job.experience,
             education = job.education,
             tags = job.tags ?: emptyList(),
+            jobCategories = job.jobCategoryCodes ?: emptyList(),
             isFavorited = isFavorited,
         )
 

@@ -196,7 +196,7 @@ private fun ReelsJobCard(
 
             Spacer(Modifier.height(18.dp))
 
-            // 칩 (가로 스크롤)
+            // 칩 (가로 스크롤) — 채워진 정보만 노출(경력·회사규모·직군·학력·태그 순)
             val hScroll = rememberScrollState()
             Row(
                 Modifier
@@ -205,6 +205,8 @@ private fun ReelsJobCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 if (job.experience.isNotBlank()) HiFiChip("💼 ${job.experience}", small = true, variant = HiFiChipVariant.Outline)
+                companySizeLabel(job.companySize)?.let { HiFiChip("🏢 $it", small = true, variant = HiFiChipVariant.Outline) }
+                job.categories.take(2).forEach { HiFiChip(it, small = true) }
                 if (job.education.isNotBlank()) HiFiChip("🎓 ${job.education}", small = true, variant = HiFiChipVariant.Outline)
                 job.tags.forEach { HiFiChip("#$it", small = true) }
             }
@@ -350,4 +352,15 @@ private fun FinishReelsCard(favCount: Int, savedCount: Int, onGoMain: () -> Unit
             )
         }
     }
+}
+
+/** 회사규모 코드 → 한글 라벨. 빈/모르는 값은 null(배지 미노출). DB 실제값: large_corp·public·startup_unicorn. */
+private fun companySizeLabel(code: String): String? = when (code) {
+    "large_corp" -> "대기업"
+    "mid_corp" -> "중견기업"
+    "small" -> "중소기업"
+    "public" -> "공기업"
+    "startup", "startup_unicorn" -> "스타트업"
+    "foreign" -> "외국계"
+    else -> null
 }

@@ -8,6 +8,7 @@ data class CompanyEmbedDto(
     val logo: String,
     val logoUrl: String?,
     val industry: String?,
+    val size: String? = null,
 )
 
 data class JobDto(
@@ -21,6 +22,7 @@ data class JobDto(
     val experience: String?,
     val education: String?,
     val tags: List<String>,
+    val jobCategories: List<String> = emptyList(),
     val isFavorited: Boolean = false,
 )
 
