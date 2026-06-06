@@ -37,4 +37,6 @@ data class RawJobPosting(
     val description: String? = null,
     /** 학력 조건. 공공기관 상세(acbgCondNmLst: "학력무관" 등). 없으면 null. */
     val education: String? = null,
+    /** 급여/임금. 서울시 일자리포털 HOPE_WAGE("시급 13000원" 등). 없으면 null. */
+    val salary: String? = null,
 )

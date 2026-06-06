@@ -54,6 +54,11 @@ jobalert:
       service-key: ${JOBALERT_PUBINST_KEY:}
       max-pages: 5
       page-size: 100
+    seoul:
+      # 서울시 일자리포털. data.seoul.go.kr serviceKey(JOBALERT_SEOUL_KEY). sample로 테스트 가능.
+      enabled: ${SEOUL_ENABLED:false}
+      service-key: ${JOBALERT_SEOUL_KEY:sample}
+      max-rows: ${SEOUL_MAX_ROWS:1000}
   collector:
     # Daily 18:00 KST = 09:00 UTC. cron is in server timezone (UTC).
     cron: "0 0 9 * * *"

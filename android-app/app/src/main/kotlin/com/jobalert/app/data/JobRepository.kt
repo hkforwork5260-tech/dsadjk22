@@ -108,6 +108,7 @@ class JobRepository(
         location = location,
         experience = experience,
         education = education,
+        salary = salary,
         tags = tags,
         categories = categoryLabels(jobCategories),
         companySize = company.size,

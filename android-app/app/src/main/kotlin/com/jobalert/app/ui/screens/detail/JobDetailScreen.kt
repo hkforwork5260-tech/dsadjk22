@@ -252,6 +252,7 @@ private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () 
     Spacer(Modifier.height(10.dp))
     val info = listOf(
         "마감" to job.dateText.removePrefix("~").ifBlank { "상시" },
+        "급여" to job.salary,
         "직군" to job.categories.joinToString(", "),
         "경력" to job.experience,
         "회사규모" to (companySizeLabel(job.companySize) ?: ""),

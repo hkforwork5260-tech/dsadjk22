@@ -17,6 +17,7 @@ data class Job(
     val location: String = "",
     val experience: String = "",       // "신입", "3년+"
     val education: String = "",        // "학사+"
+    val salary: String = "",           // 급여 (서울시 소스 — "최소연봉 3200만원" 등)
     val tags: List<String> = emptyList(),
     val categories: List<String> = emptyList(),  // 직군 한글 라벨 (카드·상세 배지)
     val companySize: String = "",                // 회사규모 코드 (large_corp/public/...)

@@ -60,7 +60,7 @@ data class JobDetailDto(
     val location: String = "",
     val experience: String = "",
     val education: String = "",
-    val salary: String = "회사내규",
+    val salary: String = "",
     val jobCategories: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val description: String = "",
