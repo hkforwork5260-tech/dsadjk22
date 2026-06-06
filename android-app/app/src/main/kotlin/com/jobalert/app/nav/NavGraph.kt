@@ -23,6 +23,7 @@ import com.jobalert.app.ui.screens.main.MainScreen
 import com.jobalert.app.ui.screens.mypage.MyPageScreen
 import com.jobalert.app.ui.screens.notif.NotifHistoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
+import com.jobalert.app.ui.screens.saved.SavedJobsScreen
 import com.jobalert.app.ui.screens.search.SearchResultsScreen
 import com.jobalert.app.ui.screens.search.SearchScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
@@ -71,6 +72,7 @@ object Routes {
     const val WidgetSettings = "widgetSettings"
     const val Interests = "interests"
     const val Feedback = "feedback"
+    const val SavedJobs = "savedJobs"
 }
 
 @Composable
@@ -215,7 +217,15 @@ fun JobAlertNavHost() {
                 onWidgetSettings = { nav.navigate(Routes.WidgetSettings) },
                 onInterests = { nav.navigate(Routes.Interests) },
                 onFeedback = { nav.navigate(Routes.Feedback) },
+                onSavedJobs = { nav.navigate(Routes.SavedJobs) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Mypage) },
+            )
+        }
+
+        composable(Routes.SavedJobs) {
+            SavedJobsScreen(
+                onBack = { nav.popBackStack() },
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
             )
         }
 

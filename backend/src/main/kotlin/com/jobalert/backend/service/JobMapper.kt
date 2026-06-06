@@ -49,7 +49,7 @@ class JobMapper(
             isFavorited = isFavorited,
         )
 
-    fun toDetailDto(job: Job, company: Company?, isFavorited: Boolean = false): JobDetailDto =
+    fun toDetailDto(job: Job, company: Company?, isFavorited: Boolean = false, isSaved: Boolean = false): JobDetailDto =
         JobDetailDto(
             id = job.id,
             company = toCompanyEmbed(job.companyId, company),
@@ -71,6 +71,7 @@ class JobMapper(
             originalUrl = job.originalUrl,
             source = job.source,
             isFavorited = isFavorited,
+            isSaved = isSaved,
         )
 
     fun toCompanyDto(company: Company, activeJobCount: Int, isFavorited: Boolean = false): CompanyDto =

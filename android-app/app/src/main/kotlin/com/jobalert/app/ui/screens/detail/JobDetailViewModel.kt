@@ -31,6 +31,17 @@ class JobDetailViewModel : ViewModel() {
             }
         }
     }
+
+    /**
+     * 공고 저장/해제. UI가 낙관적으로 먼저 토글한 뒤 호출하고,
+     * [onResult]로 성공/실패를 돌려준다(실패 시 화면이 토글을 롤백·안내).
+     */
+    fun setSaved(jobId: String, saved: Boolean, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val ok = if (saved) repository.saveJob(jobId) else repository.unsaveJob(jobId)
+            onResult(ok)
+        }
+    }
 }
 
 sealed interface JobDetailUiState {

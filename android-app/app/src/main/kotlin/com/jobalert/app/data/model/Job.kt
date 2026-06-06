@@ -19,6 +19,7 @@ data class Job(
     val education: String = "",        // "학사+"
     val tags: List<String> = emptyList(),
     val originalUrl: String = "",
+    val isSaved: Boolean = false,       // 저장(북마크) 여부 — 공고 상세에서 사용
 )
 
 /**

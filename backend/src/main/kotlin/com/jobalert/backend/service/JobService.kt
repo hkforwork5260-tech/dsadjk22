@@ -13,6 +13,7 @@ import com.jobalert.backend.exception.NotFoundException
 import com.jobalert.backend.repository.CompanyRepository
 import com.jobalert.backend.repository.DeviceCategoryRepository
 import com.jobalert.backend.repository.JobRepository
+import com.jobalert.backend.repository.SavedJobRepository
 import com.jobalert.backend.repository.UserFavoriteRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -34,6 +35,7 @@ class JobService(
     private val companyRepository: CompanyRepository,
     private val userFavoriteRepository: UserFavoriteRepository,
     private val deviceCategoryRepository: DeviceCategoryRepository,
+    private val savedJobRepository: SavedJobRepository,
     private val mapper: JobMapper,
     private val clock: Clock,
 ) {
@@ -139,12 +141,13 @@ class JobService(
         return result
     }
 
-    fun detail(id: String): JobDetailDto {
+    fun detail(id: String, deviceId: UUID? = null): JobDetailDto {
         val job = jobRepository.findById(id).orElseThrow {
             NotFoundException("JOB_NOT_FOUND", "공고를 찾을 수 없습니다.")
         }
         val company = companyRepository.findById(job.companyId).orElse(null)
-        return mapper.toDetailDto(job, company)
+        val saved = deviceId != null && savedJobRepository.existsByDeviceIdAndJobId(deviceId, id)
+        return mapper.toDetailDto(job, company, isSaved = saved)
     }
 
     fun similar(id: String): JobListResponse {

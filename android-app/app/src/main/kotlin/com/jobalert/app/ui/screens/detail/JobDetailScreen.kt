@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Share
@@ -22,9 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.model.Job
@@ -50,8 +53,11 @@ fun JobDetailScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val job = (state as? JobDetailUiState.Success)?.job
         ?: Job(id = jobId, company = "", logo = "", role = "불러오는 중…", kind = JobKind.NEW, dday = "", dateText = "")
+    val context = LocalContext.current
     var tab by remember { mutableStateOf(DetailTab.Info) }
-    var saved by remember { mutableStateOf(false) }
+    var saved by remember(jobId) { mutableStateOf(false) }
+    // 백엔드가 알려준 저장 상태로 초기 동기화(로드 완료 시).
+    LaunchedEffect(job.isSaved) { saved = job.isSaved }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -62,7 +68,20 @@ fun JobDetailScreen(
             },
             action = {
                 Row {
-                    HiFiIconBtn(Icons.Outlined.BookmarkBorder, "저장", onClick = { saved = !saved })
+                    HiFiIconBtn(
+                        if (saved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                        "저장",
+                        onClick = {
+                            val target = !saved
+                            saved = target  // 낙관적 토글
+                            viewModel.setSaved(jobId, target) { ok ->
+                                if (!ok) {
+                                    saved = !target  // 실패 시 롤백
+                                    Toast.makeText(context, "저장에 실패했어요. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                    )
                     Spacer(Modifier.width(8.dp))
                     HiFiIconBtn(Icons.Outlined.Share, "공유", onClick = onShare)
                 }

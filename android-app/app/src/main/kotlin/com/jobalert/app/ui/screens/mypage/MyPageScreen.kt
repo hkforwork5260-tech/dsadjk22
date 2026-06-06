@@ -17,11 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.widget.Toast
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -39,12 +37,9 @@ fun MyPageScreen(
     onWidgetSettings: () -> Unit,
     onInterests: () -> Unit,
     onFeedback: () -> Unit,
+    onSavedJobs: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
-    val context = LocalContext.current
-    val showSoon: () -> Unit = {
-        Toast.makeText(context, "v0.2에서 추가될 예정이에요 ✨", Toast.LENGTH_SHORT).show()
-    }
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
@@ -99,10 +94,10 @@ fun MyPageScreen(
                         StatColumn(value = "87", label = "본 공고", color = HiFiColors.Text, modifier = Modifier.weight(1f))
                         Box(Modifier.width(1.dp).height(44.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                         StatColumn(
-                            value = "14",
+                            value = "🔖",
                             label = "저장한 공고 ›",
                             color = HiFiColors.UpdateShadow,
-                            modifier = Modifier.weight(1f).clickable { showSoon() },
+                            modifier = Modifier.weight(1f).clickable { onSavedJobs() },
                         )
                     }
                 }

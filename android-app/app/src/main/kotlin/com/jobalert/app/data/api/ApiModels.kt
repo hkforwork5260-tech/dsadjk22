@@ -68,6 +68,7 @@ data class JobDetailDto(
     val originalUrl: String = "",
     val source: String = "saramin",
     val isFavorited: Boolean = false,
+    val isSaved: Boolean = false,
 )
 
 /** GET /jobs/today */
@@ -150,6 +151,19 @@ data class FavoriteCompanyDto(
 data class FavoriteToggleResponse(
     val favorited: Boolean,
     val companyId: Int,
+)
+
+/** GET 저장한 공고 목록(최신순). 공고 카드 그대로. */
+@Serializable
+data class SavedJobsResponse(
+    val jobs: List<JobDto>,
+)
+
+/** POST/DELETE 공고 저장(북마크) 토글 응답. */
+@Serializable
+data class SaveToggleResponse(
+    val saved: Boolean,
+    val jobId: String,
 )
 
 /** POST /devices/register — FCM 토큰 + 관심직군을 기기ID와 함께 등록(개인화 다이제스트 근거). */

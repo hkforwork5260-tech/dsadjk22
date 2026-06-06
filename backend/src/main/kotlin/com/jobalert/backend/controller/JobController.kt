@@ -47,7 +47,10 @@ class JobController(
     ): JobSearchResponse = jobService.search(q, kind, limit)
 
     @GetMapping("/{id}")
-    fun detail(@PathVariable id: String): JobDetailDto = jobService.detail(id)
+    fun detail(
+        @PathVariable id: String,
+        @RequestHeader(value = "X-Device-Id", required = false) deviceId: String?,
+    ): JobDetailDto = jobService.detail(id, parseDeviceId(deviceId))
 
     @GetMapping("/{id}/similar")
     fun similar(@PathVariable id: String): JobListResponse = jobService.similar(id)

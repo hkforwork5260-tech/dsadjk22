@@ -69,6 +69,13 @@ class JobRepository(
     suspend fun addFavorite(companyId: Int) = api.addFavorite(companyId)
     suspend fun removeFavorite(companyId: Int) = api.removeFavorite(companyId)
 
+    /** 저장한 공고 목록(현재 기기, 최신순). */
+    suspend fun savedJobs(): List<Job> = api.savedJobs().jobs.map { it.toDomain() }
+
+    /** 공고 저장/해제. 호출 성공 여부 반환(실패 시 화면이 롤백·안내). */
+    suspend fun saveJob(id: String): Boolean = runCatching { api.addSavedJob(id); true }.getOrDefault(false)
+    suspend fun unsaveJob(id: String): Boolean = runCatching { api.removeSavedJob(id); true }.getOrDefault(false)
+
     /** 알림 히스토리 (현재 기기 기준 다이제스트 기록). */
     suspend fun notifications(): NotificationsResponse = api.notifications()
 
@@ -101,6 +108,7 @@ class JobRepository(
         education = education,
         tags = tags,
         originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
+        isSaved = isSaved,
     )
 
     private fun JobDto.toDomain(): Job = Job(

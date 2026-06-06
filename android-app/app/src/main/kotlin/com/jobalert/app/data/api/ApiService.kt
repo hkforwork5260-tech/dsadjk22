@@ -58,6 +58,16 @@ interface ApiService {
     @DELETE("api/v1/users/me/favorites/{companyId}")
     suspend fun removeFavorite(@Path("companyId") companyId: Int): FavoriteToggleResponse
 
+    // 저장한 공고(북마크) — 기기ID는 ApiClient 인터셉터가 X-Device-Id 헤더로 자동 첨부.
+    @GET("api/v1/users/me/saved")
+    suspend fun savedJobs(): SavedJobsResponse
+
+    @POST("api/v1/users/me/saved/{jobId}")
+    suspend fun addSavedJob(@Path("jobId") jobId: String): SaveToggleResponse
+
+    @DELETE("api/v1/users/me/saved/{jobId}")
+    suspend fun removeSavedJob(@Path("jobId") jobId: String): SaveToggleResponse
+
     @GET("api/v1/notifications/history")
     suspend fun notifications(@Query("limit") limit: Int = 30): NotificationsResponse
 

@@ -44,6 +44,18 @@ data class JobDetailDto(
     val originalUrl: String?,
     val source: String,
     val isFavorited: Boolean = false,
+    val isSaved: Boolean = false,
+)
+
+/** 공고 저장(북마크) 토글 응답. */
+data class SaveToggleResponse(
+    val saved: Boolean,
+    val jobId: String,
+)
+
+/** 저장한 공고 목록(최신순). 공고 카드 그대로 반환. */
+data class SavedJobsResponse(
+    val jobs: List<JobDto>,
 )
 
 data class JobsTodayResponse(
