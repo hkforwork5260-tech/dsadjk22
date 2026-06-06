@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="10dp"
+    android:padding="12dp"
     android:background="@drawable/widget_bg">
 
     <ImageView
         android:id="@+id/widget_mascot"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:contentDescription="꽁이"
         android:scaleType="fitCenter" />
 
@@ -22,15 +22,38 @@
         android:layout_marginTop="4dp"
         android:textColor="#FF6B35"
         android:textStyle="bold"
-        android:textSize="15sp"
+        android:textSize="16sp"
+        android:maxLines="1"
         android:text="새 공고 0" />
+
+    <TextView
+        android:id="@+id/widget_closing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#E5484D"
+        android:textSize="12sp"
+        android:maxLines="1"
+        android:text="" />
+
+    <TextView
+        android:id="@+id/widget_topjob"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:textColor="#555555"
+        android:textSize="12sp"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:text="" />
 
     <TextView
         android:id="@+id/widget_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#777777"
-        android:textSize="11sp"
+        android:layout_marginTop="4dp"
+        android:textColor="#999999"
+        android:textSize="10sp"
         android:text="채용알리미" />
 
 </LinearLayout>

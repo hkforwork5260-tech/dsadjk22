@@ -64,6 +64,16 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_count, countText)
             views.setTextViewText(R.id.widget_label, "채용알리미")
 
+            // 큰(세로) 레이아웃에만 마감임박·대표공고 추가(작은/가로엔 해당 뷰 없음).
+            if (layout == R.layout.widget_jobalert) {
+                val closing = WidgetState.closingCount(context)
+                views.setTextViewText(
+                    R.id.widget_closing,
+                    if (closing > 0) "⏰ 마감 임박 $closing" else "",
+                )
+                views.setTextViewText(R.id.widget_topjob, WidgetState.topJob(context))
+            }
+
             // 위젯 탭 → 앱 열기
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP

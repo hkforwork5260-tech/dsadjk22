@@ -10,15 +10,21 @@ import com.jobalert.app.ui.components.MascotExpression
 object WidgetState {
     private const val PREFS = "jobalert_prefs"
     private const val KEY_NEW_COUNT = "widget_new_count"
+    private const val KEY_CLOSING_COUNT = "widget_closing_count"
+    private const val KEY_TOP_JOB = "widget_top_job"
     private const val KEY_LAST_VISIT = "widget_last_visit"
     private const val DAY_MS = 24L * 60 * 60 * 1000
 
     private fun prefs(context: Context) =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
-    /** 앱이 "오늘 새 공고(NEW)" 수를 갱신. */
-    fun setNewCount(context: Context, count: Int) {
-        prefs(context).edit().putInt(KEY_NEW_COUNT, count).apply()
+    /** 앱이 위젯에 보여줄 요약 갱신: 새 공고 수 + 마감임박 수 + 대표 공고 1개("회사 · 직무"). */
+    fun setSummary(context: Context, newCount: Int, closingCount: Int, topJob: String) {
+        prefs(context).edit()
+            .putInt(KEY_NEW_COUNT, newCount)
+            .putInt(KEY_CLOSING_COUNT, closingCount)
+            .putString(KEY_TOP_JOB, topJob)
+            .apply()
     }
 
     /** 앱 진입 시 방문 기록(표정 판단용). */
@@ -27,6 +33,8 @@ object WidgetState {
     }
 
     fun newCount(context: Context): Int = prefs(context).getInt(KEY_NEW_COUNT, 0)
+    fun closingCount(context: Context): Int = prefs(context).getInt(KEY_CLOSING_COUNT, 0)
+    fun topJob(context: Context): String = prefs(context).getString(KEY_TOP_JOB, "").orEmpty()
 
     /**
      * 상황별 꽁이 표정:

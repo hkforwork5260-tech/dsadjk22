@@ -58,7 +58,13 @@ fun MainScreen(
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
-            WidgetState.setNewCount(context, f.counts[JobKind.NEW] ?: 0)
+            val topJob = f.jobs.firstOrNull()?.let { "${it.company} · ${it.role}" } ?: ""
+            WidgetState.setSummary(
+                context,
+                newCount = f.counts[JobKind.NEW] ?: 0,
+                closingCount = f.counts[JobKind.CLOSING] ?: 0,
+                topJob = topJob,
+            )
             JobAlertWidgetProvider.updateAll(context)
         }
     }
