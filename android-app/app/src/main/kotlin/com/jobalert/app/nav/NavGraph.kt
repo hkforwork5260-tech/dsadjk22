@@ -202,7 +202,7 @@ fun JobAlertNavHost() {
         composable(Routes.Favorites) {
             FavoritesScreen(
                 onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
-                onAddCompany = { /* TODO: 검색으로 이동 또는 add flow */ },
+                onAddCompany = { nav.navigate(Routes.Search) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Favorites) },
             )
         }

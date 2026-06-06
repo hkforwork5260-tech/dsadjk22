@@ -34,12 +34,16 @@ class CompanyDetailViewModel : ViewModel() {
         }
     }
 
-    /** 관심기업 추가/삭제. UI는 낙관적으로 먼저 토글되고, 실패해도 best-effort. */
-    fun setFavorite(companyId: Int, favorite: Boolean) {
+    /**
+     * 관심기업 추가/삭제. UI가 낙관적으로 먼저 토글한 뒤 호출하고,
+     * [onResult]로 성공/실패를 돌려준다(실패 시 화면이 토글을 롤백·안내).
+     */
+    fun setFavorite(companyId: Int, favorite: Boolean, onResult: (Boolean) -> Unit = {}) {
         viewModelScope.launch {
-            runCatching {
+            val ok = runCatching {
                 if (favorite) repository.addFavorite(companyId) else repository.removeFavorite(companyId)
-            }
+            }.isSuccess
+            onResult(ok)
         }
     }
 }

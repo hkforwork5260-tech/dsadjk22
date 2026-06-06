@@ -19,9 +19,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.CompanyDto
@@ -50,6 +52,7 @@ fun CompanyDetailScreen(
     LaunchedEffect(companyId) { viewModel.load(companyId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val data = (state as? CompanyUiState.Success)?.data ?: emptyCompanyPage(companyId)
+    val context = LocalContext.current
     var starred by remember(companyId) { mutableStateOf(false) }
     // 백엔드가 알려준 즐겨찾기 상태로 별표 초기 동기화(로드 완료 시).
     LaunchedEffect(data.company.isFavorited) { starred = data.company.isFavorited }
@@ -106,7 +109,16 @@ fun CompanyDetailScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     HiFiButton(
                         text = if (starred) "✓ 관심기업" else "+ 관심기업",
-                        onClick = { starred = !starred; viewModel.setFavorite(companyId, starred) },
+                        onClick = {
+                            val target = !starred
+                            starred = target  // 낙관적 토글
+                            viewModel.setFavorite(companyId, target) { ok ->
+                                if (!ok) {
+                                    starred = !target  // 실패 시 롤백
+                                    Toast.makeText(context, "관심기업 저장에 실패했어요. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
                         variant = if (starred) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                     )
