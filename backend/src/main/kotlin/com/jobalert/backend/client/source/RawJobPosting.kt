@@ -39,4 +39,6 @@ data class RawJobPosting(
     val education: String? = null,
     /** 급여/임금. 서울시 일자리포털 HOPE_WAGE("시급 13000원" 등). 없으면 null. */
     val salary: String? = null,
+    /** 표시용 태그(근무형태·휴일·복리후생 등 구조화 정보). 카드 칩으로 노출. */
+    val tags: List<String> = emptyList(),
 )

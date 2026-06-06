@@ -225,7 +225,7 @@ private fun ReelsJobCard(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     style = HiFiType.body2.copy(fontSize = 14.sp, lineHeight = 21.sp),
                     color = HiFiColors.Text2,
-                    maxLines = 6,
+                    maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                 )
             }

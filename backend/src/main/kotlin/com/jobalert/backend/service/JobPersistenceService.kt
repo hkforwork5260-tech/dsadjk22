@@ -145,6 +145,7 @@ class JobPersistenceService(
         experience = experienceClassifier.classify(raw.experience, raw.title),
         education = raw.education,
         salary = raw.salary,
+        tags = raw.tags.takeIf { it.isNotEmpty() },
         jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
         description = raw.description,
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
@@ -173,6 +174,7 @@ class JobPersistenceService(
         raw.description?.let { job.description = it }
         raw.education?.let { job.education = it }
         raw.salary?.let { job.salary = it }
+        raw.tags.takeIf { it.isNotEmpty() }?.let { job.tags = it }
         // 만료(isActive=false)됐던 공고가 다시 수집되면 재활성화 — 일시적 미노출/장애 후 복귀 대응.
         if (!job.isActive) {
             job.isActive = true

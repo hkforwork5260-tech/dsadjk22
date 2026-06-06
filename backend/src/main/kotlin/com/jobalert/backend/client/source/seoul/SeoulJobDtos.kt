@@ -46,4 +46,8 @@ data class SeoulJob(
     @JsonProperty("PRESENTN_PAPERS_NM") val presentnPapersNm: String? = null,
     @JsonProperty("MNGR_PHON_NO") val mngrPhonNo: String? = null,
     @JsonProperty("EMPLYM_STLE_CMMN_MM") val emplymStle: String? = null,
+    @JsonProperty("WORK_TM_NM") val workTmNm: String? = null,           // 주간/야간 등
+    @JsonProperty("HOLIDAY_NM") val holidayNm: String? = null,          // 주5일근무 등
+    @JsonProperty("JO_FEINSR_SBSCRB_NM") val insuranceNm: String? = null, // 4대보험 가입 정보
+    @JsonProperty("RET_GRANTS_NM") val retGrantsNm: String? = null,      // 퇴직금 여부
 )

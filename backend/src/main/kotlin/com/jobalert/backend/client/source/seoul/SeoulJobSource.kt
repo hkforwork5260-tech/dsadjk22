@@ -124,8 +124,29 @@ class SeoulJobSource(
             description = buildDescription(job),
             education = clean(job.acdmcrNm),
             salary = clean(job.hopeWage),
+            tags = buildTags(job),
         )
     }
+
+    /** 구조화 정보(고용형태·휴일·근무시간대·4대보험·퇴직금)를 카드용 짧은 태그로. */
+    private fun buildTags(job: SeoulJob): List<String> = buildList {
+        cleanTag(job.emplymStle)?.let { add(it) }                    // 정규직/상용직 등(괄호 앞)
+        job.holidayNm?.let { h ->
+            when {
+                h.contains("주5일") -> add("주5일")
+                h.contains("주6일") -> add("주6일")
+                h.contains("주4일") -> add("주4일")
+            }
+        }
+        cleanTag(job.workTmNm)?.let { add(it) }                      // 주간/야간
+        val ins = job.insuranceNm.orEmpty()
+        if (ins.contains("고용") && ins.contains("산재") && ins.contains("건강") && ins.contains("국민")) add("4대보험")
+        if (job.retGrantsNm?.contains("퇴직") == true) add("퇴직금")
+    }.distinct().take(5)
+
+    /** 괄호 앞부분만 + 빈/플레이스홀더 제거. "상용직(시간제)" → "상용직". */
+    private fun cleanTag(s: String?): String? =
+        s?.substringBefore("(")?.trim()?.takeIf { it.isNotBlank() && it != "-" }
 
     /** 노인·중장년 전용 일자리인가(요양·간병·경비·미화·청소·가사 등). 제목/본문 키워드로 판정. */
     private fun isElderlyOrCareJob(title: String, dtyCn: String?): Boolean {
