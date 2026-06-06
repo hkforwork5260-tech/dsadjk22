@@ -63,7 +63,7 @@ fun DiscoverScreen(
     LaunchedEffect(Unit) { viewModel.load() }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
-    var savedSet by remember { mutableStateOf(setOf<String>()) }
+    val savedJobIds by viewModel.savedJobIds.collectAsStateWithLifecycle()
     val pageCount = jobs.size + 1
     val pagerState = rememberPagerState(pageCount = { pageCount })
 
@@ -91,18 +91,16 @@ fun DiscoverScreen(
                 ReelsJobCard(
                     job = j,
                     isFav = j.companyId != null && j.companyId in favoriteCompanyIds,
-                    isSaved = j.id in savedSet,
+                    isSaved = j.id in savedJobIds,
                     onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
-                    onToggleSave = {
-                        savedSet = if (j.id in savedSet) savedSet - j.id else savedSet + j.id
-                    },
+                    onToggleSave = { viewModel.toggleSave(j.id) },
                     onShare = onShare,
                     onOpenDetail = { onJobClick(j.id) },
                     pageIndex = page,
                     pageTotal = jobs.size,
                 )
             } else {
-                FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedSet.size, onGoMain = onGoMain)
+                FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedJobIds.size, onGoMain = onGoMain)
             }
         }
 

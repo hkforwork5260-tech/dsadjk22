@@ -161,10 +161,31 @@ class JobService(
         return JobListResponse(jobs = toDtos(jobs))
     }
 
-    fun search(q: String, kind: String?, limit: Int): JobSearchResponse {
-        // 현재는 제목 LIKE 검색. 회사명·태그 검색은 인덱스/풀텍스트 도입 시 확장.
-        var hits = jobRepository.searchByKeyword(q, PageRequest.of(0, limit))
+    /**
+     * 검색 + 직군 필터 통합. v0.1 규모(<2천)라 후보를 넓게 가져와 메모리로 거른다.
+     *
+     * - 직군(categories)만 있고 검색어 없음 → "직군별 둘러보기"(해당 직군 공고).
+     * - 검색어(q)는 공백으로 토큰 분해 후, 각 토큰이 제목 또는 회사명에 하나라도 포함되면 매칭(OR).
+     *   → "백엔드 개발자"처럼 여러 단어/관련어로도 잡힌다. (오타 교정은 미지원 — 형태소/유사도 필요, v0.2)
+     * - 직군+검색어 둘 다면 교집합.
+     */
+    fun search(q: String, kind: String?, categories: List<String>, limit: Int): JobSearchResponse {
+        val cats = categories.toSet()
+        val pool = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 2000))
+        val companies = loadCompanies(pool)
+        val tokens = q.trim().lowercase().split(Regex("\\s+")).filter { it.isNotBlank() }
+
+        var hits = pool.filter { job ->
+            val catOk = cats.isEmpty() || job.jobCategoryCodes?.any { it in cats } == true
+            val kwOk = tokens.isEmpty() || run {
+                val hay = (job.title + " " + (companies[job.companyId]?.name ?: "")).lowercase()
+                tokens.any { hay.contains(it) }
+            }
+            catOk && kwOk
+        }
         if (kind != null) hits = hits.filter { it.kind == kind }
+        hits = hits.take(limit)
+
         return JobSearchResponse(
             query = q,
             totalEstimate = hits.size,

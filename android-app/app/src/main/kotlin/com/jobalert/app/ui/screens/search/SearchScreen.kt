@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -41,6 +43,7 @@ import com.jobalert.app.ui.theme.HiFiType
 @Composable
 fun SearchScreen(
     onSearch: (String) -> Unit,
+    onCategoryClick: (String) -> Unit,   // 직군 코드(it_dev_data 등)로 둘러보기
     onTabClick: (HomeTab) -> Unit,
 ) {
     var queryText by remember { mutableStateOf("") }
@@ -170,7 +173,11 @@ fun SearchScreen(
             Spacer(Modifier.height(22.dp))
             Text("직군별 둘러보기", style = HiFiType.h2, color = HiFiColors.Text)
             Spacer(Modifier.height(10.dp))
-            CategoryGrid(items = byCategory, onClick = { onSearch(it) })
+            CategoryGrid(items = byCategory, onClick = { label ->
+                // 직군 라벨 → 백엔드 코드로 변환해 "직군별 둘러보기"(필터). 매핑 없으면 검색어로 폴백.
+                val i = JobCategories.indexOf(label)
+                if (i in JobCategoryCodes.indices) onCategoryClick(JobCategoryCodes[i]) else onSearch(label)
+            })
 
             Spacer(Modifier.height(22.dp))
             Text("추천 키워드", style = HiFiType.h2, color = HiFiColors.Text)

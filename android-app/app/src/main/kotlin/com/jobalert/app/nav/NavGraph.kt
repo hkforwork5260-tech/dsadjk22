@@ -52,8 +52,8 @@ object Routes {
     fun company(id: Int) = "company/$id"
 
     const val Search = "search"
-    const val SearchResults = "searchResults?q={q}"
-    fun searchResults(q: String) = "searchResults?q=$q"
+    const val SearchResults = "searchResults?q={q}&cat={cat}"
+    fun searchResults(q: String = "", cat: String = "") = "searchResults?q=$q&cat=$cat"
 
     const val Discover = "discover"
     const val Favorites = "favorites"
@@ -262,22 +262,24 @@ fun JobAlertNavHost() {
 
         composable(Routes.Search) {
             SearchScreen(
-                onSearch = { q -> nav.navigate(Routes.searchResults(q)) },
+                onSearch = { q -> nav.navigate(Routes.searchResults(q = q)) },
+                onCategoryClick = { code -> nav.navigate(Routes.searchResults(cat = code)) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Search) },
             )
         }
 
         composable(
             route = Routes.SearchResults,
-            arguments = listOf(navArgument("q") {
-                type = NavType.StringType
-                defaultValue = ""
-                nullable = true
-            }),
+            arguments = listOf(
+                navArgument("q") { type = NavType.StringType; defaultValue = ""; nullable = true },
+                navArgument("cat") { type = NavType.StringType; defaultValue = ""; nullable = true },
+            ),
         ) { backStackEntry ->
             val q = backStackEntry.arguments?.getString("q").orEmpty()
+            val cat = backStackEntry.arguments?.getString("cat").orEmpty()
             SearchResultsScreen(
                 query = q,
+                categoryCode = cat,
                 onBack = { nav.popBackStack() },
                 onJobClick = { id -> nav.navigate(Routes.detail(id)) },
                 onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },

@@ -51,9 +51,9 @@ class JobRepository(
         val jobs: List<Job>,
     )
 
-    /** /jobs/search — 검색 결과. 화면이 DTO 그대로 쓰므로 응답을 그대로 반환.
-     *  (백엔드는 현재 제목 검색만 → companies는 빈 리스트로 옴) */
-    suspend fun search(query: String): JobsSearchResponse = api.jobsSearch(query)
+    /** /jobs/search — 검색(단어분해 제목·회사명) + 직군 필터(categories). 화면이 DTO 그대로 사용. */
+    suspend fun search(query: String, categories: List<String> = emptyList()): JobsSearchResponse =
+        api.jobsSearch(query = query, categories = categories)
 
     /** /jobs/upcoming — 마감 임박(캘린더용). days일 내 마감 공고를 날짜별로. */
     suspend fun upcoming(days: Int = 40): UpcomingResponse = api.upcoming(days)

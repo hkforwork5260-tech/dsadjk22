@@ -34,9 +34,10 @@ interface ApiService {
 
     @GET("api/v1/jobs/search")
     suspend fun jobsSearch(
-        @Query("q") query: String,
+        @Query("q") query: String = "",
+        @Query("categories") categories: List<String> = emptyList(),
         @Query("kind") kind: String? = null,
-        @Query("limit") limit: Int = 20,
+        @Query("limit") limit: Int = 50,
     ): JobsSearchResponse
 
     @GET("api/v1/jobs/upcoming")

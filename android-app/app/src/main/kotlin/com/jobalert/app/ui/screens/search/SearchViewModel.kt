@@ -20,16 +20,21 @@ class SearchViewModel : ViewModel() {
     private val _state = MutableStateFlow<SearchUiState>(SearchUiState.Loading)
     val state: StateFlow<SearchUiState> = _state.asStateFlow()
 
-    private var lastQuery: String? = null
+    private var lastKey: String? = null
 
-    /** 같은 검색어 중복 호출 방지. 화면에서 LaunchedEffect(query)로 트리거. */
-    fun search(query: String) {
-        if (query == lastQuery) return
-        lastQuery = query
+    /**
+     * 검색어(query) 또는 직군(categoryCode)으로 조회. 화면에서 LaunchedEffect로 트리거.
+     * categoryCode가 있으면 "직군별 둘러보기", 없으면 키워드 검색.
+     */
+    fun search(query: String, categoryCode: String? = null) {
+        val key = "$query|$categoryCode"
+        if (key == lastKey) return
+        lastKey = key
         _state.value = SearchUiState.Loading
         viewModelScope.launch {
             _state.value = try {
-                SearchUiState.Success(repository.search(query))
+                val cats = categoryCode?.let { listOf(it) } ?: emptyList()
+                SearchUiState.Success(repository.search(query, cats))
             } catch (e: Exception) {
                 SearchUiState.Error(e.message ?: "검색에 실패했어요")
             }

@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.api.JobsSearchResponse
+import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -38,18 +40,23 @@ import com.jobalert.app.ui.theme.JobKind
 @Composable
 fun SearchResultsScreen(
     query: String,
+    categoryCode: String = "",
     onBack: () -> Unit,
     onJobClick: (String) -> Unit,
     onCompanyClick: (Int) -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
-    val effectiveQuery = if (query.isBlank()) "삼성" else query
-    // 백엔드 /jobs/search 연결. 로딩·에러 시엔 빈 결과로 렌더(화면은 그대로 동작).
+    val isCategory = categoryCode.isNotBlank()
+    // 직군 둘러보기면 직군 라벨을, 일반 검색이면 검색어를 헤더에 표시(빈 검색은 "삼성" 데모).
+    val headerText = if (isCategory) categoryLabelOf(categoryCode) else query.ifBlank { "삼성" }
+    // 백엔드 /jobs/search 연결(직군이면 categories 필터). 로딩·에러 시엔 빈 결과로 렌더.
     val viewModel: SearchViewModel = viewModel()
-    LaunchedEffect(effectiveQuery) { viewModel.search(effectiveQuery) }
+    LaunchedEffect(query, categoryCode) {
+        if (isCategory) viewModel.search("", categoryCode) else viewModel.search(query.ifBlank { "삼성" })
+    }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val response = (state as? SearchUiState.Success)?.response
-        ?: JobsSearchResponse(query = effectiveQuery, totalEstimate = 0, jobs = emptyList())
+        ?: JobsSearchResponse(query = headerText, totalEstimate = 0, jobs = emptyList())
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
@@ -70,7 +77,7 @@ fun SearchResultsScreen(
                 Icon(Icons.Outlined.Search, contentDescription = null, tint = HiFiColors.Text, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    effectiveQuery,
+                    headerText,
                     style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
                     color = HiFiColors.Text,
                     modifier = Modifier.weight(1f),
@@ -116,6 +123,12 @@ fun SearchResultsScreen(
         HiFiTabBar(active = HomeTab.Search, onTabClick = onTabClick)
         HiFiGestureNav()
     }
+}
+
+/** 직군 코드(it_dev_data) → 한글 라벨. 매핑 없으면 코드 그대로. */
+private fun categoryLabelOf(code: String): String {
+    val i = JobCategoryCodes.indexOf(code)
+    return if (i in JobCategories.indices) JobCategories[i] else code
 }
 
 private fun kindOf(s: String): JobKind = when (s.uppercase()) {

@@ -41,10 +41,11 @@ class JobController(
 
     @GetMapping("/search")
     fun search(
-        @RequestParam q: String,
+        @RequestParam(required = false, defaultValue = "") q: String,
         @RequestParam(required = false) kind: String?,
-        @RequestParam(defaultValue = "20") limit: Int,
-    ): JobSearchResponse = jobService.search(q, kind, limit)
+        @RequestParam(required = false, defaultValue = "") categories: List<String>,
+        @RequestParam(defaultValue = "50") limit: Int,
+    ): JobSearchResponse = jobService.search(q, kind, categories, limit)
 
     @GetMapping("/{id}")
     fun detail(
