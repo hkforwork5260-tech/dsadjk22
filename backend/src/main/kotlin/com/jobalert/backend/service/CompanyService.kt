@@ -7,6 +7,7 @@ import com.jobalert.backend.dto.CompanyPageResponse
 import com.jobalert.backend.dto.CompanyPageStats
 import com.jobalert.backend.dto.CompanyStatsDto
 import com.jobalert.backend.dto.JobHistoryItem
+import com.jobalert.backend.entity.Company
 import com.jobalert.backend.entity.Job
 import com.jobalert.backend.exception.NotFoundException
 import com.jobalert.backend.repository.CompanyRepository
@@ -98,7 +99,7 @@ class CompanyService(
                 isFavorited = favorited,
             ),
             region = region,
-            about = c.description ?: "${c.name} 채용 정보입니다. 자세한 내용은 각 공고 원문을 확인하세요.",
+            about = c.description?.takeIf { it.isNotBlank() } ?: buildAbout(c, active.size, region),
             stats = CompanyPageStats(
                 // "올해 신규" 근사값 = 현재 진행중 공고 수(전부 올해 수집분). 정밀 집계는 후속.
                 thisYearCount = active.size,
@@ -108,6 +109,33 @@ class CompanyService(
             postings = active.map { mapper.toDto(it, c) },
             history = closed.map { JobHistoryItem(role = it.title, period = periodLabel(it)) },
         )
+    }
+
+    /** 회사 description이 없을 때, 산업·규모·근무지·진행 공고 수로 소개문을 자동 생성. */
+    private fun buildAbout(c: Company, activeCount: Int, region: String): String {
+        val ind = c.industry?.takeIf { it.isNotBlank() }
+        val size = sizeLabelKo(c.size)
+        val head = when {
+            ind != null && size != null -> "$ind 분야 $size"
+            ind != null -> "$ind 분야 기업"
+            size != null -> size
+            else -> null
+        }
+        return buildString {
+            head?.let { append("$it. ") }
+            if (region.isNotBlank() && region != "—") append("주요 근무지는 $region. ")
+            append(if (activeCount > 0) "현재 ${activeCount}건의 채용을 진행 중이에요." else "지금은 진행 중인 공고가 없어요.")
+        }
+    }
+
+    private fun sizeLabelKo(code: String?): String? = when (code) {
+        "large_corp" -> "대기업"
+        "mid_corp" -> "중견기업"
+        "small" -> "중소기업"
+        "public" -> "공기업"
+        "startup", "startup_unicorn" -> "스타트업"
+        "foreign" -> "외국계"
+        else -> null
     }
 
     private fun periodLabel(job: Job): String {
