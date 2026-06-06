@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.widget.Toast
@@ -250,8 +251,9 @@ private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () 
         }
     }
 
-    // 공고 본문 (수집된 경우만 — Greenhouse 등 본문 제공 소스)
+    // 공고 본문 (수집된 경우만 — Greenhouse 등 본문 제공 소스). 길어서 기본 접고 "더보기"로 펼침.
     if (job.description.isNotBlank()) {
+        var descExpanded by remember(job.id) { mutableStateOf(false) }
         Spacer(Modifier.height(22.dp))
         Text("📄 상세 내용", style = HiFiType.h2, color = HiFiColors.Text)
         Spacer(Modifier.height(10.dp))
@@ -259,6 +261,15 @@ private fun InfoContent(job: Job, onOpenOriginal: () -> Unit, onOpenCompany: () 
             job.description,
             style = HiFiType.body.copy(lineHeight = 22.sp),
             color = HiFiColors.Text,
+            maxLines = if (descExpanded) Int.MAX_VALUE else 8,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            if (descExpanded) "접기 ▴" else "더보기 ▾",
+            style = HiFiType.body2.copy(fontWeight = FontWeight.Bold),
+            color = HiFiColors.Brand,
+            modifier = Modifier.clickable { descExpanded = !descExpanded },
         )
     }
 
