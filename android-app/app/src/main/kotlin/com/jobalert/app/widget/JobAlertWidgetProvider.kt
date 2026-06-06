@@ -71,7 +71,6 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
                     R.id.widget_closing,
                     if (closing > 0) "⏰ 마감 임박 $closing" else "",
                 )
-                views.setTextViewText(R.id.widget_topjob, WidgetState.topJob(context))
             }
 
             // 위젯 탭 → 앱 열기
