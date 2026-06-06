@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
@@ -64,8 +65,15 @@ fun DiscoverScreen(
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
     val savedJobIds by viewModel.savedJobIds.collectAsStateWithLifecycle()
-    val pageCount = jobs.size + 1
+    // 이미 본 공고는 뒤로(안 본 것 먼저). 로드 시점 스냅샷이라 보는 도중엔 순서가 안 바뀐다.
+    val orderedJobs = remember(jobs) { jobs.sortedBy { it.id in SeenJobs.seenIds } }
+    val pageCount = orderedJobs.size + 1
     val pagerState = rememberPagerState(pageCount = { pageCount })
+    // 현재 페이지 공고를 '본 것'으로 기록 → 다음 진입 시 후순위.
+    LaunchedEffect(pagerState.currentPage, orderedJobs) {
+        val p = pagerState.currentPage
+        if (p < orderedJobs.size) SeenJobs.markSeen(orderedJobs[p].id)
+    }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -86,8 +94,8 @@ fun DiscoverScreen(
             flingBehavior = flingBehavior,
             beyondViewportPageCount = 2,
         ) { page ->
-            if (page < jobs.size) {
-                val j = jobs[page]
+            if (page < orderedJobs.size) {
+                val j = orderedJobs[page]
                 ReelsJobCard(
                     job = j,
                     isFav = j.companyId != null && j.companyId in favoriteCompanyIds,
@@ -97,7 +105,7 @@ fun DiscoverScreen(
                     onShare = onShare,
                     onOpenDetail = { onJobClick(j.id) },
                     pageIndex = page,
-                    pageTotal = jobs.size,
+                    pageTotal = orderedJobs.size,
                 )
             } else {
                 FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedJobIds.size, onGoMain = onGoMain)

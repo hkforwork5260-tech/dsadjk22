@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import com.google.firebase.messaging.FirebaseMessaging
+import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.api.DeviceId
 import com.jobalert.app.data.fcm.FcmRegistrar
 import com.jobalert.app.ui.screens.filter.ActiveFilter
@@ -32,6 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         DeviceId.init(applicationContext)      // 관심기업 등 기기ID 헤더 준비
         ActiveFilter.init(applicationContext)  // 저장된 관심 직군 필터 로드
+        SeenJobs.init(applicationContext)      // 찾아보기 본 공고 기록(후순위 정렬)
         requestNotificationPermission()
         registerFcmToken()
         enableEdgeToEdge()
