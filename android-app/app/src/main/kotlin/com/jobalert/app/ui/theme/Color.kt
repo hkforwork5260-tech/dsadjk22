@@ -47,28 +47,33 @@ object HiFiColors {
     val BorderDark = Color(0xFFD1D1D1)
 }
 
-enum class JobKind { NEW, UPDATE, CLOSING }
+// ACTIVE = 일반 진행중(NEW/UPDATE/CLOSING 아님). 메인 토글엔 안 뜨고 찾아보기·검색에 노출.
+enum class JobKind { NEW, UPDATE, CLOSING, ACTIVE }
 
 fun JobKind.color(): Color = when (this) {
     JobKind.NEW -> HiFiColors.New
     JobKind.UPDATE -> HiFiColors.Update
     JobKind.CLOSING -> HiFiColors.Closing
+    JobKind.ACTIVE -> HiFiColors.Text2
 }
 
 fun JobKind.softColor(): Color = when (this) {
     JobKind.NEW -> HiFiColors.NewSoft
     JobKind.UPDATE -> HiFiColors.UpdateSoft
     JobKind.CLOSING -> HiFiColors.ClosingSoft
+    JobKind.ACTIVE -> HiFiColors.Bg2
 }
 
 fun JobKind.shadowColor(): Color = when (this) {
     JobKind.NEW -> HiFiColors.NewShadow
     JobKind.UPDATE -> HiFiColors.UpdateShadow
     JobKind.CLOSING -> HiFiColors.ClosingShadow
+    JobKind.ACTIVE -> HiFiColors.Text3
 }
 
 fun JobKind.label(): String = when (this) {
     JobKind.NEW -> "NEW"
     JobKind.UPDATE -> "UPDATE"
     JobKind.CLOSING -> "CLOSING"
+    JobKind.ACTIVE -> "진행중"
 }

@@ -154,7 +154,7 @@ private fun ColumnScope.SuccessContent(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        JobKind.values().forEach { kind ->
+        listOf(JobKind.NEW, JobKind.UPDATE, JobKind.CLOSING).forEach { kind ->
             SectionChip(
                 kind = kind,
                 count = counts[kind] ?: 0,

@@ -213,7 +213,9 @@ class JobPersistenceService(
         job.kind = when (outcome) {
             DiffOutcome.CLOSING -> "CLOSING"
             DiffOutcome.UPDATED -> "UPDATE"
-            DiffOutcome.UNCHANGED -> job.kind // 유지
+            // 변화 없음 → 일반(ACTIVE)으로. 어제 NEW였던 공고가 오늘도 NEW로 남는 누적 방지.
+            // "오늘 새 공고(NEW)"는 이번 수집에서 처음 들어온(INSERT) 것만 유지된다.
+            DiffOutcome.UNCHANGED -> "ACTIVE"
         }
         return outcome
     }
