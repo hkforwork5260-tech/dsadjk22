@@ -150,7 +150,7 @@
 - **G4 관심기업 추가 버그** — 관심기업 화면 "기업 추가" 버튼이 빈 람다(NavGraph TODO)였음 → 검색 연결. setFavorite runCatching silent 실패 → 결과 콜백+롤백+토스트. ⚠️ **남은 트레이드오프**: 검색 결과에서 회사 섹션을 빼서, "기업 추가"→검색 시 회사가 안 나옴(공고만). 회사 검색 전용 경로는 미구현.
 - **G5 저장한 공고(북마크) 풀스택 신규** — `saved_jobs` 테이블(V2) + SavedJob 엔티티/repo/service/controller(`/users/me/saved`). JobDetailDto.isSaved. 안드: 상세 북마크 서버연동, `SavedJobsScreen` 신규, 마이페이지 "저장한 공고"→실화면. 마이페 카운트는 🔖 아이콘(실수치 추후).
 - **G2 카드/상세 충실화** — JobDto.jobCategories + CompanyEmbedDto.size 추가. 찾아보기 카드·공고상세에 직군·회사규모 배지(빈 학력/태그 대신 채워진 것만).
-- **G6(보류, 별도 의논)** — 카드 빈약 근본해결=공고 본문·급여 실수집. RawJobPosting에 필드 자체가 없음 + Greenhouse content=false. 작업량 커서 분리.
+- **G6 공고 본문 수집 완료 (2026-06-06, 커밋 8017227)** — Greenhouse `content=true`로 본문(content)+부서(departments) 수집. `SourceUtil.htmlToText`(Jsoup)로 HTML 정제→평문. `RawJobPosting.description`+적재. 라이브: greenhouse 399/399 본문 채움, 쿠팡 2730자. 상세화면 "📄 상세 내용" 섹션. **급여는 미수집**(Greenhouse pay_input_ranges=null, 공공기관 목록 API에 본문·급여 없음 — 소스에 데이터 자체가 없음). 온보딩 관심회사 고르기(onb3)도 제거(커밋 9a5f205).
 
 ### 🔥 FCM 푸시 운영 메모 (2026-06-05)
 - Firebase 프로젝트 `jobjob-533ca`(Spark 무료). `google-services.json`(패키지 `com.jobalert.app.debug`) 앱에 배치·커밋됨.
