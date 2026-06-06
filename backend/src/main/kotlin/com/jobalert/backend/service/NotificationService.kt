@@ -93,17 +93,7 @@ class NotificationService(
         val companyById = companyRepository.findAllById(jobs.map { it.companyId }.toSet()).associateBy { it.id }
         val names = jobs.mapNotNull { companyById[it.companyId]?.name }.distinct().take(3)
 
-        val title = when {
-            evening && personalized -> "내 직군 마감 임박 ${total}건 🔥"
-            evening -> "마감 임박 ${total}건 🔥"
-            personalized -> "내 직군 새 공고 ${total}건 ☀️"
-            else -> "오늘 새 공고 ${total}건 ☀️"
-        }
-        val body = when {
-            names.isEmpty() -> "오늘은 새 소식이 없어요"
-            total > names.size -> names.joinToString("·") + " 외 ${total - names.size}건"
-            else -> names.joinToString("·")
-        }
+        val (title, body) = buildDigestMessage(evening, total, names, now)
 
         val rec = NotificationHistory(
             id = "ntf-${if (evening) "eve" else "mor"}-${deviceId.toString().take(8)}-${now.toEpochSecond()}",
@@ -142,5 +132,50 @@ class NotificationService(
         if (!deviceRepository.existsById(deviceId)) {
             deviceRepository.save(Device(deviceId = deviceId, platform = "android"))
         }
+    }
+
+    /**
+     * 듀오링고풍 간단·친근 다이제스트 문구. 매일(dayOfYear) 다른 템플릿을 돌려 신선하게.
+     * title은 "새 공고 N개" 같은 한 줄 후크, body는 회사명 몇 개로 살짝 호기심.
+     */
+    private fun buildDigestMessage(evening: Boolean, total: Int, names: List<String>, now: OffsetDateTime): Pair<String, String> {
+        val idx = now.dayOfYear
+        if (total == 0) {
+            val title = EMPTY_TITLES[idx % EMPTY_TITLES.size]
+            val body = if (evening) "오늘 마감하는 공고는 없어요" else "내일 더 좋은 소식으로 올게요 🙌"
+            return title to body
+        }
+        val titles = if (evening) EVENING_TITLES else MORNING_TITLES
+        val title = String.format(titles[idx % titles.size], total)
+        val body = when {
+            names.isEmpty() -> "지금 1분만 확인해요 👀"
+            total > names.size -> names.joinToString("·") + " 외 ${total - names.size}건"
+            else -> names.joinToString("·")
+        }
+        return title to body
+    }
+
+    companion object {
+        // 아침(새 공고) — %d = 건수. 매일 돌려가며 노출.
+        private val MORNING_TITLES = listOf(
+            "오늘 새 공고 %d개 떴어요 👀",
+            "꽁이가 새 공고 %d개 찾았어요 🐱",
+            "따끈한 새 공고 %d개 도착 ☀️",
+            "새 공고 %d개! 1분이면 충분해요",
+            "잠깐! 새 공고 %d개 있어요 ✨",
+        )
+        // 저녁(마감 임박)
+        private val EVENING_TITLES = listOf(
+            "마감 임박 %d개 ⏰ 놓치지 마요",
+            "오늘 마감 %d개, 지금 확인해요 🔥",
+            "꽁이가 챙긴 마감 임박 %d개 🐱",
+            "곧 마감! %d개 서둘러요 ⏳",
+        )
+        // 새 소식 없는 날
+        private val EMPTY_TITLES = listOf(
+            "오늘은 조용하네요 😴",
+            "새 소식은 없지만 꽁이는 지켜보는 중 🐱",
+            "잠깐 쉬어가요. 새 공고 없어요 🍵",
+        )
     }
 }
