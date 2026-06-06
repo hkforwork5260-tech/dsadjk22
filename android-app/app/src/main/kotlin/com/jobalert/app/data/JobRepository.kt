@@ -114,11 +114,13 @@ class JobRepository(
         description = description,
         originalUrl = originalUrl,     // 지원하기 → 원본 채용 URL
         isSaved = isSaved,
+        isFavoriteCompany = isFavorited,
     )
 
     private fun JobDto.toDomain(): Job = Job(
         id = id,
         company = company.name,
+        companyId = company.id,
         logo = company.logo,
         role = title,
         kind = kindOf(kind) ?: JobKind.NEW,

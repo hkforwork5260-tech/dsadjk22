@@ -23,6 +23,7 @@ data class Job(
     val description: String = "",                 // 공고 본문(평문) — 상세 화면
     val originalUrl: String = "",
     val isSaved: Boolean = false,       // 저장(북마크) 여부 — 공고 상세에서 사용
+    val isFavoriteCompany: Boolean = false,  // 이 공고 회사가 관심기업인지 — 상세 하트 초기상태
 )
 
 /**

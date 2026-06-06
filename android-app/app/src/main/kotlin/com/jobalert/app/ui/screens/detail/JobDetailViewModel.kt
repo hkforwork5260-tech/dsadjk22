@@ -42,6 +42,16 @@ class JobDetailViewModel : ViewModel() {
             onResult(ok)
         }
     }
+
+    /** 이 공고 회사를 관심기업 추가/삭제. 낙관적 토글 후 실패는 [onResult]로. */
+    fun setFavorite(companyId: Int, favorite: Boolean, onResult: (Boolean) -> Unit = {}) {
+        viewModelScope.launch {
+            val ok = runCatching {
+                if (favorite) repository.addFavorite(companyId) else repository.removeFavorite(companyId)
+            }.isSuccess
+            onResult(ok)
+        }
+    }
 }
 
 sealed interface JobDetailUiState {

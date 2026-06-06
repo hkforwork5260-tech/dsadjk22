@@ -147,7 +147,8 @@ class JobService(
         }
         val company = companyRepository.findById(job.companyId).orElse(null)
         val saved = deviceId != null && savedJobRepository.existsByDeviceIdAndJobId(deviceId, id)
-        return mapper.toDetailDto(job, company, isSaved = saved)
+        val favorited = deviceId != null && userFavoriteRepository.existsByDeviceIdAndCompanyId(deviceId, job.companyId)
+        return mapper.toDetailDto(job, company, isFavorited = favorited, isSaved = saved)
     }
 
     fun similar(id: String): JobListResponse {

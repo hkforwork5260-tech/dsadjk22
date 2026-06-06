@@ -9,8 +9,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,8 +59,10 @@ fun JobDetailScreen(
     val context = LocalContext.current
     var tab by remember { mutableStateOf(DetailTab.Info) }
     var saved by remember(jobId) { mutableStateOf(false) }
-    // 백엔드가 알려준 저장 상태로 초기 동기화(로드 완료 시).
+    var favorited by remember(jobId) { mutableStateOf(false) }
+    // 백엔드가 알려준 저장·관심기업 상태로 초기 동기화(로드 완료 시).
     LaunchedEffect(job.isSaved) { saved = job.isSaved }
+    LaunchedEffect(job.isFavoriteCompany) { favorited = job.isFavoriteCompany }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -69,6 +73,24 @@ fun JobDetailScreen(
             },
             action = {
                 Row {
+                    HiFiIconBtn(
+                        if (favorited) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        "관심기업",
+                        onClick = {
+                            val cid = job.companyId
+                            if (cid != null) {
+                                val target = !favorited
+                                favorited = target  // 낙관적 토글
+                                viewModel.setFavorite(cid, target) { ok ->
+                                    if (!ok) {
+                                        favorited = !target  // 실패 롤백
+                                        Toast.makeText(context, "관심기업 저장에 실패했어요. 잠시 후 다시 시도해 주세요", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        },
+                    )
+                    Spacer(Modifier.width(8.dp))
                     HiFiIconBtn(
                         if (saved) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                         "저장",

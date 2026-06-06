@@ -62,7 +62,7 @@ fun DiscoverScreen(
     val viewModel: DiscoverViewModel = viewModel()
     LaunchedEffect(Unit) { viewModel.load() }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
-    var favSet by remember { mutableStateOf(setOf<String>()) }
+    val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
     var savedSet by remember { mutableStateOf(setOf<String>()) }
     val pageCount = jobs.size + 1
     val pagerState = rememberPagerState(pageCount = { pageCount })
@@ -90,11 +90,9 @@ fun DiscoverScreen(
                 val j = jobs[page]
                 ReelsJobCard(
                     job = j,
-                    isFav = j.id in favSet,
+                    isFav = j.companyId != null && j.companyId in favoriteCompanyIds,
                     isSaved = j.id in savedSet,
-                    onToggleFav = {
-                        favSet = if (j.id in favSet) favSet - j.id else favSet + j.id
-                    },
+                    onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
                     onToggleSave = {
                         savedSet = if (j.id in savedSet) savedSet - j.id else savedSet + j.id
                     },
@@ -104,7 +102,7 @@ fun DiscoverScreen(
                     pageTotal = jobs.size,
                 )
             } else {
-                FinishReelsCard(favCount = favSet.size, savedCount = savedSet.size, onGoMain = onGoMain)
+                FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedSet.size, onGoMain = onGoMain)
             }
         }
 
@@ -252,10 +250,10 @@ private fun ReelsJobCard(
         ) {
             CircleAction(
                 icon = if (isFav) Icons.Outlined.Favorite else Icons.Outlined.FavoriteBorder,
-                desc = "좋아요",
+                desc = "관심기업",
                 activeColor = HiFiColors.Closing,
                 active = isFav,
-                label = "좋아요",
+                label = "관심기업",
                 onClick = onToggleFav,
             )
             CircleAction(
