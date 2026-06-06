@@ -26,7 +26,6 @@ import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
 import com.jobalert.app.ui.screens.saved.SavedJobsScreen
 import com.jobalert.app.ui.screens.search.SearchResultsScreen
 import com.jobalert.app.ui.screens.search.SearchScreen
-import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySwipeScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingJobCategoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingWidgetScreen
 import com.jobalert.app.ui.screens.settings.FeedbackScreen
@@ -43,7 +42,6 @@ import com.jobalert.app.ui.screens.similar.SimilarJobsScreen
 object Routes {
     const val Onboarding1 = "onb1"
     const val Onboarding2 = "onb2"
-    const val Onboarding3 = "onb3"
     const val Onboarding4 = "onb4"
     const val Main = "main"
     const val MainEmpty = "mainEmpty"
@@ -96,19 +94,15 @@ fun JobAlertNavHost() {
 
         composable(Routes.Onboarding2) {
             OnboardingCompanySizeScreen(
-                onNext = { nav.navigate(Routes.Onboarding3) },
-                onSkip = { goMain(nav) },
-                onBack = { nav.popBackStack() },
-            )
-        }
-
-        composable(Routes.Onboarding3) {
-            OnboardingCompanySwipeScreen(
+                // 관심회사 고르기(onb3)는 온보딩 흐름에서 제외 — 찾아보기와 겹쳐 바로 위젯 단계로 (사용자 요청 2026-06-06)
                 onNext = { nav.navigate(Routes.Onboarding4) },
                 onSkip = { goMain(nav) },
                 onBack = { nav.popBackStack() },
             )
         }
+
+        // onb3(관심회사 스와이프)는 온보딩·관심설정에서 모두 제외(찾아보기와 겹침, 사용자 요청 2026-06-06).
+        // 화면 파일(OnboardingCompanySwipeScreen)은 복원 용이하게 남겨둠 — 현재 어디서도 라우트되지 않음.
 
         composable(Routes.Onboarding4) {
             OnboardingWidgetScreen(
@@ -240,7 +234,6 @@ fun JobAlertNavHost() {
                 onBack = { nav.popBackStack() },
                 onEditJobCategory = { nav.navigate(Routes.Onboarding1) },
                 onEditCompanySize = { nav.navigate(Routes.Onboarding2) },
-                onEditCompanySwipe = { nav.navigate(Routes.Onboarding3) },
                 onOpenFavorites = { nav.navigate(Routes.Favorites) },
             )
         }

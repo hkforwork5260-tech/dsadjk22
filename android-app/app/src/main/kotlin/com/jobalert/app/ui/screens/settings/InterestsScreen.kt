@@ -37,7 +37,6 @@ fun InterestsScreen(
     onBack: () -> Unit,
     onEditJobCategory: () -> Unit,
     onEditCompanySize: () -> Unit,
-    onEditCompanySwipe: () -> Unit,
     onOpenFavorites: () -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
@@ -107,17 +106,6 @@ fun InterestsScreen(
                 chipColor = HiFiColors.New,
                 chipSoft = HiFiColors.NewSoft,
                 onEdit = onOpenFavorites,
-            )
-
-            Spacer(Modifier.height(14.dp))
-
-            SectionCard(
-                title = "관심 기업 추가 탐색",
-                count = "온보딩에서 더 둘러보기",
-                chips = emptyList(),
-                chipColor = HiFiColors.Brand,
-                chipSoft = HiFiColors.BrandSoft,
-                onEdit = onEditCompanySwipe,
             )
 
             Spacer(Modifier.height(22.dp))
