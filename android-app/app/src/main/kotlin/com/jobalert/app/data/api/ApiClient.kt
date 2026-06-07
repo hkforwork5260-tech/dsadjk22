@@ -14,14 +14,16 @@ import java.util.concurrent.TimeUnit
  * Retrofit 싱글톤. [ApiService] 구현체를 만들어 [api]로 노출한다.
  *
  * BASE_URL:
- *  - 안드로이드 **에뮬레이터**에서 PC의 localhost는 `10.0.2.2`다 (localhost는 에뮬 자신).
- *  - **실기기**로 테스트하면 PC의 LAN IP(예: http://192.168.0.x:8080/)로 바꿔야 함.
- *  - 배포 시 실제 서버 도메인(https)로 교체. cleartext(http)는 dev 전용
- *    (AndroidManifest usesCleartextTraffic=true).
+ *  - **운영(기본)**: Railway 클라우드 서버. 24시간 켜져 있어 에뮬·실기기 어디서나 동작.
+ *  - 로컬 백엔드로 개발할 땐 아래 주석을 토글:
+ *    - 에뮬레이터에서 PC의 localhost는 `10.0.2.2` (localhost는 에뮬 자신).
+ *    - 실기기는 PC의 LAN IP(예: http://192.168.0.x:8080/).
+ *  - cleartext(http)는 dev 전용(AndroidManifest usesCleartextTraffic=true). 운영은 https.
  */
 object ApiClient {
 
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    // 운영: Railway 클라우드. 로컬 개발 시 "http://10.0.2.2:8080/"로 교체.
+    private const val BASE_URL = "https://dsadjk22-production.up.railway.app/"
 
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
