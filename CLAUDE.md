@@ -103,6 +103,7 @@
 ## 현재 상태
 
 ### ✅ 완료
+- **★ 클라우드 배포 (2026-06-07, Railway)** — 백엔드가 로컬→**24시간 클라우드 서버**로 첫 배포. 공개주소 `https://dsadjk22-production.up.railway.app`(health UP, jobs/today 399건). 매일 18시 KST 자동수집 cron 가동. 프로젝트 `enchanting-wisdom` + 관리형 Postgres(DB명 `railway`), Redis 제거. repo `hkforwork5260-tech/dsadjk22`, **Root Directory=`backend`**, push시 자동재배포. 절차=`backend/DEPLOY_RAILWAY.md`. 함정 3개: ①Railway `DATABASE_URL`은 `postgresql://`(jdbc아님)→env에 `jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/railway` 직접 박음 ②수집 멈춤=Greenhouse `content=true`가 메모리작은 박스서 과부하→`content=false` 기본(그래서 **greenhouse 본문 현재 미수집**)+힙75% ③무거운 동기 `/admin/collect`는 프록시 502→`@Async`(202). 커밋 `ffd20e8`·`d8df879`·`47b2484`. 미설정: PUBINST/SEOUL 키(넣으면 1,300건+), 안드 BASE_URL.
 - HTML 프로토타입 (`project/index.html`) — 26개 화면 전부, jsdom 검증 26/26
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
 - **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
