@@ -3,6 +3,8 @@ package com.jobalert.backend.controller
 import com.jobalert.backend.dto.NotificationDto
 import com.jobalert.backend.service.HybridCollectorService
 import com.jobalert.backend.service.NotificationService
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -24,9 +26,22 @@ class AdminController(
     private val collectorService: HybridCollectorService,
     private val notificationService: NotificationService,
 ) {
-    /** 즉시 1회 수집 + DB 적재. 결과(소스별 건수·적재 통계) 반환. */
+    /**
+     * 수집을 백그라운드로 시작하고 즉시 202 반환.
+     * 수집은 수백 건+본문을 받느라 수십 초~수 분 걸려 클라우드 프록시가 동기 응답에 502를 내므로,
+     * HTTP는 바로 끊고 작업은 별도 스레드에서 진행한다. 진행/결과는 서버 로그로 확인.
+     * 이미 수집 중이면 409.
+     */
     @PostMapping("/collect")
-    fun collect(): HybridCollectorService.CollectionResult = collectorService.runDailyCollection()
+    fun collect(): ResponseEntity<Map<String, Any>> {
+        if (collectorService.isRunning) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(mapOf("status" to "already_running", "message" to "수집이 이미 진행 중입니다."))
+        }
+        collectorService.runDailyCollectionAsync()
+        return ResponseEntity.accepted()
+            .body(mapOf("status" to "started", "message" to "수집을 시작했습니다. 진행 상황은 서버 로그를 확인하세요."))
+    }
 
     /**
      * 다이제스트 1건 생성(테스트용). kind=morning_digest(기본)/evening_digest.

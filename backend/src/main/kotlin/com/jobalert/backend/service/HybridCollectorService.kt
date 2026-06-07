@@ -3,7 +3,9 @@ package com.jobalert.backend.service
 import com.jobalert.backend.client.source.JobSource
 import com.jobalert.backend.client.source.RawJobPosting
 import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * 하이브리드 수집기 — 등록된 모든 [JobSource]를 순회하며 공고를 모은다.
@@ -20,6 +22,31 @@ class HybridCollectorService(
     private val persistenceService: JobPersistenceService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    /** 수집 진행 중 플래그 — 수동 트리거 중복 실행(동시 2회 수집) 방지. */
+    private val running = AtomicBoolean(false)
+
+    val isRunning: Boolean get() = running.get()
+
+    /**
+     * 수동 트리거용 비동기 수집. 즉시 반환하고 별도 스레드에서 [runDailyCollection] 실행.
+     * 클라우드(Railway) 프록시는 동기 응답이 오래 걸리면 502를 내므로, HTTP는 바로 끊고 작업은 뒤에서 돌린다.
+     * 이미 수집 중이면 false 반환(중복 방지). 시작했으면 true.
+     */
+    @Async
+    fun runDailyCollectionAsync() {
+        if (!running.compareAndSet(false, true)) {
+            log.warn("이미 수집 진행 중 — 비동기 트리거 무시")
+            return
+        }
+        try {
+            runDailyCollection()
+        } catch (ex: Exception) {
+            log.error("비동기 수집 실패", ex)
+        } finally {
+            running.set(false)
+        }
+    }
 
     fun runDailyCollection(): CollectionResult {
         log.info("hybrid collection start. active sources = {}", sources.map { it.sourceId })
