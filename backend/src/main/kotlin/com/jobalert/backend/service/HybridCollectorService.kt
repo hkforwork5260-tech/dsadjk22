@@ -55,6 +55,7 @@ class HybridCollectorService(
         val all = mutableListOf<RawJobPosting>()
 
         for (source in sources) {
+            val srcStart = System.currentTimeMillis()
             val jobs = try {
                 source.fetchAll()
             } catch (ex: Exception) {
@@ -64,7 +65,7 @@ class HybridCollectorService(
             }
             perSource[source.sourceId] = jobs.size
             all += jobs
-            log.info("source={} collected={}", source.sourceId, jobs.size)
+            log.info("source={} collected={} ({}ms)", source.sourceId, jobs.size, System.currentTimeMillis() - srcStart)
         }
 
         // 소스 간 중복 제거 (같은 공고가 여러 소스에 잡히는 경우 대비). externalId는 소스 prefix 포함이라
@@ -72,7 +73,10 @@ class HybridCollectorService(
         val deduped = all.distinctBy { it.externalId }
 
         // 메모리까지 가져온 공고를 DB에 적재 + 어제 대비 diff 라벨링.
+        log.info("적재 시작: {}건 (DB upsert+diff)", deduped.size)
+        val persistStart = System.currentTimeMillis()
         val persist = persistenceService.persist(deduped)
+        log.info("적재 완료: {}건 ({}ms)", deduped.size, System.currentTimeMillis() - persistStart)
 
         log.info(
             "hybrid collection end. perSource={} total={} deduped={} persist={}",

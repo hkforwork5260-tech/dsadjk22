@@ -25,4 +25,5 @@ COPY --from=build /app/build/libs/*.jar app.jar
 ENV SPRING_PROFILES_ACTIVE=prod
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# 컨테이너 가용 메모리의 75%까지 힙으로 사용(기본 25%). 큰 응답 처리 시 GC 쥐어짜기 완화.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

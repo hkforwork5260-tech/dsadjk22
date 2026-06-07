@@ -32,6 +32,9 @@ class GreenhouseSource(
     private val apiCallLogger: ApiCallLogger,
     private val registry: SourceRegistry,
     @Value("\${jobalert.sources.greenhouse.base-url:https://boards-api.greenhouse.io/v1/boards}") private val baseUrl: String,
+    // content=true면 공고 본문(HTML)까지 받아 응답이 수십 배 커진다. 메모리 작은 클라우드에선
+    // 큰 응답 처리가 매우 느려질 수 있어 기본 false(목록만 가볍게). 본문 보강은 별도.
+    @Value("\${jobalert.sources.greenhouse.content:false}") private val fetchContent: Boolean,
 ) : JobSource {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -51,8 +54,8 @@ class GreenhouseSource(
     }
 
     private fun fetchBoard(board: SourceBoard): List<RawJobPosting> {
-        // content=true: 공고 본문(content)+부서(departments)까지 받는다. 응답이 커지지만 카드/상세 충실화에 필요.
-        val url = "$baseUrl/${board.token}/jobs?content=true"
+        // content=true면 본문(content)+부서까지. 응답이 커서 작은 클라우드 박스에선 느림 → 기본 false.
+        val url = "$baseUrl/${board.token}/jobs?content=$fetchContent"
         val started = System.currentTimeMillis()
         return try {
             val response = restClient.get()
