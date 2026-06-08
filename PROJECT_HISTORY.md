@@ -111,6 +111,9 @@ backend/src/main/kotlin/com/jobalert/backend/
 8. **클라우드 배포 함정(Railway)**: ①`DATABASE_URL`은 `postgresql://`(jdbc 아님)→env에 jdbc URL 직접 박음 ②Greenhouse `content=true`가 작은 박스서 OOM→`content=false` 기본 ③무거운 동기 `/admin/collect`는 프록시 502→`@Async`(202) ④**변수 수정 후 `Deploy` 버튼 눌러야 반영**(안 누르면 옛 값, 1시간 헤맴) ⑤적재는 모든 소스 fetch 후 맨 끝 한 번에 점프 ⑥`total_estimate`는 limit에 묶인 반환 개수.
 9. **트라이얼 박스 OOM 반복**: 무료 박스가 수집·대량 응답(limit 1000)에 크래시. 데이터는 Postgres라 안전, push 재배포로 부활. **단, 크래시 대부분은 개발 중 과도한 테스트(수십 번 재수집·큰 쿼리) 탓**이라, 실사용자 부하가 적으면 무료로도 충분할 수 있음(추후 today 캐싱·페이지네이션).
 10. **컴파일 못 하던 시절의 흔적**: 초기엔 웹 샌드박스라 안드 빌드 불가 → "사용자 PC에서 검증"으로 진행. Compose 함정들 학습(box-shadow 없음=2겹 스택, `1.4.dp` 불가→`1.4f.dp`, 음수 padding 불가→offset, FlowRow @OptIn 필요).
+11. **메인 NEW 의미 정의 사투(2026-06-09)**: "NEW=오늘 첫등장"만 → 그날 수집 전이면 0 → 빈칸. → "오늘 올라온 OR 아직 안 본 공고"로 재정의(필터·관심 바꾸면 새 매칭이 NEW로). 위젯·오늘·알림 셋 다 같은 관심 기준(직군+규모, 마감임박 D-3)으로 통일. 백엔드 today()에서 표시 kind를 메모리로 재계산하되 **JPA 관리 엔티티를 직접 mutate**하면 위험(readOnly라 flush는 안 됐지만)이라 주의.
+12. **"공고를 불러오지 못했어요" 502 사투(2026-06-09)**: 첫 설치+온보딩 직후 첫 today만 502, 관심 바꾸면 됨. 원인 추적 — ①today limit=1000이라 '어디든(전체)' 응답이 너무 커 무료 박스 OOM/502(→200으로 축소) ②목록 응답에 본문 전체를 실어 수MB(→미리보기 160자로 잘라 수십KB) ③진짜 핵심은 **무료 박스 cold start/재시작 중 502**(첫 요청 실패→다음 요청 성공) → 타임아웃 10s→25s + **첫 로드 자동 재시도 5회(점증)** + **앱 시작 시 warmup 핑**(온보딩 동안 박스 깨움). ④그리고 **하루 ~15번 재배포(커밋마다 1~2분 다운)도 502의 큰 원인** — 기능 안정 후 재배포 멈추니 해결.
+13. **keep-alive(2026-06-09)**: 무료 박스가 유휴/재시작으로 잠깐 죽는 걸 막으려 **UptimeRobot 무료**(5분마다 `GET /actuator/health` 핑). GitHub Actions cron도 시도했으나 git/gh 토큰에 `workflow` 스코프가 없어 push 거부 → UptimeRobot으로 선회(더 안정적·컴퓨팅 0·비용 0). actuator/health는 DB SELECT 1 수준이라 가벼움(무거운 today를 핑하면 역효과).
 
 ---
 
@@ -119,6 +122,8 @@ backend/src/main/kotlin/com/jobalert/backend/
 - **시크릿(미커밋)**: `backend/secrets/fcm-service-account.json`(gitignore), `keystore.properties`+`release.jks`(release 서명, 비번 백업 필수), data.go.kr·서울 API 키(Railway Variables).
 - **푸시 활성화 조건**: `PUSH_ENABLED=true` + `FCM_ENABLED=true`(+서비스계정 키). 기본 false라 안 켜져 있으면 실제 폰 푸시는 안 나감(앱 내 알림 히스토리엔 보임).
 - **수집 활성화**: `COLLECTOR_ENABLED`, `PUBINST_ENABLED`+키, `SEOUL_ENABLED`+키.
+- **keep-alive**: UptimeRobot(무료)가 5분마다 `GET /actuator/health` 핑 → 박스 콜드/유휴 완화. UptimeRobot Free·Railway 핑 모두 비용 무시 수준(박스는 어차피 24시간 가동).
+- **무료 박스 한계 대응**: today limit 200·목록 본문 160자·today 풀 2000으로 응답/메모리 경량화 + 앱 warmup·재시도로 콜드스타트 흡수.
 
 ## 9. 현재 상태 & 남은 것
 - ✅ 라이브 배포·자동수집·4소스·직군분류 91%·리브랜딩·위젯 자체갱신·도움말·관심(직군+규모) 푸시·원문 직링크.
@@ -135,7 +140,8 @@ backend/src/main/kotlin/com/jobalert/backend/
 - **06-06**: UX 개선 6건 + 본문 수집(카드/상세 충실화) + 서울 소스 + 한줄요약 폐기 + 관심기업 UX.
 - **06-07**: 검색·찾아보기·알림(듀오링고풍)·**홈 위젯(꽁이 표정)** 대개편 + NEW 누적버그(ACTIVE 도입) + **Railway 클라우드 첫 배포** + 데이터 1,343건 + /admin 인증.
 - **06-08**: 정식 release 서명 빌드 + UX 13건 + **리브랜딩(시바 단이·블루)** + 관심↔필터 분리 + 찾아보기 인스타 랭킹(/discover) + 원문 직링크 3소스 + 직군분류 사투.
-- **06-09**: 메인 NEW 재정의·마감임박 D-3·진입 최신화 + 첫진입 도움말 + 캘린더 월이동 + 관심편집 분리 + 위젯 자체 fetch + 알림 관심(직군+규모) + 회사통계 허위정보 정리.
+- **06-09**: 메인 NEW 재정의(오늘+안 본)·마감임박 D-3·진입 최신화 + 오늘 칩(NEW/UPDATE/Hurry up!) + 첫진입 도움말(오늘·마감·관심기업·찾아보기) + 캘린더 월이동 + 관심편집 모드(이전/완료) + 위젯 자체 fetch + 알림 관심(직군+규모) + 회사통계 허위정보(합격률·올해신규 라벨) 정리 + **첫로드 502 사투**(limit 200·본문 160자·warmup·재시도·타임아웃↑) + **keep-alive(UptimeRobot)** + 제작 과정 기록 `PROJECT_HISTORY.md`.
+- **★ 빌드 검증**: 이 세션부터 **개발 머신에서 직접 `./gradlew assembleDebug`로 빌드 검증**(웹샌드박스 불가는 옛 정보). 매 변경마다 컴파일·빌드 후 APK 제공. (open class 누락 빌드실패도 이렇게 잡음.)
 
 ---
 

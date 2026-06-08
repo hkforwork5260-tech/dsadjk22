@@ -103,6 +103,15 @@
 ## 현재 상태
 
 ### ✅ 완료
+- **★★ 리브랜딩 + UX 40여건 + 분류91% + 502대응 + keep-alive (2026-06-09)** — 상세는 `memory/session_end_2026-06-09.md` + 저장소 루트 `PROJECT_HISTORY.md`(제작 전 과정 기록). 핵심:
+  - **리브랜딩**: 코랄+고양이'꽁이' → **블루(#4F6EF0)+시바'단이'**. HiFiColors 전면 교체, 마스코트 Canvas→PNG 6표정(`res/drawable-nodpi/mascot_*`), 앱아이콘, 텍스트 '꽁이'→'단이'(안드+백엔드).
+  - **원문 직링크 3소스 수정**: greenhouse embed(`job-boards.greenhouse.io/embed/job_app?for=토큰&token=id`), ALIO `mobile2021/recruit/recruitView.do?idx=`, 서울→고용24 `m.work24.go.kr ...wantedAuthNo=JO_REGIST_NO`. 기존행 Flyway V4.
+  - **직군 분류 91%**: 영문 키워드 보강+오염키워드 정밀화(finance 448폭증 수정)+**"기타(etc)" 폴백**+재분류 API. (95%는 과다태깅 위험·AI분류 v0.2.)
+  - **메인 today 재설계**: 표시 kind 재계산 — **NEW=오늘(KST) 첫등장 또는 아직 안 본 공고**(필터·관심 바꾸면 새 매칭), 마감임박=D-3, 마감 지난 건 제외, 진입마다 now 기준. 오늘칩 NEW/UPDATE/Hurry up!(카드 배지는 '마감임박'). 위젯·오늘·알림 셋 다 같은 관심 기준(직군+규모).
+  - **위젯 자체 fetch**(`WidgetUpdater`): 앱 안 열어도 ~30분 주기로 today 호출해 갱신. **알림 다이제스트도 오늘 규칙(관심 직군+규모)** — 규모는 `devices.interest_sizes`(Flyway V5).
+  - **★ 무료박스 502 대응**: today limit 1000→200, 목록 본문 160자로 자름(상세는 전체), today풀 3000→2000, OkHttp 타임아웃 25s, **첫로드 자동 재시도 5회 + 앱시작 warmup 핑**, **keep-alive=UptimeRobot 5분마다 `/actuator/health`**. **개발 중 잦은 재배포(커밋마다 1~2분 다운)도 502의 큰 원인 → 테스트 중 push 자제.**
+  - 그 외: 위젯 크기별 핀(`open class`), 캘린더 월이동·근무지역·NEW만, 관심편집 분리(이전/완료), 찾아보기 라벨제거·밝은블루·더블탭, 회사통계 허위정보(합격률·올해신규 라벨)정리, 온보딩 산업군제거·직군'어디든', 첫진입 도움말(HelpDialog), 공유 카카오톡.
+  - **★ 빌드: 이제 개발 머신에서 직접 `./gradlew assembleDebug`로 검증**(아래 함정 정정 참고).
 - **★ 클라우드 배포 (2026-06-07, Railway)** — 백엔드가 로컬→**24시간 클라우드 서버**로 첫 배포. 공개주소 `https://dsadjk22-production.up.railway.app`(health UP, jobs/today 399건). 매일 18시 KST 자동수집 cron 가동. 프로젝트 `enchanting-wisdom` + 관리형 Postgres(DB명 `railway`), Redis 제거. repo `hkforwork5260-tech/dsadjk22`, **Root Directory=`backend`**, push시 자동재배포. 절차=`backend/DEPLOY_RAILWAY.md`. 함정 3개: ①Railway `DATABASE_URL`은 `postgresql://`(jdbc아님)→env에 `jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/railway` 직접 박음 ②수집 멈춤=Greenhouse `content=true`가 메모리작은 박스서 과부하→`content=false` 기본(그래서 **greenhouse 본문 현재 미수집**)+힙75% ③무거운 동기 `/admin/collect`는 프록시 502→`@Async`(202). 커밋 `ffd20e8`·`d8df879`·`47b2484`.
 - **★ 클라우드 데이터 확장 + 운영 보안 (2026-06-07, 같은 날 후속)** — 위 배포의 "미설정" 3개를 전부 처리. 커밋 `21f3ef4`.
   - **데이터 399 → 1,343건**: Railway Variables에 `PUBINST_ENABLED=true`+`JOBALERT_PUBINST_KEY`, `SEOUL_ENABLED=true`+`JOBALERT_SEOUL_KEY`(+`SEOUL_MAX_ROWS=1000`) 추가. 라이브 실측 = **공공기관 500 + 서울 445 + greenhouse 398, 회사 534곳**. 매일 cron도 이 키로 자동수집.
@@ -242,7 +251,7 @@
 - **`Double.dp`는 컴파일 에러** — `1.4.dp` 대신 `1.4f.dp` 또는 `2.dp` 사용
 - **음수 `padding`도 에러** — `offset` 사용
 - **마스코트 꽁이**는 현재 Canvas로 SVG path 재현. 출시 전에 일러스트레이터 의뢰 → VectorDrawable 또는 Lottie로 교체 권장
-- **이 웹 샌드박스에선 Android Gradle 빌드 불가** (Google Maven 차단). 빌드 검증은 사용자 PC에서.
+- **(정정 2026-06-09)** 개발 머신(사용자 맥)에서 **`cd ~/jobalert/android-app && ./gradlew assembleDebug`로 직접 빌드 가능**(deps 캐시됨). 과거 "웹 샌드박스 빌드 불가"는 옛 정보 — 이제 매 변경 후 직접 빌드 검증하고 APK(`app/build/outputs/apk/debug/app-debug.apk`) 제공(카톡 사이드로드). `open class` 누락 같은 컴파일 에러도 직접 잡음.
 
 ## 연락처·자원
 
