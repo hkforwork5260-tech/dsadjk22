@@ -57,7 +57,8 @@ class JobService(
 
         // 회사 다양성(interleave)·개인화·규모 필터를 위해 전체 활성 공고를 후보로 둔다(v0.1 ~1.3천건).
         // 1000 cap이면 최신순에서 밀린 소스(greenhouse 등)가 규모 필터에서 누락 → 넉넉히.
-        val pool = PageRequest.of(0, maxOf(limit, 3000))
+        // 활성 공고(~1.4천) 전부 담되 메모리 과부하(무료 박스 OOM) 줄이려 3000→2000.
+        val pool = PageRequest.of(0, maxOf(limit, 2000))
         var jobs = if (kind == null) {
             jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(pool)
         } else {
