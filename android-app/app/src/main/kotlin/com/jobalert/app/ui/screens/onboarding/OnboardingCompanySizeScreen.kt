@@ -20,7 +20,7 @@ import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
 
 /**
- * 온보딩 ② 기업 규모 + 산업군 multi-select.
+ * 온보딩 ② 기업 규모 multi-select. (산업군은 데이터·필터 부재로 제거 — 직군으로 대체)
  * HiFi_Onb2 대응.
  */
 @Composable
@@ -32,20 +32,10 @@ fun OnboardingCompanySizeScreen(
     // 실제 수집 데이터에 있는 규모만(중견·외국계·스타트업은 데이터 0). 인덱스 = scaleCodes와 1:1.
     val scales = listOf("대기업", "공기업", "중소기업")
     val scaleCodes = listOf("large_corp", "public", "small")
-    // 산업군 — 사람인 기준 주요 분야 + 기타. 더보기 칸 없이 한눈에 다 보임.
-    val sectors = listOf(
-        "IT/플랫폼", "반도체", "금융",
-        "자동차", "바이오/제약", "화학/소재",
-        "유통/식품", "게임", "미디어/엔터",
-        "통신/방송", "에너지/중공업", "건설/건축",
-        "항공/물류", "교육/공공", "패션/뷰티",
-        "기타",
-    )
     // 처음엔 빈 상태(직접 고름). 내정보 '규모 수정' 재진입 시 저장된 값(ActiveFilter) 반영.
     var selectedScales by remember {
         mutableStateOf(ActiveFilter.interestSizes.mapNotNull { code -> scaleCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
     }
-    var selectedSectors by remember { mutableStateOf(emptySet<Int>()) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -102,22 +92,6 @@ fun OnboardingCompanySizeScreen(
                     },
                 )
 
-                Spacer(Modifier.height(22.dp))
-                SectionLabel("산업군")
-                Spacer(Modifier.height(8.dp))
-                AnyOption(
-                    active = selectedSectors.isEmpty(),
-                    onClick = { selectedSectors = emptySet() },
-                )
-                Spacer(Modifier.height(8.dp))
-                GridButtons(
-                    items = sectors,
-                    selected = selectedSectors,
-                    columns = 3,
-                    onToggle = { i ->
-                        selectedSectors = if (i in selectedSectors) selectedSectors - i else selectedSectors + i
-                    },
-                )
                 Spacer(Modifier.height(20.dp))
             }
 

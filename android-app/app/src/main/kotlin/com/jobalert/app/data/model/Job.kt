@@ -68,7 +68,7 @@ val JobCategories: List<String> = listOf(
 
 /**
  * [JobCategories]와 같은 순서의 백엔드 직군 코드. 필터 화면의 인덱스 선택을 코드로 변환할 때 사용.
- * 마지막 "기타"(index 21)는 백엔드 코드가 없어 제외됨(getOrNull → null).
+ * 마지막 "기타"="etc" — 백엔드 분류기가 미매칭 공고에 부여하는 catch-all 코드(라벨·필터 동작).
  */
 val JobCategoryCodes: List<String> = listOf(
     "plan_strategy", "marketing_pr", "accounting_finance",
@@ -78,4 +78,5 @@ val JobCategoryCodes: List<String> = listOf(
     "service", "production", "construction",
     "medical", "research", "education",
     "media_culture_sport", "finance_insurance", "public_welfare",
+    "etc",
 )
