@@ -16,7 +16,7 @@ class JobAlertMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         // 저장된 관심직군을 함께 보냄(빈 값 보내면 백엔드 직군이 지워지므로 prefs 로드 후 등록).
         ActiveFilter.init(applicationContext)
-        FcmRegistrar.register(token, ActiveFilter.interestCategories)
+        FcmRegistrar.register(token, ActiveFilter.interestCategories, ActiveFilter.interestSizes)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {

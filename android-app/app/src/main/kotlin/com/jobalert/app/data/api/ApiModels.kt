@@ -181,6 +181,7 @@ data class DeviceRegisterRequest(
 @Serializable
 data class DevicePreferences(
     val categories: List<String> = emptyList(),
+    val sizes: List<String> = emptyList(),
 )
 
 /** PATCH /devices/{id}/preferences — 알림 시간 on/off 등 부분 갱신. */

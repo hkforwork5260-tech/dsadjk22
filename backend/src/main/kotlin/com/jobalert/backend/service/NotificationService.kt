@@ -98,9 +98,13 @@ class NotificationService(
         } else {
             matched.filter { j -> j.firstSeenAt.atZoneSameInstant(kst).toLocalDate() == todayKst }
         }
-        val total = jobs.size
+        // 관심 회사규모 필터(있을 때만) — 직군과 함께 '오늘' 탭과 동일 기준.
+        val mySizes = deviceRepository.findById(deviceId).orElse(null)?.interestSizes
+            ?.split(",")?.map { it.trim() }?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
         val companyById = companyRepository.findAllById(jobs.map { it.companyId }.toSet()).associateBy { it.id }
-        val names = jobs.mapNotNull { companyById[it.companyId]?.name }.distinct().take(3)
+        val sizeFiltered = if (mySizes.isEmpty()) jobs else jobs.filter { companyById[it.companyId]?.size in mySizes }
+        val total = sizeFiltered.size
+        val names = sizeFiltered.mapNotNull { companyById[it.companyId]?.name }.distinct().take(3)
 
         val (title, body) = buildDigestMessage(evening, total, names, now)
 

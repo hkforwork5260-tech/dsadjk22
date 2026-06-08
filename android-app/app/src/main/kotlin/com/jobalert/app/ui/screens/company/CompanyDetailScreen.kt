@@ -165,14 +165,14 @@ fun CompanyDetailScreen(
                 }
             }
 
-            // 통계 3개 (올해 신규 / 평균 마감 / 합격률)
+            // 통계 2개 — 실제 데이터만(진행중 공고 수 / 평균 마감 기간).
+            // (합격률은 지원결과 미수집이라 제거. '올해 신규'는 실제로는 진행중 수라 라벨 정정.)
             Row(
                 Modifier.padding(horizontal = 20.dp, vertical = 8.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                StatBox(label = "올해 신규", value = "${data.stats.thisYearCount}건", color = HiFiColors.Brand, modifier = Modifier.weight(1f))
+                StatBox(label = "진행중 공고", value = "${data.stats.thisYearCount}건", color = HiFiColors.Brand, modifier = Modifier.weight(1f))
                 StatBox(label = "평균 마감", value = data.stats.avgCloseLabel, color = HiFiColors.Text, modifier = Modifier.weight(1f))
-                StatBox(label = "합격률", value = data.stats.passRateLabel, color = HiFiColors.NewShadow, modifier = Modifier.weight(1f))
             }
 
             // 진행중인 공고 헤더

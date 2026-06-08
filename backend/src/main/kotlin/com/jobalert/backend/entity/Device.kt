@@ -35,6 +35,10 @@ class Device(
     @Column(name = "push_evening", nullable = false)
     var pushEvening: Boolean = true,
 
+    // 관심 회사규모(콤마 구분 코드). 개인화 다이제스트 규모 필터용. 비면 규모 무관.
+    @Column(name = "interest_sizes", columnDefinition = "text")
+    var interestSizes: String? = null,
+
     @Column(name = "last_seen_at", nullable = false)
     var lastSeenAt: OffsetDateTime = OffsetDateTime.now(),
 

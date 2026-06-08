@@ -14,14 +14,14 @@ import kotlinx.coroutines.launch
  * 앱 시작 시 + 토큰 갱신 시 + 관심직군 변경 시([refresh]) 호출.
  */
 object FcmRegistrar {
-    /** 현재 FCM 토큰을 받아 관심직군과 함께 재등록. 직군이 바뀌었을 때 호출. */
-    fun refresh(categories: List<String>) {
+    /** 현재 FCM 토큰을 받아 관심(직군·규모)과 함께 재등록. 관심이 바뀌었을 때 호출. */
+    fun refresh(categories: List<String>, sizes: List<String>) {
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-            register(token, categories)
+            register(token, categories, sizes)
         }
     }
 
-    fun register(token: String, categories: List<String>) {
+    fun register(token: String, categories: List<String>, sizes: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             runCatching {
                 ApiClient.api.registerDevice(
@@ -29,7 +29,7 @@ object FcmRegistrar {
                         fcmToken = token,
                         platform = "android",
                         deviceId = DeviceId.value,
-                        preferences = DevicePreferences(categories = categories),
+                        preferences = DevicePreferences(categories = categories, sizes = sizes),
                     ),
                 )
             }

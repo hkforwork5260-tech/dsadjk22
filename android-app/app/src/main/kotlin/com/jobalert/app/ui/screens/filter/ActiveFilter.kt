@@ -75,7 +75,7 @@ object ActiveFilter {
         // 필터를 따로 안 걸었다면 피드가 관심대로 보이도록 세션도 갱신.
         this.categories = categories
         this.sizes = sizes
-        FcmRegistrar.refresh(categories)
+        FcmRegistrar.refresh(categories, sizes)
     }
 
     /** 필터 다이얼로그 적용 — 세션만(비영속). 관심은 바뀌지 않는다(일회성). */

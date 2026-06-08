@@ -37,6 +37,8 @@ class DeviceService(
         device.osVersion = req.osVersion
         device.pushMorning = req.preferences.pushMorning
         device.pushEvening = req.preferences.pushEvening
+        device.interestSizes = req.preferences.sizes.distinct().filter { it.isNotBlank() }
+            .joinToString(",").ifBlank { null }
         device.lastSeenAt = now
         device.updatedAt = now
         deviceRepository.save(device)

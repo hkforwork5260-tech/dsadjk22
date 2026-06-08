@@ -7,6 +7,7 @@ import java.util.UUID
 
 data class DevicePreferencesDto(
     val categories: List<String> = emptyList(),
+    val sizes: List<String> = emptyList(),
     val favoriteCompanies: List<Long> = emptyList(),
     val pushMorning: Boolean = true,
     val pushEvening: Boolean = true,
