@@ -75,42 +75,48 @@ fun NotifHistoryScreen(
             },
         )
 
-        Column(
-            Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
-                .padding(bottom = 16.dp),
-        ) {
-            grouped.forEach { (group, notifs) ->
-                Text(group, style = HiFiType.caption, color = HiFiColors.Text2)
-                Spacer(Modifier.height(8.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    notifs.forEach { n ->
-                        NotifCard(
-                            n = n,
-                            onClick = {
-                                viewModel.markRead(n.id)
-                                items = items.map { if (it.id == n.id) it.copy(read = true) else it }
-                                onItemClick(n)
-                            },
-                        )
-                    }
-                }
-                Spacer(Modifier.height(18.dp))
-            }
-
-            // "더 있어요" 가짜 카드
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .dashedBorder(HiFiColors.BorderDark)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center,
+        if (items.isEmpty()) {
+            // 받은 알림이 없을 때 빈 화면 — 빈 것처럼 보이지 않게 안내.
+            Column(
+                Modifier.weight(1f).fillMaxWidth().padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
             ) {
-                Text("+ 31개 더 있어요", style = HiFiType.body2, color = HiFiColors.Text2)
+                Mascot(size = 96.dp, expression = MascotExpression.Sleep)
+                Spacer(Modifier.height(14.dp))
+                Text("아직 받은 알림이 없어요", style = HiFiType.h2, color = HiFiColors.Text)
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "매일 새 공고를 알림으로 보내드려요",
+                    style = HiFiType.body2,
+                    color = HiFiColors.Text2,
+                )
+            }
+        } else {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(bottom = 16.dp),
+            ) {
+                grouped.forEach { (group, notifs) ->
+                    Text(group, style = HiFiType.caption, color = HiFiColors.Text2)
+                    Spacer(Modifier.height(8.dp))
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        notifs.forEach { n ->
+                            NotifCard(
+                                n = n,
+                                onClick = {
+                                    viewModel.markRead(n.id)
+                                    items = items.map { if (it.id == n.id) it.copy(read = true) else it }
+                                    onItemClick(n)
+                                },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(18.dp))
+                }
             }
         }
 

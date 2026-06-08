@@ -76,7 +76,7 @@ fun JobKind.shadowColor(): Color = when (this) {
 
 fun JobKind.label(): String = when (this) {
     JobKind.NEW -> "NEW"
-    JobKind.UPDATE -> "UPDATE"
-    JobKind.CLOSING -> "CLOSING"
+    JobKind.UPDATE -> "변경"
+    JobKind.CLOSING -> "마감임박"
     JobKind.ACTIVE -> "진행중"
 }

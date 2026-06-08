@@ -68,7 +68,7 @@ fun FeedbackScreen(onBack: () -> Unit) {
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
-                        "꽁이가 듣고 있어요",
+                        "단이가 듣고 있어요",
                         style = HiFiType.display.copy(fontSize = 20.sp),
                         color = HiFiColors.Text,
                     )
@@ -186,7 +186,7 @@ fun FeedbackScreen(onBack: () -> Unit) {
             HiFiButton(
                 text = "보내기",
                 onClick = {
-                    Toast.makeText(context, "전송됐어요! 꽁이가 잘 읽어볼게요 ✨", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "전송됐어요! 단이가 잘 읽어볼게요 ✨", Toast.LENGTH_LONG).show()
                     onBack()
                 },
                 variant = HiFiButtonVariant.Primary,

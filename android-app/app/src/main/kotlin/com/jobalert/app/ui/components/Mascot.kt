@@ -12,7 +12,7 @@ enum class MascotExpression { Default, Happy, Sleep, Sad, Wow, Wave }
 
 /**
  * 표정 → 마스코트 '단이'(시바견) PNG 리소스.
- * 2026-06-08 리브랜딩: 기존 고양이 '꽁이' Canvas 드로잉을 시바 PNG(mascot-dan 번들)로 교체.
+ * 2026-06-08 리브랜딩: 기존 고양이 '단이' Canvas 드로잉을 시바 PNG(mascot-dan 번들)로 교체.
  * 전용 sad 자산이 없어 Sad는 alert(깜짝)로 근접 매핑.
  */
 fun MascotExpression.drawableRes(): Int = when (this) {

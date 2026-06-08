@@ -143,7 +143,7 @@ private fun ReelsJobCard(
             .fillMaxSize()
             .padding(horizontal = 20.dp, vertical = 12.dp)
             .clip(RoundedCornerShape(24.dp))
-            .background(HiFiColors.Bg)
+            .background(HiFiColors.Bg2)   // 흰 카드 — 웜화이트 배경 위에서 또렷하게
             .border(2.dp, HiFiColors.Border, RoundedCornerShape(24.dp))
             // 카드 아무 데나 탭해도 진입하던 것 제거. 진입은 '자세히 보기' 버튼만.
             // 인스타처럼 더블탭 = 좋아요(관심기업 토글). (세로 스크롤은 드래그라 그대로 동작)
@@ -161,16 +161,15 @@ private fun ReelsJobCard(
                     Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(job.kind.softColor()),
+                        .background(HiFiColors.BrandSoft),
                     contentAlignment = Alignment.Center,
                 ) {
                     // 로고 자리에 근무지역 표시(회사 위치 아닌 근무지). 지역 없으면 회사 이니셜.
-                    Text(job.regionShort, style = HiFiType.h2.copy(fontSize = 20.sp), color = job.kind.color())
+                    Text(job.regionShort, style = HiFiType.h2.copy(fontSize = 20.sp), color = HiFiColors.Brand)
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    HiFiLabel(text = job.kind.label(), bg = job.kind.color())
-                    Spacer(Modifier.height(6.dp))
+                    // 찾아보기는 전부 진행중이라 NEW/CLOSING 라벨 제거.
                     Text(job.company, style = HiFiType.title, color = HiFiColors.Text)
                     if (job.location.isNotBlank()) {
                         Text(
@@ -203,13 +202,13 @@ private fun ReelsJobCard(
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(999.dp))
-                            .background(job.kind.softColor())
+                            .background(HiFiColors.BrandSoft)
                             .padding(horizontal = 12.dp, vertical = 6.dp),
                     ) {
                         Text(
                             job.dday,
                             style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
-                            color = job.kind.color(),
+                            color = HiFiColors.Brand,
                         )
                     }
                     Spacer(Modifier.width(8.dp))

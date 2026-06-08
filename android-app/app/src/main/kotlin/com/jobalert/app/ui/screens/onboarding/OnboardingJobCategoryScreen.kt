@@ -32,6 +32,8 @@ import com.jobalert.app.ui.theme.HiFiType
 fun OnboardingJobCategoryScreen(
     onNext: () -> Unit,
     onSkip: () -> Unit,
+    editMode: Boolean = false,   // 내정보 관심 편집: 점·건너뛰기 숨기고 이전/완료 버튼
+    onBack: () -> Unit = {},
 ) {
     // 처음 온보딩이면 빈 상태(직접 고름). 내정보에서 '직군 수정'으로 재진입하면 저장된 값(ActiveFilter)을 반영.
     var selected by remember {
@@ -54,25 +56,26 @@ fun OnboardingJobCategoryScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp, bottom = 14.dp),
         ) {
-            // 진행 dot + 건너뛰기
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Dot(active = true)
-                Spacer(Modifier.width(6.dp))
-                Dot()
-                Spacer(Modifier.width(6.dp))
-                Dot()
-                Spacer(Modifier.width(6.dp))
-                Dot()
-                Spacer(Modifier.weight(1f))
-                HiFiButton(
-                    text = "건너뛰기",
-                    onClick = onSkip,
-                    variant = HiFiButtonVariant.Ghost,
-                    size = HiFiButtonSize.Sm,
-                )
+            // 진행 dot + 건너뛰기 (편집 모드에선 숨김)
+            if (!editMode) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Dot(active = true)
+                    Spacer(Modifier.width(6.dp))
+                    Dot()
+                    Spacer(Modifier.width(6.dp))
+                    Dot()
+                    Spacer(Modifier.width(6.dp))
+                    Dot()
+                    Spacer(Modifier.weight(1f))
+                    HiFiButton(
+                        text = "건너뛰기",
+                        onClick = onSkip,
+                        variant = HiFiButtonVariant.Ghost,
+                        size = HiFiButtonSize.Sm,
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
             }
-
-            Spacer(Modifier.height(12.dp))
 
             // 마스코트 + 헤드라인
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -137,18 +140,39 @@ fun OnboardingJobCategoryScreen(
 
             Spacer(Modifier.height(14.dp))
 
-            HiFiButton(
-                text = if (anyJob) "다음 (어디든) →" else "다음 ($count 개 선택됨) →",
-                onClick = {
-                    // 고른 관심 직군 저장(어디든이면 빈 리스트 = 전체) → 메인 피드 기본 필터
-                    val cats = if (anyJob) emptyList() else selected.mapNotNull { JobCategoryCodes.getOrNull(it) }
-                    ActiveFilter.setInterest(categories = cats)
-                    onNext()
-                },
-                variant = if (count > 0 || anyJob) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
-                enabled = count > 0 || anyJob,
-                fullWidth = true,
-            )
+            // 저장 동작 공통(어디든이면 빈 리스트 = 전체).
+            val save = {
+                val cats = if (anyJob) emptyList() else selected.mapNotNull { JobCategoryCodes.getOrNull(it) }
+                ActiveFilter.setInterest(categories = cats)
+            }
+            if (editMode) {
+                // 편집 모드: 이전 / 완료
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    HiFiButton(
+                        text = "← 이전",
+                        onClick = onBack,
+                        variant = HiFiButtonVariant.Default,
+                        modifier = Modifier.weight(1f),
+                        fullWidth = true,
+                    )
+                    HiFiButton(
+                        text = "완료",
+                        onClick = { save(); onNext() },
+                        variant = HiFiButtonVariant.Primary,
+                        enabled = count > 0 || anyJob,
+                        modifier = Modifier.weight(2f),
+                        fullWidth = true,
+                    )
+                }
+            } else {
+                HiFiButton(
+                    text = if (anyJob) "다음 (어디든) →" else "다음 ($count 개 선택됨) →",
+                    onClick = { save(); onNext() },
+                    variant = if (count > 0 || anyJob) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
+                    enabled = count > 0 || anyJob,
+                    fullWidth = true,
+                )
+            }
         }
 
         HiFiGestureNav()

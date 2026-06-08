@@ -81,7 +81,7 @@ fun MyPageScreen(
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                "꽁이가 ${AppStats.daysSinceInstall(context)}일째 챙겨주는 중",
+                                "단이가 ${AppStats.daysSinceInstall(context)}일째 챙겨주는 중",
                                 style = HiFiType.body2,
                                 color = HiFiColors.Text2,
                             )

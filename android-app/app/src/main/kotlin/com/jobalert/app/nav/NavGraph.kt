@@ -113,18 +113,21 @@ fun JobAlertNavHost() {
             )
         }
 
-        // 내정보→관심 편집: 같은 화면이지만 저장 후 복귀(다음 단계로 체인하지 않음).
+        // 내정보→관심 편집: 같은 화면이지만 편집 모드(점·건너뛰기 없이 이전/완료)로 저장 후 복귀.
         composable(Routes.EditJobCategory) {
             OnboardingJobCategoryScreen(
                 onNext = { nav.popBackStack() },
-                onSkip = { ActiveFilter.setInterest(categories = emptyList()); nav.popBackStack() },
+                onSkip = { nav.popBackStack() },
+                editMode = true,
+                onBack = { nav.popBackStack() },
             )
         }
         composable(Routes.EditCompanySize) {
             OnboardingCompanySizeScreen(
                 onNext = { nav.popBackStack() },
-                onSkip = { ActiveFilter.setInterest(sizes = emptyList()); nav.popBackStack() },
+                onSkip = { nav.popBackStack() },
                 onBack = { nav.popBackStack() },
+                editMode = true,
             )
         }
 

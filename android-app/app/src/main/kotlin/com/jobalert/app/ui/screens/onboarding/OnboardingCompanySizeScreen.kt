@@ -28,6 +28,7 @@ fun OnboardingCompanySizeScreen(
     onNext: () -> Unit,
     onSkip: () -> Unit,
     onBack: () -> Unit,
+    editMode: Boolean = false,   // 내정보 관심 편집: 점·건너뛰기 숨기고 다음→완료
 ) {
     // 실제 수집 데이터에 있는 규모만(중견·외국계·스타트업은 데이터 0). 인덱스 = scaleCodes와 1:1.
     val scales = listOf("대기업", "공기업", "중소기업")
@@ -45,19 +46,20 @@ fun OnboardingCompanySizeScreen(
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp, bottom = 14.dp),
         ) {
-            // 진행 dot + 건너뛰기
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OnboardingDots(total = 4, activeIndex = 1)
-                Spacer(Modifier.weight(1f))
-                HiFiButton(
-                    text = "건너뛰기",
-                    onClick = onSkip,
-                    variant = HiFiButtonVariant.Ghost,
-                    size = HiFiButtonSize.Sm,
-                )
+            // 진행 dot + 건너뛰기 (편집 모드에선 숨김)
+            if (!editMode) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    OnboardingDots(total = 4, activeIndex = 1)
+                    Spacer(Modifier.weight(1f))
+                    HiFiButton(
+                        text = "건너뛰기",
+                        onClick = onSkip,
+                        variant = HiFiButtonVariant.Ghost,
+                        size = HiFiButtonSize.Sm,
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
             }
-
-            Spacer(Modifier.height(12.dp))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Mascot(size = 56.dp, expression = MascotExpression.Default)
@@ -104,7 +106,7 @@ fun OnboardingCompanySizeScreen(
                     fullWidth = true,
                 )
                 HiFiButton(
-                    text = "다음 →",
+                    text = if (editMode) "완료" else "다음 →",
                     onClick = {
                         // 선택한 규모를 백엔드 코드로 변환해 저장 → 메인 피드 필터에 반영.
                         ActiveFilter.setInterest(sizes = selectedScales.sorted().mapNotNull { scaleCodes.getOrNull(it) })

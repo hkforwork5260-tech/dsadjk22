@@ -59,7 +59,7 @@ fun InterestsScreen(
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(
-                        "꽁이가 찾아줄 조건",
+                        "단이가 찾아줄 조건",
                         style = HiFiType.display.copy(fontSize = 20.sp),
                         color = HiFiColors.Text,
                     )
@@ -171,14 +171,18 @@ private fun SectionCard(
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 private fun FlowChips(
     chips: List<String>,
     color: androidx.compose.ui.graphics.Color,
     soft: androidx.compose.ui.graphics.Color,
 ) {
-    // 칸수 적어서 단순 Row + spacedBy. 넘치면 줄바꿈 안 됨 — 한 줄 짧게 유지.
-    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+    // 칩이 많으면 줄바꿈(좌측 정렬, 일정 간격). 한 줄 Row는 넘칠 때 벌어지거나 잘려서 FlowRow 사용.
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
         chips.forEach { c ->
             Box(
                 Modifier

@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
         DeviceId.init(applicationContext)      // 관심기업 등 기기ID 헤더 준비
         ActiveFilter.init(applicationContext)  // 저장된 관심 직군 필터 로드
         SeenJobs.init(applicationContext)      // 찾아보기 본 공고 기록(후순위 정렬)
-        WidgetState.markVisited(applicationContext)  // 위젯 꽁이 표정용 방문 기록
+        WidgetState.markVisited(applicationContext)  // 위젯 단이 표정용 방문 기록
         requestNotificationPermission()
         registerFcmToken()
         enableEdgeToEdge()

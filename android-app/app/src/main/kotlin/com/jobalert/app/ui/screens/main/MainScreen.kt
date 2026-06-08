@@ -36,7 +36,7 @@ import com.jobalert.app.widget.JobAlertWidgetProvider
 import com.jobalert.app.widget.WidgetState
 
 /**
- * 메인 피드. 상단 헤더(오늘 새 공고 N건 + 꽁이) + NEW/UPDATE/CLOSING 토글 + 공고 리스트.
+ * 메인 피드. 상단 헤더(오늘 새 공고 N건 + 단이) + NEW/UPDATE/CLOSING 토글 + 공고 리스트.
  * HiFi_Main 대응. 데이터는 [MainViewModel]을 통해 백엔드 /jobs/today에서 온다.
  */
 @Composable
@@ -56,7 +56,7 @@ fun MainScreen(
     LaunchedEffect(cats, exps, szs, dday) { viewModel.load(cats, exps, szs, dday) }
     var section by remember { mutableStateOf(JobKind.NEW) }
 
-    // 오늘 새 공고(NEW) 수를 위젯에 반영(꽁이 표정·카운트).
+    // 오늘 새 공고(NEW) 수를 위젯에 반영(단이 표정·카운트).
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
@@ -127,7 +127,9 @@ private fun ColumnScope.SuccessContent(
     onJobClick: (String) -> Unit,
 ) {
     val counts = feed.counts
+    // 마감임박(CLOSING) 섹션은 마감 이른 순 정렬. 그 외는 기본(개인화/다양성) 순서 유지.
     val filtered = feed.jobs.filter { it.kind == section }
+        .let { if (section == JobKind.CLOSING) it.sortedBy { j -> ddayNum(j.dday) } else it }
 
     // 헤더 (날짜 + 큰 카운트 + 마스코트)
     Row(
@@ -224,6 +226,13 @@ private fun ColumnScope.SuccessContent(
             }
         }
     }
+}
+
+/** dday 문자열 → 정렬용 일수. "D-Day"=0, "D-3"=3, 상시·마감 등은 뒤로(MAX). */
+private fun ddayNum(d: String): Int = when {
+    d == "D-Day" -> 0
+    d.startsWith("D-") -> d.removePrefix("D-").toIntOrNull() ?: Int.MAX_VALUE
+    else -> Int.MAX_VALUE
 }
 
 @Composable

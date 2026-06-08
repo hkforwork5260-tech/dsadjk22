@@ -89,7 +89,7 @@ fun SimilarJobsScreen(
                 Mascot(size = 36.dp, expression = MascotExpression.Wave)
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "꽁이가 골라온 ${others.size}개",
+                    "단이가 골라온 ${others.size}개",
                     style = HiFiType.h2,
                     color = HiFiColors.Text,
                 )

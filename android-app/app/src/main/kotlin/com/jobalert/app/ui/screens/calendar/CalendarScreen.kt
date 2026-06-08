@@ -55,8 +55,12 @@ fun CalendarScreen(
 
     // 현재 달 기준으로 그리드 구성 (KST). 디자인 단계의 2026-05 하드코딩을 일반화.
     val nowDate = remember { LocalDate.now(ZoneId.of("Asia/Seoul")) }
-    val ym = remember(nowDate) { YearMonth.from(nowDate) }
-    val today = nowDate.dayOfMonth
+    val curMonth = remember(nowDate) { YearMonth.from(nowDate) }
+    // 보고 있는 달(< >로 이동). 데이터는 70일 확보 → 이번 달 + 다음 2달까지 의미 있음.
+    var displayMonth by remember { mutableStateOf(curMonth) }
+    val ym = displayMonth
+    val isCurrentMonth = ym == curMonth
+    val today = if (isCurrentMonth) nowDate.dayOfMonth else -1   // 다른 달이면 '오늘' 강조 없음
     val totalDays = ym.lengthOfMonth()
     // java.time: 월=1..일=7 → 디자인 요일(일=0,월=1,...,토=6)로 변환
     val firstDow = ym.atDay(1).dayOfWeek.value % 7
@@ -74,7 +78,7 @@ fun CalendarScreen(
     }
 
     // 선택한 날짜(기본=오늘). 셀을 누르면 그 날짜의 마감 공고를 아래에 보여준다.
-    var selectedDay by remember(monthPrefix) { mutableStateOf(today) }
+    var selectedDay by remember(monthPrefix) { mutableStateOf(if (isCurrentMonth) today else 1) }
     val selectedJobs = byDay[selectedDay] ?: emptyList()
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
@@ -97,11 +101,23 @@ fun CalendarScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Icon(Icons.Outlined.ChevronLeft, contentDescription = "이전 달", tint = HiFiColors.Text2, modifier = Modifier.size(20.dp))
+                val canPrev = displayMonth > curMonth                 // 지난 달은 의미 없어 막음
+                val canNext = displayMonth < curMonth.plusMonths(2)   // 데이터(70일) 범위까지
+                Icon(
+                    Icons.Outlined.ChevronLeft, contentDescription = "이전 달",
+                    tint = if (canPrev) HiFiColors.Text else HiFiColors.Border,
+                    modifier = Modifier.size(28.dp)
+                        .clickable(enabled = canPrev) { displayMonth = displayMonth.minusMonths(1) },
+                )
                 Spacer(Modifier.width(16.dp))
                 Text("${ym.year}년 ${ym.monthValue}월", style = HiFiType.h2, color = HiFiColors.Text)
                 Spacer(Modifier.width(16.dp))
-                Icon(Icons.Outlined.ChevronRight, contentDescription = "다음 달", tint = HiFiColors.Text2, modifier = Modifier.size(20.dp))
+                Icon(
+                    Icons.Outlined.ChevronRight, contentDescription = "다음 달",
+                    tint = if (canNext) HiFiColors.Text else HiFiColors.Border,
+                    modifier = Modifier.size(28.dp)
+                        .clickable(enabled = canNext) { displayMonth = displayMonth.plusMonths(1) },
+                )
             }
 
             // 요일 헤더

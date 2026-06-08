@@ -3,7 +3,7 @@ package com.jobalert.app.data
 import android.content.Context
 
 /**
- * 앱 사용 통계(설치 기준). '꽁이가 N일째 챙겨주는 중' 카운트에 사용.
+ * 앱 사용 통계(설치 기준). '단이가 N일째 챙겨주는 중' 카운트에 사용.
  *
  * 설치 시각은 PackageManager.firstInstallTime(실제 APK 설치 시각)을 직접 읽는다.
  * 별도 저장이 필요 없고, prefs를 지워도 정확하다.

@@ -11,8 +11,8 @@ import com.jobalert.app.MainActivity
 import com.jobalert.app.R
 
 /**
- * 홈 위젯 — 새 공고 수 + 꽁이(상황별 표정). 미리보기 없이 단순.
- * 데이터는 [WidgetState](앱이 갱신)에서 읽고, 꽁이는 [MascotRenderer]로 Bitmap 렌더.
+ * 홈 위젯 — 새 공고 수 + 단이(상황별 표정). 미리보기 없이 단순.
+ * 데이터는 [WidgetState](앱이 갱신)에서 읽고, 단이는 [MascotRenderer]로 Bitmap 렌더.
  */
 open class JobAlertWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
@@ -46,7 +46,7 @@ open class JobAlertWidgetProvider : AppWidgetProvider() {
         }
 
         private fun updateWidget(context: Context, manager: AppWidgetManager, id: Int) {
-            // 위젯 크기(dp)에 맞는 레이아웃 선택: 작으면 tiny(꽁이+숫자), 높이 1줄이면 wide(가로), 그 외 세로.
+            // 위젯 크기(dp)에 맞는 레이아웃 선택: 작으면 tiny(단이+숫자), 높이 1줄이면 wide(가로), 그 외 세로.
             val opts = manager.getAppWidgetOptions(id)
             val minW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
             val minH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, 0)
