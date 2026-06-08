@@ -159,7 +159,7 @@ class NotificationService(
         // 아침(새 공고) — %d = 건수. 매일 돌려가며 노출.
         private val MORNING_TITLES = listOf(
             "오늘 새 공고 %d개 떴어요 👀",
-            "꽁이가 새 공고 %d개 찾았어요 🐱",
+            "단이가 새 공고 %d개 찾았어요 🐱",
             "따끈한 새 공고 %d개 도착 ☀️",
             "새 공고 %d개! 1분이면 충분해요",
             "잠깐! 새 공고 %d개 있어요 ✨",
@@ -168,13 +168,13 @@ class NotificationService(
         private val EVENING_TITLES = listOf(
             "마감 임박 %d개 ⏰ 놓치지 마요",
             "오늘 마감 %d개, 지금 확인해요 🔥",
-            "꽁이가 챙긴 마감 임박 %d개 🐱",
+            "단이가 챙긴 마감 임박 %d개 🐱",
             "곧 마감! %d개 서둘러요 ⏳",
         )
         // 새 소식 없는 날
         private val EMPTY_TITLES = listOf(
             "오늘은 조용하네요 😴",
-            "새 소식은 없지만 꽁이는 지켜보는 중 🐱",
+            "새 소식은 없지만 단이는 지켜보는 중 🐱",
             "잠깐 쉬어가요. 새 공고 없어요 🍵",
         )
     }

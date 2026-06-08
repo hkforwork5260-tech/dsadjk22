@@ -75,13 +75,14 @@ fun MainScreen(
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
+            // 위젯도 '오늘'과 동일 규칙: NEW=오늘 올라온 or 아직 안 본 공고, 마감임박=CLOSING(D-3).
+            val seenIds = SeenJobs.seenIds
+            val newCount = f.jobs.count {
+                it.kind == JobKind.NEW || (it.id !in seenIds && it.kind != JobKind.CLOSING && it.kind != JobKind.UPDATE)
+            }
+            val closingCount = f.jobs.count { it.kind == JobKind.CLOSING }
             val topJob = f.jobs.firstOrNull()?.let { "${it.company} · ${it.role}" } ?: ""
-            WidgetState.setSummary(
-                context,
-                newCount = f.counts[JobKind.NEW] ?: 0,
-                closingCount = f.counts[JobKind.CLOSING] ?: 0,
-                topJob = topJob,
-            )
+            WidgetState.setSummary(context, newCount = newCount, closingCount = closingCount, topJob = topJob)
             JobAlertWidgetProvider.updateAll(context)
         }
     }
