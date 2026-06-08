@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
+import com.jobalert.app.widget.WidgetPinSize
 import com.jobalert.app.widget.requestPinJobAlertWidget
 
 private enum class WidgetSize(val label: String, val widthRatio: Float, val heightDp: Dp) {
@@ -136,7 +137,12 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
             HiFiButton(
                 text = "지금 추가하기",
                 onClick = {
-                    val requested = context.requestPinJobAlertWidget()
+                    val pinSize = when (size) {
+                        WidgetSize.Small -> WidgetPinSize.SMALL
+                        WidgetSize.Medium -> WidgetPinSize.MEDIUM
+                        WidgetSize.Large -> WidgetPinSize.LARGE
+                    }
+                    val requested = context.requestPinJobAlertWidget(pinSize)
                     if (!requested) {
                         Toast.makeText(
                             context,
@@ -148,13 +154,6 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
                 variant = HiFiButtonVariant.Primary,
                 size = HiFiButtonSize.Lg,
                 fullWidth = true,
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "* 지원하는 홈 화면에선 팝업 '추가' 한 번으로 끝나요. 안 되면 위 3단계로 추가하세요.",
-                style = HiFiType.body2.copy(fontSize = 11.sp),
-                color = HiFiColors.Text3,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
             )
         }
 

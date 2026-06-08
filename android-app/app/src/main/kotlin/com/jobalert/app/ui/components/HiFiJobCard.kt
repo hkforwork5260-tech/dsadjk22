@@ -59,8 +59,11 @@ fun HiFiJobCard(
         // 중앙: NEW라벨 + 회사명 한 줄, 직무명 한 줄
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                HiFiLabel(text = kind.label(), bg = kind.color())
-                Spacer(Modifier.width(6.dp))
+                // ACTIVE(일반 진행중)은 라벨 숨김 — NEW/UPDATE/CLOSING만 배지 노출.
+                if (kind != JobKind.ACTIVE) {
+                    HiFiLabel(text = kind.label(), bg = kind.color())
+                    Spacer(Modifier.width(6.dp))
+                }
                 Text(
                     text = company,
                     style = HiFiType.body2.copy(fontSize = 12.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),

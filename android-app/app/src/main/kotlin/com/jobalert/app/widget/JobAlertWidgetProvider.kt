@@ -30,13 +30,19 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        /** 앱이 데이터(새 공고 수·방문)를 갱신한 뒤 위젯을 즉시 새로고침할 때 호출. */
+        /** 앱이 데이터(새 공고 수·방문)를 갱신한 뒤 위젯을 즉시 새로고침할 때 호출. 크기별 provider 전부. */
         fun updateAll(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
-            val ids = manager.getAppWidgetIds(
-                ComponentName(context, JobAlertWidgetProvider::class.java),
+            val providers = listOf(
+                JobAlertWidgetProvider::class.java,
+                JobAlertWidgetSmall::class.java,
+                JobAlertWidgetMedium::class.java,
+                JobAlertWidgetLarge::class.java,
             )
-            ids.forEach { updateWidget(context, manager, it) }
+            providers.forEach { cls ->
+                manager.getAppWidgetIds(ComponentName(context, cls))
+                    .forEach { updateWidget(context, manager, it) }
+            }
         }
 
         private fun updateWidget(context: Context, manager: AppWidgetManager, id: Int) {
@@ -96,3 +102,9 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
         }
     }
 }
+
+// 크기별 위젯 — 동작은 [JobAlertWidgetProvider]와 동일하고, 핀 추가 시 기본 크기만 다르다
+// (각자 widget_info XML의 targetCell). 안드로이드는 핀 크기를 widget XML로만 정하므로 크기별 provider 필요.
+class JobAlertWidgetSmall : JobAlertWidgetProvider()
+class JobAlertWidgetMedium : JobAlertWidgetProvider()
+class JobAlertWidgetLarge : JobAlertWidgetProvider()

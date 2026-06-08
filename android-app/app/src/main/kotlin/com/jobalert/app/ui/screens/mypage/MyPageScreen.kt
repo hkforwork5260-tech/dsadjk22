@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +48,10 @@ fun MyPageScreen(
     val context = LocalContext.current
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(title = "내 정보")
+        HiFiAppBar(
+            title = "내 정보",
+            action = { HiFiIconBtn(Icons.Outlined.NotificationsNone, "알림", onClick = onNotifHistory) },
+        )
 
         Column(
             Modifier

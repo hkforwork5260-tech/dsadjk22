@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * 마감 캘린더 상태. 진입 시 백엔드 /jobs/upcoming(40일)을 불러 날짜별 마감 공고를 노출.
+ * 마감 캘린더 상태. 진입 시 백엔드 /jobs/upcoming(70일)을 불러 날짜별 마감 공고를 노출(약 2개월).
  */
 class CalendarViewModel : ViewModel() {
 
@@ -27,7 +27,7 @@ class CalendarViewModel : ViewModel() {
         _state.value = CalendarUiState.Loading
         viewModelScope.launch {
             _state.value = try {
-                CalendarUiState.Success(repository.upcoming(40))
+                CalendarUiState.Success(repository.upcoming(70))
             } catch (e: Exception) {
                 CalendarUiState.Error(e.message ?: "마감 정보를 불러오지 못했어요")
             }

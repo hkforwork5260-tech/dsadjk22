@@ -68,6 +68,10 @@ object Routes {
     const val Similar = "similar/{jobId}"
     fun similar(jobId: String) = "similar/$jobId"
 
+    // 관심 편집(내정보→관심) : 온보딩 화면 재사용하되 저장 후 '복귀'(다음 단계로 체인 안 함)
+    const val EditJobCategory = "editJobCategory"
+    const val EditCompanySize = "editCompanySize"
+
     // 마이페이지 서브
     const val NotifSettings = "notifSettings"
     const val WidgetSettings = "widgetSettings"
@@ -94,8 +98,8 @@ fun JobAlertNavHost() {
         composable(Routes.Onboarding1) {
             OnboardingJobCategoryScreen(
                 onNext = { nav.navigate(Routes.Onboarding2) },
-                // 건너뛰기 = 이 페이지만 건너뜀(직군 선택 안 함 = 전체) → 다음 단계로. 온보딩 전체 종료 아님.
-                onSkip = { nav.navigate(Routes.Onboarding2) },
+                // 건너뛰기 = 전체 보기(직군 관심 비움) → 다음 단계로. 온보딩 전체 종료 아님.
+                onSkip = { ActiveFilter.setInterest(categories = emptyList()); nav.navigate(Routes.Onboarding2) },
             )
         }
 
@@ -103,8 +107,23 @@ fun JobAlertNavHost() {
             OnboardingCompanySizeScreen(
                 // 관심회사 고르기(onb3)는 온보딩 흐름에서 제외 — 찾아보기와 겹쳐 바로 위젯 단계로 (사용자 요청 2026-06-06)
                 onNext = { nav.navigate(Routes.Onboarding4) },
-                // 건너뛰기 = 이 페이지만 건너뜀(규모 선택 안 함 = 전체) → 위젯 단계로.
-                onSkip = { nav.navigate(Routes.Onboarding4) },
+                // 건너뛰기 = 전체 보기(규모 관심 비움) → 위젯 단계로.
+                onSkip = { ActiveFilter.setInterest(sizes = emptyList()); nav.navigate(Routes.Onboarding4) },
+                onBack = { nav.popBackStack() },
+            )
+        }
+
+        // 내정보→관심 편집: 같은 화면이지만 저장 후 복귀(다음 단계로 체인하지 않음).
+        composable(Routes.EditJobCategory) {
+            OnboardingJobCategoryScreen(
+                onNext = { nav.popBackStack() },
+                onSkip = { ActiveFilter.setInterest(categories = emptyList()); nav.popBackStack() },
+            )
+        }
+        composable(Routes.EditCompanySize) {
+            OnboardingCompanySizeScreen(
+                onNext = { nav.popBackStack() },
+                onSkip = { ActiveFilter.setInterest(sizes = emptyList()); nav.popBackStack() },
                 onBack = { nav.popBackStack() },
             )
         }
@@ -255,8 +274,8 @@ fun JobAlertNavHost() {
         composable(Routes.Interests) {
             InterestsScreen(
                 onBack = { nav.popBackStack() },
-                onEditJobCategory = { nav.navigate(Routes.Onboarding1) },
-                onEditCompanySize = { nav.navigate(Routes.Onboarding2) },
+                onEditJobCategory = { nav.navigate(Routes.EditJobCategory) },
+                onEditCompanySize = { nav.navigate(Routes.EditCompanySize) },
                 onOpenFavorites = { nav.navigate(Routes.Favorites) },
             )
         }

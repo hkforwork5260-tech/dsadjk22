@@ -207,11 +207,19 @@ private fun ColumnScope.SuccessContent(
         }
         if (filtered.isEmpty()) {
             item {
-                Box(
-                    Modifier.fillMaxWidth().padding(top = 40.dp),
-                    contentAlignment = Alignment.Center,
+                Column(
+                    Modifier.fillMaxWidth().padding(top = 48.dp, bottom = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("이 카테고리에 새 공고가 없어요", style = HiFiType.body2, color = HiFiColors.Text3)
+                    Mascot(size = 96.dp, expression = MascotExpression.Sleep)
+                    Spacer(Modifier.height(14.dp))
+                    Text("조건에 맞는 공고가 없어요", style = HiFiType.h2, color = HiFiColors.Text)
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "필터를 넓히거나 '관심'을 바꿔보세요",
+                        style = HiFiType.body2,
+                        color = HiFiColors.Text2,
+                    )
                 }
             }
         }

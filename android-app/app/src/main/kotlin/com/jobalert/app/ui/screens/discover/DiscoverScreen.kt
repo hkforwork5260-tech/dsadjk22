@@ -184,11 +184,18 @@ private fun ReelsJobCard(
 
             // 직무 + D-day. 우측 액션버튼 영역(약 72dp)을 비워 글자가 버튼 밑으로 안 파고들게.
             Column(Modifier.padding(start = 20.dp, end = 72.dp)) {
+                // 제목이 길면 글자 크기를 줄여서라도 다 보이게(잘림 최소화). 카드 공간 넉넉 → 최대 4줄.
+                val titleSize = when {
+                    job.role.length <= 18 -> 22.sp
+                    job.role.length <= 32 -> 19.sp
+                    job.role.length <= 48 -> 16.sp
+                    else -> 14.sp
+                }
                 Text(
                     job.role,
-                    style = HiFiType.display.copy(fontSize = 20.sp, lineHeight = 25.sp),
+                    style = HiFiType.display.copy(fontSize = titleSize, lineHeight = (titleSize.value + 5).sp),
                     color = HiFiColors.Text,
-                    maxLines = 3,
+                    maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(10.dp))

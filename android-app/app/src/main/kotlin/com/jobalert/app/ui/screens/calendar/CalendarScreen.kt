@@ -161,7 +161,7 @@ fun CalendarScreen(
                             kind = kindOf(job.kind),
                             company = job.company.name,
                             role = job.title,
-                            logo = job.company.logo,
+                            logo = shortRegion(job.location, job.company.logo),   // 좌측=근무지역(홈과 통일)
                             dday = job.dday,
                             dateText = displayDeadlineShort(job.deadline),
                             onClick = { onJobClick(job.id) },
@@ -245,11 +245,21 @@ private fun CalendarCell(
     }
 }
 
+// 캘린더에선 새로 생긴 공고만 NEW 배지. 미래 마감(내일 등)은 CLOSING으로 보지 않음 →
+// NEW 외엔 ACTIVE(라벨 숨김). 날짜 지난 공고는 만료되어 애초에 안 들어온다.
 private fun kindOf(s: String): JobKind = when (s.uppercase()) {
     "NEW" -> JobKind.NEW
-    "UPDATE" -> JobKind.UPDATE
-    "CLOSING" -> JobKind.CLOSING
-    else -> JobKind.NEW
+    else -> JobKind.ACTIVE
+}
+
+/** JobDto.location → 짧은 근무지역(홈 카드와 동일 톤). 없으면 fallback(회사 약어). */
+private fun shortRegion(location: String?, fallback: String): String {
+    val loc = location?.takeIf { it.isNotBlank() } ?: return fallback
+    val first = loc.split(",", "·").firstOrNull { it.isNotBlank() }?.trim()
+        ?.split(" ")?.firstOrNull { it.isNotBlank() } ?: return fallback
+    return first.removeSuffix("특별자치시").removeSuffix("특별자치도")
+        .removeSuffix("특별시").removeSuffix("광역시").removeSuffix("도").removeSuffix("시")
+        .ifBlank { fallback }.take(4)
 }
 
 private fun displayDeadlineShort(iso: String?): String {
