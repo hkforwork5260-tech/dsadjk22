@@ -33,8 +33,9 @@ object ApiClient {
     }
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        // 무료 박스 cold start(쉬다 깨어나는 첫 요청)가 느려 타임아웃 나던 것 → 넉넉히.
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(25, TimeUnit.SECONDS)
         // 모든 요청에 익명 기기ID 헤더 — 관심기업 등 기기 기준 저장에 사용.
         .addInterceptor { chain ->
             val req = chain.request().newBuilder()
