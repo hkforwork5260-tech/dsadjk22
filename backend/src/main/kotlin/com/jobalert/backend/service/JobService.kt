@@ -195,21 +195,38 @@ class JobService(
         val scoreOf: Map<Job, Int> = pool.associateWith { score(it) }
         val rnd = java.util.Random()
 
-        // 회사별 그룹 → 그룹 내부 점수 desc → 그룹은 (대표점수 desc, 그룹별 고정난수)로 정렬 → 한 건씩 라운드로빈.
-        fun roundRobin(jobs: List<Job>): List<Job> {
-            if (jobs.isEmpty()) return emptyList()
-            val groups = jobs.groupBy { it.companyId }.values
+        // 회사 다양성: 회사별 큐(점수 desc, 난수 tiebreak)를 한 건씩 라운드로빈 → 평탄화.
+        fun companyDiverse(list: List<Job>): List<Job> {
+            val queues = list.groupBy { it.companyId }.values
                 .map { grp -> grp.sortedByDescending { scoreOf[it] ?: 0 } to rnd.nextInt() }
                 .sortedWith(
                     compareByDescending<Pair<List<Job>, Int>> { it.first.maxOf { j -> scoreOf[j] ?: 0 } }
                         .thenBy { it.second },
                 )
-                .map { it.first }
-            val queues = groups.map { ArrayDeque(it) }
-            val out = ArrayList<Job>(jobs.size)
+                .map { ArrayDeque(it.first) }
+            val out = ArrayList<Job>(list.size)
             while (true) {
                 var progressed = false
                 for (q in queues) q.removeFirstOrNull()?.let { out.add(it); progressed = true }
+                if (!progressed) break
+            }
+            return out
+        }
+
+        // 소스(greenhouse/pubinst/seoul…) 다양성: 소스별 '회사 다양성 리스트'를 다시 라운드로빈 → 소스도 섞임.
+        fun roundRobin(jobs: List<Job>): List<Job> {
+            if (jobs.isEmpty()) return emptyList()
+            val sourceQueues = jobs.groupBy { it.id.substringBefore('-') }.values
+                .map { ArrayDeque(companyDiverse(it)) to rnd.nextInt() }
+                .sortedWith(
+                    compareByDescending<Pair<ArrayDeque<Job>, Int>> { p -> p.first.maxOfOrNull { scoreOf[it] ?: 0 } ?: 0 }
+                        .thenBy { it.second },
+                )
+                .map { it.first }
+            val out = ArrayList<Job>(jobs.size)
+            while (true) {
+                var progressed = false
+                for (q in sourceQueues) q.removeFirstOrNull()?.let { out.add(it); progressed = true }
                 if (!progressed) break
             }
             return out
