@@ -273,14 +273,37 @@ class JobService(
         return JobListResponse(jobs = toDtos(ordered))
     }
 
+    /**
+     * 비슷한 공고. 직군(jobCategory) 겹침을 1순위, 같은 업종을 보조로 점수화해 추천.
+     * 업종만 보던 기존 방식은 업종 없는 회사(서울·공공기관 다수)에서 빈 결과라 직군 기반으로 보강.
+     */
     fun similar(id: String): JobListResponse {
         val base = jobRepository.findById(id).orElseThrow {
             NotFoundException("JOB_NOT_FOUND", "공고를 찾을 수 없습니다.")
         }
-        val industry = companyRepository.findById(base.companyId).orElse(null)?.industry
-            ?: return JobListResponse(jobs = emptyList())
-        val jobs = jobRepository.findSimilarByIndustry(industry, id, PageRequest.of(0, 10))
-        return JobListResponse(jobs = toDtos(jobs))
+        val baseCats = base.jobCategoryCodes?.toSet().orEmpty()
+        val baseIndustry = companyRepository.findById(base.companyId).orElse(null)?.industry
+
+        // 후보 풀(최신순) — 자기 자신 제외. v0.1 규모라 메모리에서 점수화.
+        val pool = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 3000))
+            .filter { it.id != id }
+        val companies = loadCompanies(pool)
+
+        // 점수 = 직군 겹침 수 ×100 + (같은 업종이면 10). 0점(무관)은 제외.
+        // pool이 이미 최신순이고 sortedByDescending는 안정 정렬이라, 동점은 최신순 유지.
+        val ranked = pool
+            .map { job ->
+                val cats = job.jobCategoryCodes?.toSet().orEmpty()
+                val overlap = baseCats.count { it in cats }
+                val sameIndustry = baseIndustry != null && companies[job.companyId]?.industry == baseIndustry
+                job to (overlap * 100 + if (sameIndustry) 10 else 0)
+            }
+            .filter { it.second > 0 }
+            .sortedByDescending { it.second }
+            .map { it.first }
+            .take(10)
+
+        return JobListResponse(jobs = toDtos(ranked))
     }
 
     /**
