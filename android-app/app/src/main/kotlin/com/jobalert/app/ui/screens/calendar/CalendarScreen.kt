@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import com.jobalert.app.data.HelpState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -81,11 +84,29 @@ fun CalendarScreen(
     var selectedDay by remember(monthPrefix) { mutableStateOf(if (isCurrentMonth) today else 1) }
     val selectedJobs = byDay[selectedDay] ?: emptyList()
 
+    val context = LocalContext.current
+    var showHelp by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!HelpState.shown(context, "calendar")) { showHelp = true; HelpState.markShown(context, "calendar") }
+    }
+    if (showHelp) {
+        HelpDialog(
+            title = "마감 캘린더",
+            lines = listOf(
+                "날짜를 누르면 그날 마감되는 공고를 볼 수 있어요.",
+                "위 < > 로 다음 달(최대 2개월)까지 확인하세요.",
+                "마감이 지난 공고는 자동으로 사라져요.",
+            ),
+            onDismiss = { showHelp = false },
+        )
+    }
+
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
             title = "마감 캘린더",
             leading = { HiFiIconBtn(Icons.Outlined.ArrowBack, "뒤로", onClick = onBack) },
+            action = { HelpIconButton(onClick = { showHelp = true }) },
         )
 
         Column(

@@ -17,7 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import com.jobalert.app.data.HelpState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,9 +59,29 @@ fun FavoritesScreen(
     val favs = (state as? FavoritesUiState.Success)?.companies ?: emptyList()
     val totalNew = favs.sumOf { it.newCount }
 
+    val context = LocalContext.current
+    var showHelp by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!HelpState.shown(context, "favorites")) { showHelp = true; HelpState.markShown(context, "favorites") }
+    }
+    if (showHelp) {
+        HelpDialog(
+            title = "관심 기업",
+            lines = listOf(
+                "관심 기업을 등록하면 그 회사 새 공고를 모아보고 알림도 받아요.",
+                "카드 우상단 빨간 숫자 = 오늘 새로 올라온 공고 수.",
+                "점선 '기업 추가' 칸에서 회사를 검색해 담아요.",
+            ),
+            onDismiss = { showHelp = false },
+        )
+    }
+
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(title = "관심 기업")   // 우상단 + 제거 — 추가는 그리드의 점선 '기업 추가' 카드로
+        HiFiAppBar(
+            title = "관심 기업",
+            action = { HelpIconButton(onClick = { showHelp = true }) },
+        )
 
         // 상단 요약
         Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {

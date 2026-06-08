@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import com.jobalert.app.data.HelpState
 import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.data.model.regionShort
@@ -80,9 +82,29 @@ fun DiscoverScreen(
     val pagerState = rememberPagerState(pageCount = { pageCount })
     // '본 것' 기록은 스크롤이 아니라 '자세히 보기'로 실제 진입했을 때만(onOpenDetail). → 직접 본 공고만 후순위.
 
+    val context = LocalContext.current
+    var showHelp by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!HelpState.shown(context, "discover")) { showHelp = true; HelpState.markShown(context, "discover") }
+    }
+    if (showHelp) {
+        HelpDialog(
+            title = "찾아보기",
+            lines = listOf(
+                "관심·취향을 바탕으로 다양한 공고를 넘겨봐요 (매번 순서가 바뀌어요).",
+                "카드를 더블탭하면 좋아요 — 그 회사가 '관심 기업'에 담겨요.",
+                "'자세히 보기'를 눌러야 공고로 들어가요.",
+            ),
+            onDismiss = { showHelp = false },
+        )
+    }
+
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(title = "찾아보기")   // 필터 없음 — 관심 기반 + 다양성으로 섞어 보여준다
+        HiFiAppBar(
+            title = "찾아보기",
+            action = { HelpIconButton(onClick = { showHelp = true }) },
+        )
 
         if (!isLoaded) {
             // 로딩 중엔 finish 카드('오늘은 여기까지')가 잠깐 깜빡이지 않게 로딩만 표시.

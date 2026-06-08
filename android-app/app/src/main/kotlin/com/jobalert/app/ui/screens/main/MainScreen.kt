@@ -27,7 +27,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.jobalert.app.data.HelpState
 import com.jobalert.app.data.JobRepository
+import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.regionShort
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.screens.filter.ActiveFilter
@@ -54,6 +60,15 @@ fun MainScreen(
     val szs = ActiveFilter.sizes
     val dday = ActiveFilter.deadlineDays
     LaunchedEffect(cats, exps, szs, dday) { viewModel.load(cats, exps, szs, dday) }
+    // 앱에 다시 들어올 때마다 현재 시각 기준으로 재조회 — 오전엔 열렸던 게 오후엔 마감됐을 수 있으니.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val obs = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.load(cats, exps, szs, dday)
+        }
+        lifecycleOwner.lifecycle.addObserver(obs)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(obs) }
+    }
     var section by remember { mutableStateOf(JobKind.NEW) }
 
     // 오늘 새 공고(NEW) 수를 위젯에 반영(단이 표정·카운트).
@@ -71,12 +86,31 @@ fun MainScreen(
         }
     }
 
+    // 처음 진입 시 도움말 1회 자동 노출. 앱바 '?'로 다시 보기.
+    var showHelp by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        if (!HelpState.shown(context, "today")) { showHelp = true; HelpState.markShown(context, "today") }
+    }
+    if (showHelp) {
+        HelpDialog(
+            title = "오늘 탭이란?",
+            lines = listOf(
+                "'관심'(직군·회사 규모)에 맞는 새 공고를 매일 모아줘요.",
+                "필터는 1회성이에요 — 앱을 닫으면 풀려요. 매일 받아보려면 마이페이지 '관심'에서 바꿔주세요.",
+                "NEW = 오늘 올라왔거나 아직 안 본 공고 · 마감임박 = 마감 3일 이내.",
+            ),
+            onDismiss = { showHelp = false },
+        )
+    }
+
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
             title = "채용알리미",
             action = {
-                Row {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    HelpIconButton(onClick = { showHelp = true })
+                    Spacer(Modifier.width(6.dp))
                     HiFiIconBtn(Icons.Outlined.NotificationsNone, "알림", onClick = onNotificationClick)
                     Spacer(Modifier.width(6.dp))
                     HiFiIconBtn(Icons.Outlined.Tune, "필터", onClick = onFilterClick)
@@ -126,10 +160,27 @@ private fun ColumnScope.SuccessContent(
     onSectionChange: (JobKind) -> Unit,
     onJobClick: (String) -> Unit,
 ) {
-    val counts = feed.counts
-    // 마감임박(CLOSING) 섹션은 마감 이른 순 정렬. 그 외는 기본(개인화/다양성) 순서 유지.
-    val filtered = feed.jobs.filter { it.kind == section }
-        .let { if (section == JobKind.CLOSING) it.sortedBy { j -> ddayNum(j.dday) } else it }
+    // NEW = 오늘 올라온(서버 kind=NEW) 또는 아직 안 본 공고('새로 보이는' — 필터·관심 바꾸면 새 매칭이 여기로).
+    //   오늘 올라온 건 봐도 유지. 마감임박·변경은 NEW에서 제외(각 칸에서 봄).
+    val seen = SeenJobs.seenIds
+    val newList = feed.jobs.filter {
+        it.kind == JobKind.NEW || (it.id !in seen && it.kind != JobKind.CLOSING && it.kind != JobKind.UPDATE)
+    }
+    val updateList = feed.jobs.filter { it.kind == JobKind.UPDATE }
+    // 마감임박은 마감 이른 순 정렬.
+    val closingList = feed.jobs.filter { it.kind == JobKind.CLOSING }.sortedBy { j -> ddayNum(j.dday) }
+    fun countOf(k: JobKind) = when (k) {
+        JobKind.NEW -> newList.size
+        JobKind.UPDATE -> updateList.size
+        JobKind.CLOSING -> closingList.size
+        else -> 0
+    }
+    val filtered = when (section) {
+        JobKind.NEW -> newList
+        JobKind.UPDATE -> updateList
+        JobKind.CLOSING -> closingList
+        else -> emptyList()
+    }
 
     // 헤더 (날짜 + 큰 카운트 + 마스코트)
     Row(
@@ -140,13 +191,13 @@ private fun ColumnScope.SuccessContent(
             Text("오늘", style = HiFiType.body2, color = HiFiColors.Text2)
             Spacer(Modifier.height(2.dp))
             Row {
-                Text("오늘 새 공고 ", style = HiFiType.title, color = HiFiColors.Text)
-                Text("${counts[JobKind.NEW] ?: 0}건", style = HiFiType.title, color = HiFiColors.Brand)
+                Text("새 공고 ", style = HiFiType.title, color = HiFiColors.Text)
+                Text("${newList.size}건", style = HiFiType.title, color = HiFiColors.Brand)
             }
         }
         Box(contentAlignment = Alignment.TopEnd) {
             Mascot(size = 60.dp, expression = MascotExpression.Happy)
-            val n = counts[JobKind.NEW] ?: 0
+            val n = newList.size
             if (n > 0) {
                 Box(
                     Modifier
@@ -179,7 +230,7 @@ private fun ColumnScope.SuccessContent(
         listOf(JobKind.NEW, JobKind.UPDATE, JobKind.CLOSING).forEach { kind ->
             SectionChip(
                 kind = kind,
-                count = counts[kind] ?: 0,
+                count = countOf(kind),
                 selected = section == kind,
                 onClick = { onSectionChange(kind) },
                 modifier = Modifier.weight(1f),
