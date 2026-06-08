@@ -85,6 +85,11 @@ class JobService(
             }
         }
 
+        // 표시용 kind 재계산(메모리, 미저장): 오늘 처음 등장한 공고 = NEW(하루 종일 유지 — 재수집에도
+        // 안 사라짐). 마감 7일 이내 = CLOSING(앱에선 '마감임박'). 그 외 변경=UPDATE, 나머지=ACTIVE.
+        val todayKstDate = OffsetDateTime.now(clock).atZoneSameInstant(kst).toLocalDate()
+        jobs.forEach { it.kind = displayKind(it, todayKstDate) }
+
         // 개인화 신호(기기 기준). 헤더 없으면 빈 집합 → 가점 없이 회사 다양성(interleave)만 적용.
         val myCategories = deviceId?.let { dev ->
             deviceCategoryRepository.findAllByDeviceId(dev).map { it.categoryCode }.toSet()
@@ -279,6 +284,20 @@ class JobService(
      * 비슷한 공고. 직군(jobCategory) 겹침을 1순위, 같은 업종을 보조로 점수화해 추천.
      * 업종만 보던 기존 방식은 업종 없는 회사(서울·공공기관 다수)에서 빈 결과라 직군 기반으로 보강.
      */
+    /**
+     * 메인 표시용 kind. 오늘(KST) 처음 등장 = NEW(하루 유지). 마감 7일 이내 = CLOSING(앱 '마감임박').
+     * 그 외 저장 kind가 UPDATE면 UPDATE, 나머지는 ACTIVE.
+     */
+    private fun displayKind(job: Job, todayKst: java.time.LocalDate): String {
+        val firstSeen = job.firstSeenAt.atZoneSameInstant(kst).toLocalDate()
+        if (firstSeen == todayKst) return "NEW"
+        job.deadline?.atZoneSameInstant(kst)?.toLocalDate()?.let { dl ->
+            val d = java.time.temporal.ChronoUnit.DAYS.between(todayKst, dl)
+            if (d in 0..7) return "CLOSING"
+        }
+        return if (job.kind == "UPDATE") "UPDATE" else "ACTIVE"
+    }
+
     fun similar(id: String): JobListResponse {
         val base = jobRepository.findById(id).orElseThrow {
             NotFoundException("JOB_NOT_FOUND", "공고를 찾을 수 없습니다.")
