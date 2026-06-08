@@ -164,7 +164,7 @@ class JobPersistenceService(
         education = raw.education,
         salary = raw.salary,
         tags = raw.tags.takeIf { it.isNotEmpty() },
-        jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
+        jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords, raw.description),
         description = raw.description,
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
         deadline = raw.deadlineEpoch?.toUtcOdt(),
@@ -175,6 +175,31 @@ class JobPersistenceService(
         createdAt = now,
         updatedAt = now,
     )
+
+    /**
+     * DB의 모든 공고를 분류기로 재분류(소스 재수집 없이). 분류 규칙 개선 후 즉시 반영용 — OOM 안전.
+     * department는 저장 안 돼 있어 title + tags + description(본문)으로 분류. 미매칭은 "etc"(기타).
+     */
+    @Transactional
+    fun reclassifyAll(): ReclassifyResult {
+        var updated = 0
+        var etc = 0
+        val all = jobRepository.findAll()
+        for (job in all) {
+            val newCats = classifier.classify(job.title, null, job.tags ?: emptyList(), job.description)
+            if (newCats == listOf("etc")) etc++
+            if (job.jobCategoryCodes != newCats) {
+                job.jobCategoryCodes = newCats
+                jobRepository.save(job)
+                updated++
+            }
+        }
+        val result = ReclassifyResult(total = all.size, updated = updated, etc = etc)
+        log.info("reclassify 완료: {}", result)
+        return result
+    }
+
+    data class ReclassifyResult(val total: Int, val updated: Int, val etc: Int)
 
     /** 기존 공고에 변경을 반영하고 새 kind 를 정한다. 호출자가 save 한다. */
     private fun applyDiff(job: Job, raw: RawJobPosting, now: OffsetDateTime): DiffOutcome {
@@ -200,7 +225,7 @@ class JobPersistenceService(
         }
         job.experience = experienceClassifier.classify(raw.experience, raw.title)
         // 기존 공고도 재분류 — 분류 규칙이 개선되면 다음 수집에서 반영됨.
-        job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords)
+        job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords, raw.description)
         raw.postingDateEpoch?.toUtcOdt()?.let { job.postingDate = it }
         job.lastSeenAt = now
         job.updatedAt = now

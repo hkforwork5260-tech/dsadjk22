@@ -48,6 +48,16 @@ class AdminController(
     }
 
     /**
+     * DB 전체 직군 재분류(소스 재수집 없이). 분류 규칙 개선 후 즉시 반영. 비동기(202).
+     */
+    @PostMapping("/reclassify")
+    fun reclassify(): ResponseEntity<Map<String, Any>> {
+        collectorService.reclassifyAsync()
+        return ResponseEntity.accepted()
+            .body(mapOf("status" to "started", "message" to "재분류를 시작했습니다. 진행은 서버 로그를 확인하세요."))
+    }
+
+    /**
      * 다이제스트 1건 생성(테스트용). kind=morning_digest(기본)/evening_digest.
      * 실제 발송(FCM)은 별개 — 이건 히스토리 레코드만 생성.
      */

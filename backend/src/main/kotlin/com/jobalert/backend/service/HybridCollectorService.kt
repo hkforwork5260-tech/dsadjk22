@@ -53,6 +53,16 @@ class HybridCollectorService(
      *   만료 스윕은 수집한 소스에만 적용되므로(seenBySource 기준) 다른 소스 공고는 건드리지 않는다.
      *   트라이얼 박스 OOM 회피용 — 가벼운 단일 소스만 빠르게 재수집할 때 쓴다.
      */
+    /** DB 전체 재분류를 비동기로(소스 재수집 없이). 분류 규칙 개선 후 즉시 반영용. */
+    @Async
+    fun reclassifyAsync() {
+        try {
+            persistenceService.reclassifyAll()
+        } catch (ex: Exception) {
+            log.error("재분류 실패", ex)
+        }
+    }
+
     fun runDailyCollection(sourceFilter: Set<String>? = null): CollectionResult {
         val targets = sources.filter { sourceFilter == null || it.sourceId in sourceFilter }
         log.info("hybrid collection start. target sources = {}", targets.map { it.sourceId })
