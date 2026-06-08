@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jobalert.app.data.JobRepository
+import com.jobalert.app.data.model.regionShort
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.*
@@ -198,7 +199,7 @@ private fun ColumnScope.SuccessContent(
                 kind = job.kind,
                 company = job.company,
                 role = job.role,
-                logo = job.logo,
+                logo = job.regionShort,   // 로고 자리에 근무지역
                 dday = job.dday,
                 dateText = job.dateText,
                 onClick = { onJobClick(job.id) },

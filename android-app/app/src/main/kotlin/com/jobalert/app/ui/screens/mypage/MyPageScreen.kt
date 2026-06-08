@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -88,7 +89,7 @@ fun MyPageScreen(
                     Box(Modifier.fillMaxWidth().height(1.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        StatColumn(value = "87", label = "본 공고", color = HiFiColors.Text, modifier = Modifier.weight(1f))
+                        StatColumn(value = "${SeenJobs.seenIds.size}", label = "본 공고", color = HiFiColors.Text, modifier = Modifier.weight(1f))
                         Box(Modifier.width(1.dp).height(44.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                         StatColumn(
                             value = "🔖",
@@ -103,14 +104,15 @@ fun MyPageScreen(
             Spacer(Modifier.height(22.dp))
 
             // 메뉴 리스트
+            // 부제(세부설명)는 제거 — 제목만 깔끔하게.
             val menu = listOf(
-                MenuItem("🔔", "알림 설정", "매일 9시 / 21시", onClick = onNotifSettings),
-                MenuItem("📜", "알림 히스토리", "받은 알림 다시 보기", onClick = onNotifHistory),
-                MenuItem("📅", "마감 캘린더", "저장한 공고 마감일", onClick = onCalendar),
-                MenuItem("📱", "바탕화면 위젯", "켜짐 (Medium)", onClick = onWidgetSettings),
-                MenuItem("🎯", "관심 직군", "개발 · 디자인 · 데이터", onClick = onInterests),
+                MenuItem("🔔", "알림 설정", "", onClick = onNotifSettings),
+                MenuItem("📜", "알림 히스토리", "", onClick = onNotifHistory),
+                MenuItem("📅", "마감 캘린더", "", onClick = onCalendar),
+                MenuItem("📱", "바탕화면 위젯", "", onClick = onWidgetSettings),
+                MenuItem("🎯", "관심", "", onClick = onInterests),
                 MenuItem("💬", "피드백 보내기", "", onClick = onFeedback),
-                MenuItem("ℹ️", "앱 정보", "v0.1.0 · 베타", onClick = null),
+                MenuItem("ℹ️", "앱 정보", "", onClick = null),
             )
             Column {
                 menu.forEachIndexed { idx, item ->

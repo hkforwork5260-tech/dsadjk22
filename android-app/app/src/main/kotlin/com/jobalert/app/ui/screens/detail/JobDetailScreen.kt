@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.*
@@ -52,7 +53,8 @@ fun JobDetailScreen(
 ) {
     // 백엔드 /jobs/{id} 연결. 로딩·에러 시엔 빈 공고로 렌더.
     val viewModel: JobDetailViewModel = viewModel()
-    LaunchedEffect(jobId) { viewModel.load(jobId) }
+    // 상세화면 진입 = '직접 본 공고'로 기록(내 정보 '본 공고' 카운트·찾아보기 후순위에 반영).
+    LaunchedEffect(jobId) { viewModel.load(jobId); SeenJobs.markSeen(jobId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val job = (state as? JobDetailUiState.Success)?.job
         ?: Job(id = jobId, company = "", logo = "", role = "불러오는 중…", kind = JobKind.NEW, dday = "", dateText = "")

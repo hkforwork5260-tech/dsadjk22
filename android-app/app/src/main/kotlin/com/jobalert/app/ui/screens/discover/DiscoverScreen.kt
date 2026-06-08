@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
+import com.jobalert.app.data.model.regionShort
 import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
@@ -163,7 +164,8 @@ private fun ReelsJobCard(
                         .background(job.kind.softColor()),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(job.logo, style = HiFiType.h2.copy(fontSize = 22.sp), color = job.kind.color())
+                    // 로고 자리에 근무지역 표시(회사 위치 아닌 근무지). 지역 없으면 회사 이니셜.
+                    Text(job.regionShort, style = HiFiType.h2.copy(fontSize = 20.sp), color = job.kind.color())
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {

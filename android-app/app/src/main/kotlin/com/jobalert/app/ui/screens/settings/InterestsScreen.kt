@@ -42,7 +42,7 @@ fun InterestsScreen(
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
-            title = "관심 직군",
+            title = "관심",
             leading = { HiFiIconBtn(Icons.Outlined.ArrowBack, "뒤로", onClick = onBack) },
         )
 
@@ -88,25 +88,18 @@ fun InterestsScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // 회사 규모도 실제 선택값(ActiveFilter) 반영.
+            val sizeLabels = ActiveFilter.sizes.mapNotNull { sizeLabelOf(it) }
             SectionCard(
                 title = "회사 규모",
-                count = "2개 선택",
-                chips = listOf("대기업", "스타트업"),
+                count = if (sizeLabels.isEmpty()) "전체" else "${sizeLabels.size}개 선택",
+                chips = sizeLabels.ifEmpty { listOf("전체") },
                 chipColor = HiFiColors.Info,
                 chipSoft = HiFiColors.InfoSoft,
                 onEdit = onEditCompanySize,
             )
 
-            Spacer(Modifier.height(14.dp))
-
-            SectionCard(
-                title = "관심 기업",
-                count = "12개 저장",
-                chips = listOf("토스", "카카오", "네이버", "쿠팡", "+8"),
-                chipColor = HiFiColors.New,
-                chipSoft = HiFiColors.NewSoft,
-                onEdit = onOpenFavorites,
-            )
+            // 관심 기업 섹션은 제거 — 하단 탭에 '관심기업'이 따로 있음(중복).
 
             Spacer(Modifier.height(22.dp))
             Box(
@@ -127,6 +120,17 @@ fun InterestsScreen(
 
         HiFiGestureNav()
     }
+}
+
+/** 회사 규모 코드 → 한글 라벨. 모르는 값은 null. */
+private fun sizeLabelOf(code: String): String? = when (code) {
+    "large_corp" -> "대기업"
+    "public" -> "공기업"
+    "small" -> "중소기업"
+    "mid_corp" -> "중견기업"
+    "startup", "startup_unicorn" -> "스타트업"
+    "foreign" -> "외국계"
+    else -> null
 }
 
 @Composable

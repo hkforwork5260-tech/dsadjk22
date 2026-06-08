@@ -26,19 +26,20 @@
             android:id="@+id/widget_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#FF6B35"
-            android:textStyle="bold"
-            android:textSize="16sp"
+            android:textColor="#777777"
+            android:textSize="12sp"
             android:maxLines="1"
-            android:text="새 공고 0" />
+            android:text="새 공고" />
 
         <TextView
             android:id="@+id/widget_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#777777"
-            android:textSize="11sp"
-            android:text="채용알리미" />
+            android:textColor="#FF6B35"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:maxLines="1"
+            android:text="0" />
 
     </LinearLayout>
 

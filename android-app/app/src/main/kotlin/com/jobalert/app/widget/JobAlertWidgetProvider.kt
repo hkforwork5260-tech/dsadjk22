@@ -50,19 +50,28 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
                 else -> R.layout.widget_jobalert
             }
             val tiny = layout == R.layout.widget_jobalert_tiny
+            val wide = layout == R.layout.widget_jobalert_wide
 
             val views = RemoteViews(context.packageName, layout)
             val count = WidgetState.newCount(context)
             val expression = WidgetState.expression(context)
 
             views.setImageViewBitmap(R.id.widget_mascot, MascotRenderer.render(expression, 160))
-            val countText = when {
-                tiny -> if (count > 0) "$count" else "0"
-                count > 0 -> "새 공고 $count"
-                else -> "새 공고 없음"
+            when {
+                tiny -> {
+                    views.setTextViewText(R.id.widget_count, if (count > 0) "$count" else "0")
+                    views.setTextViewText(R.id.widget_label, "채용알리미")
+                }
+                wide -> {
+                    // 2x1: "채용알리미" 자리에 새 공고 수 숫자를 크게. 위는 라벨.
+                    views.setTextViewText(R.id.widget_count, "새 공고")
+                    views.setTextViewText(R.id.widget_label, "$count")
+                }
+                else -> {
+                    views.setTextViewText(R.id.widget_count, if (count > 0) "새 공고 $count" else "새 공고 없음")
+                    views.setTextViewText(R.id.widget_label, "채용알리미")
+                }
             }
-            views.setTextViewText(R.id.widget_count, countText)
-            views.setTextViewText(R.id.widget_label, "채용알리미")
 
             // 큰(세로) 레이아웃에만 마감임박·대표공고 추가(작은/가로엔 해당 뷰 없음).
             if (layout == R.layout.widget_jobalert) {

@@ -27,6 +27,31 @@ data class Job(
     val isFavoriteCompany: Boolean = false,  // 이 공고 회사가 관심기업인지 — 상세 하트 초기상태
 )
 
+private val enRegion = mapOf(
+    "seoul" to "서울", "gyeonggi" to "경기", "incheon" to "인천",
+    "busan" to "부산", "daegu" to "대구", "daejeon" to "대전",
+    "gwangju" to "광주", "ulsan" to "울산", "sejong" to "세종",
+    "gangwon" to "강원", "jeju" to "제주", "remote" to "원격",
+)
+
+/**
+ * 카드 로고 자리에 표시할 짧은 근무지역(회사 위치 아님, 공고의 근무지).
+ * 예: "Seoul, South Korea"→"서울", "서울특별시 강남구"→"서울", "경기"→"경기".
+ * location 없으면 logo(회사 이니셜)로 폴백.
+ */
+val Job.regionShort: String
+    get() {
+        if (location.isBlank()) return logo
+        val first = location.split(",", "·").firstOrNull { it.isNotBlank() }
+            ?.trim()?.split(" ")?.firstOrNull { it.isNotBlank() } ?: return logo
+        enRegion[first.lowercase()]?.let { return it }
+        val stripped = first
+            .removeSuffix("특별자치시").removeSuffix("특별자치도")
+            .removeSuffix("특별시").removeSuffix("광역시")
+            .removeSuffix("도").removeSuffix("시")
+        return stripped.ifBlank { logo }.take(4)
+    }
+
 /**
  * 22개 직군. README 21개 + "기타" 추가.
  */
