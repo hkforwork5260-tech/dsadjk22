@@ -48,6 +48,11 @@ class JobController(
         @RequestParam(defaultValue = "50") limit: Int,
     ): JobSearchResponse = jobService.search(q, kind, categories, limit)
 
+    // 리터럴 경로라 /{id}보다 우선 매칭됨. '본 공고' 등 클라가 가진 ID 목록으로 공고 조회.
+    @GetMapping("/by-ids")
+    fun byIds(@RequestParam(required = false, defaultValue = "") ids: List<String>): JobListResponse =
+        jobService.byIds(ids)
+
     @GetMapping("/{id}")
     fun detail(
         @PathVariable id: String,

@@ -164,6 +164,14 @@ class JobService(
         return mapper.toDetailDto(job, company, isFavorited = favorited, isSaved = saved)
     }
 
+    /** 주어진 ID들의 공고를 입력(최근 본) 순서대로 반환. '본 공고' 목록 등 클라가 가진 ID로 조회용. */
+    fun byIds(ids: List<String>): JobListResponse {
+        if (ids.isEmpty()) return JobListResponse(jobs = emptyList())
+        val found = jobRepository.findAllById(ids).associateBy { it.id }
+        val ordered = ids.mapNotNull { found[it] }   // 입력 순서(최근 본 순) 유지
+        return JobListResponse(jobs = toDtos(ordered))
+    }
+
     fun similar(id: String): JobListResponse {
         val base = jobRepository.findById(id).orElseThrow {
             NotFoundException("JOB_NOT_FOUND", "공고를 찾을 수 없습니다.")
