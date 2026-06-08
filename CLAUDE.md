@@ -109,6 +109,18 @@
   - **`/admin/*` 토큰 인증**(`AdminAuthInterceptor`+`WebConfig`): `ADMIN_TOKEN`(=`jobalert.admin.token`) 설정 시 `X-Admin-Token` 헤더 일치 요구(불일치 401). spring-security 안 씀(공개 API 보호 위해 경로만 매핑). 빈값이면 개방+경고로그(로컬용). 수동 수집 시 `curl -X POST -H "X-Admin-Token: <토큰>" .../api/v1/admin/collect`.
   - **안드 `ApiClient.BASE_URL`** = `https://dsadjk22-production.up.railway.app/`(로컬은 주석). 빌드는 본인 PC.
   - **★ Railway 함정 (오늘 1시간 헤맴)**: 변수를 고친 뒤 **`Deploy` 버튼(또는 Apply changes)을 눌러야 반영**됨. 안 누르면 "N Changes" 대기 상태로 옛 값 유지 → 키가 안 먹은 것처럼 보임. 적재는 모든 소스 fetch 후 **맨 끝 한 번에**(`HybridCollectorService`) 일어나 공공기관 상세 500여 호출 끝날 때 399→1,343으로 점프. `jobs/search?limit=N`의 `total_estimate`는 **반환 개수**(limit에 묶임)지 총량 아님 — 총량 보려면 limit 크게.
+- **★ 안드로이드 출시 빌드 + UX 대개편 + 찾아보기 인스타 랭킹 (2026-06-08)** — 사용자 실사용 피드백 반복 반영. 안드 빌드/설치는 본인 PC(카톡으로 폰 설치). 커밋 다수(주요: 출시준비 `3df8948`, ALIO `idx`+Flyway `V3`, `/by-ids` `079f7c6`, `/discover` `82eb8f0`·`f46855a`, 찾아보기 프론트 `0337bfa`).
+  - **정식 release 빌드**: `keystore.properties`(gitignore) 기반 release 서명(`release.jks`, alias `jobalert-release`, **비번 백업 필수**). google-services.json에 release 패키지 `com.jobalert.app` 추가(프로젝트 `jobjob-533ca` — 처음에 실수로 새 프로젝트 `-91b81` 생성→폐기). lint `InvalidFragmentVersionForActivityResult` 오탐 제외(lintVitalRelease 차단). 서명 APK `CN=JobAlert`. **Play Console 미등록**(개발자 계정 $25 필요) — 지금은 사이드로드.
+  - **런처 아이콘**: 눈·코 없던 기괴한 placeholder → **꽁이 얼굴**(`ic_launcher_foreground.xml`, 마스코트 팔레트).
+  - **위젯**: 온보딩·마이페이지 "지금 추가하기" = `requestPinAppWidget`(WidgetPinner, 한 번 탭 추가). 2x1은 "채용알리미" 자리에 **새 공고 수 숫자**.
+  - **UI 정리**: 가짜 상태바(9:41)·하단 제스처막대 = `HiFiStatusBar`/`HiFiGestureNav` 본문 비워 23개 화면 일괄 제거(루트 `windowInsetsPadding(systemBars)`가 이미 처리). 찾아보기 카드 우측 버튼 영역(72dp gutter)+제목 3줄 제한. **카드 로고 자리=근무지역**(`Job.regionShort`). 내정보 "관심"(관심기업 제거·부제 제거·톱니바퀴 제거·규모 실제값).
+  - **온보딩 1회만**: `ActiveFilter.onboardingDone` 플래그(처음 설치 1회→이후 메인 직행). 직군·규모 미리선택 제거(빈→직접 고름, 내정보 수정 시 저장값 반영).
+  - **★ 관심↔필터 2-tier 분리**(`ActiveFilter`): **관심**(interestCategories/interestSizes, 영속, 온보딩·내정보·푸시개인화) ↔ **세션 필터**(categories/experiences/sizes/deadlineDays, 비영속, 시작 시 관심으로 초기화, 피드가 사용). `setInterest`(온보딩·내정보) vs `setFilter`(필터 다이얼로그·일회성). 필터 적용해도 관심 안 바뀜·앱 재시작 시 관심으로 리셋.
+  - **필터 작동 수정**: today() 카운트를 **필터된 후보에서 계산**(필터 시 헤더·칩 숫자 반영). **마감일 필터**(`deadlineDays`, N일 이내). 검색 `total_estimate`=자르기 전 실제 매칭 수(공고(50) 하드코딩 해소). 오늘·검색 limit↑(사실상 전부). FilterScreen 더미 기본값·"17건" 제거.
+  - **공공기관 원문 직링크**: ALIO 파라미터 `recrutPblntSn`→**`idx`**(WebSearch로 확인 — recrutPblntSn은 무시돼 통합목록으로 빠졌음). 기존 행은 **Flyway `V3__fix_alio_url.sql`**로 일괄 보정(재수집이 트라이얼 박스서 불안정해 마이그레이션이 결정적).
+  - **본 공고 기록함**: 백엔드 `GET /jobs/by-ids`(여러 ID, 입력순) + `SeenJobsScreen`. 상세 진입 시 `SeenJobs.markSeen`(영속, LinkedHashSet). 내정보 "본 공고 N ›" 탭→목록. 카운트 하드코딩 87 제거.
+  - **★ 찾아보기 인스타 탐색 랭킹** `GET /jobs/discover`(오늘 필터와 **완전 분리**, 필터버튼 없음): 점수(관심기업+5·관심직군+3·저장취향+2·최신+2/+1·마감임박+1) + **소스+회사 2단 라운드로빈**(검증: 공공·gh·서울 1/3씩 번갈아) + **관심:발견 3:1**(발견 25%) + 그룹 난수 셔플. 본 공고 후순위는 클라(로컬 SeenJobs). 미구현=머문시간 학습(4번, 앱 계측 필요).
+  - **⚠️ 트라이얼 박스 불안정**: 무료 Railway 박스가 수집·대량응답(오늘 limit 1000)에 **OOM 크래시** 반복(앱 502 + 서버 000). 데이터는 Postgres라 안전, push 재배포로 부활. **출시 전 유료 플랜 or 페이지네이션 필요.** 미푸시 커밋 `0337bfa`(프론트는 push해도 백엔드 무관하나 Railway가 재배포돼서 보류).
 - HTML 프로토타입 (`project/index.html`) — 26개 화면 전부, jsdom 검증 26/26
 - 의사결정: 데이터 소스 / 회사 풀 / 영리화 / 기술 스택 모두 확정
 - **Phase 1 백엔드 코어 (`backend/`)** — Spring Boot 3.5 + Kotlin 2.0 스캐폴드 / Flyway 스키마 10개 테이블 / JPA Entity·Repository / REST API 15개 엔드포인트 mock 응답 / 사람인 mock client / 수집 cron 골격 / 회사 시드 57개 placeholder / Docker Compose. `./gradlew compileKotlin` 통과.
