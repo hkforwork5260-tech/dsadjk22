@@ -16,7 +16,9 @@ import com.jobalert.app.R
  */
 open class JobAlertWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        ids.forEach { updateWidget(context, manager, it) }
+        ids.forEach { updateWidget(context, manager, it) }   // 마지막 값 즉시 렌더
+        // 앱을 안 열어도 위젯 주기(약 30분)마다 백엔드에서 관심 기준 새 공고 수를 직접 받아 갱신.
+        WidgetUpdater.refreshFromServer(context)
     }
 
     // 사용자가 위젯 크기를 바꾸면(리사이즈) 레이아웃을 다시 골라 갱신.

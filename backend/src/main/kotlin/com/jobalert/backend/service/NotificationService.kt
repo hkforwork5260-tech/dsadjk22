@@ -77,17 +77,26 @@ class NotificationService(
         ensureDevice(deviceId)
         val now = OffsetDateTime.now(clock)
         val evening = kind == "evening_digest"
-        val targetKind = if (evening) "CLOSING" else "NEW"
 
         // 기기의 관심 직군. 있으면 그 직군만, 없으면 전체(전역 다이제스트).
         val myCategories = deviceCategoryRepository.findAllByDeviceId(deviceId).map { it.categoryCode }.toSet()
         val personalized = myCategories.isNotEmpty()
 
-        val pool = jobRepository.findAllByKindAndIsActiveTrue(targetKind, PageRequest.of(0, 2000))
-        val jobs = if (personalized) {
-            pool.filter { j -> j.jobCategoryCodes?.any { it in myCategories } == true }
+        // '오늘' 탭과 동일 기준: 아침=오늘(KST) 첫 등장한 새 공고, 저녁=마감 D-3 이내(지난 건 제외). 관심 직군 필터.
+        val kst = java.time.ZoneId.of("Asia/Seoul")
+        val todayKst = now.atZoneSameInstant(kst).toLocalDate()
+        val active = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 3000))
+        val matched = if (personalized) {
+            active.filter { j -> j.jobCategoryCodes?.any { it in myCategories } == true }
+        } else active
+        val jobs = if (evening) {
+            matched.filter { j ->
+                j.deadline?.atZoneSameInstant(kst)?.toLocalDate()?.let {
+                    java.time.temporal.ChronoUnit.DAYS.between(todayKst, it) in 0..3
+                } ?: false
+            }
         } else {
-            pool
+            matched.filter { j -> j.firstSeenAt.atZoneSameInstant(kst).toLocalDate() == todayKst }
         }
         val total = jobs.size
         val companyById = companyRepository.findAllById(jobs.map { it.companyId }.toSet()).associateBy { it.id }
