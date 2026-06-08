@@ -1,9 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.gms.google-services")
+}
+
+// 출시 서명 자격증명은 keystore.properties(gitignore)에서 읽는다. 파일이 없으면(예: CI·타인 체크아웃)
+// release 서명을 건너뛰고 그대로 빌드 — 서명은 keystore.properties가 있을 때만 적용된다.
+val keystorePropertiesFile = rootProject.file("keystore.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -18,8 +28,23 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // keystore.properties가 있을 때만 release 키로 서명(없으면 미서명 — 로컬/CI 빌드 깨지지 않게).
+            if (keystorePropertiesFile.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -42,6 +67,13 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    lint {
+        // 이 앱은 Fragment를 쓰지 않고 ComponentActivity(activity-compose)에서
+        // registerForActivityResult를 호출한다. InvalidFragmentVersionForActivityResult는
+        // Fragment 사용을 가정한 오탐이라 release vital lint에서 제외(전체 abortOnError는 유지).
+        disable += "InvalidFragmentVersionForActivityResult"
     }
 
     sourceSets {

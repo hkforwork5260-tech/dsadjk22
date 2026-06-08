@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:1059526736833:android:a9d6b4929f33b70406cd40",
+        "android_client_info": {
+          "package_name": "com.jobalert.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBeE9LOI3BenYsC2TrxQ_GjQoATYLbL_Fk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:1059526736833:android:d5f31f2bcaa4b88806cd40",
         "android_client_info": {
           "package_name": "com.jobalert.app.debug"
