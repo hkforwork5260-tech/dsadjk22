@@ -101,6 +101,9 @@ class JobRepository(
     suspend fun jobsByIds(ids: List<String>): List<Job> =
         if (ids.isEmpty()) emptyList() else api.jobsByIds(ids).jobs.map { it.toDomain() }
 
+    /** 찾아보기 피드 — 인스타 탐색 랭킹(관심·다양성·발견). '오늘' 필터와 무관. */
+    suspend fun discoverFeed(): List<Job> = api.discover().jobs.map { it.toDomain() }
+
     private val kst = ZoneId.of("Asia/Seoul")
 
     // 공고 제목 끝의 상투어("~채용합니다/모집합니다/모집/채용/공고" 등) 제거용.

@@ -37,6 +37,10 @@ interface ApiService {
     @GET("api/v1/jobs/by-ids")
     suspend fun jobsByIds(@Query("ids") ids: List<String>): JobListResponse
 
+    /** 찾아보기 전용 피드(인스타 탐색 랭킹). 필터 없음 — 관심·다양성·발견으로 섞임. */
+    @GET("api/v1/jobs/discover")
+    suspend fun discover(@Query("limit") limit: Int = 200): JobListResponse
+
     @GET("api/v1/jobs/search")
     suspend fun jobsSearch(
         @Query("q") query: String = "",

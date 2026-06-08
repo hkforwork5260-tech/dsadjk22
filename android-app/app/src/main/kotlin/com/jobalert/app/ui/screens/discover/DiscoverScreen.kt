@@ -65,12 +65,9 @@ fun DiscoverScreen(
     onTabClick: (HomeTab) -> Unit,
 ) {
     val viewModel: DiscoverViewModel = viewModel()
-    // 메인과 동일하게 ActiveFilter(직군·경력·규모)를 구독해 변경 시 재조회. (이전엔 필터 무시)
-    val cats = ActiveFilter.categories
-    val exps = ActiveFilter.experiences
-    val szs = ActiveFilter.sizes
-    val dday = ActiveFilter.deadlineDays
-    LaunchedEffect(cats, exps, szs, dday) { viewModel.load(cats, exps, szs, dday) }
+    // 찾아보기는 '오늘'의 필터와 분리. 필터 없이 전체를 받아오고, 백엔드 개인화(관심 직군·관심기업 가점)
+    // + 회사 라운드로빈(다양성)으로 인스타 탐색처럼 섞여 나온다. (관심은 기기 등록값으로 서버가 반영)
+    LaunchedEffect(Unit) { viewModel.load() }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
     val isLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
@@ -83,10 +80,7 @@ fun DiscoverScreen(
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(
-            title = "찾아보기",
-            action = { HiFiIconBtn(Icons.Outlined.Tune, "필터", onClick = onFilter) },
-        )
+        HiFiAppBar(title = "찾아보기")   // 필터 없음 — 관심 기반 + 다양성으로 섞어 보여준다
 
         if (!isLoaded) {
             // 로딩 중엔 finish 카드('오늘은 여기까지')가 잠깐 깜빡이지 않게 로딩만 표시.

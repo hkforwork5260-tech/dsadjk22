@@ -29,14 +29,9 @@ class DiscoverViewModel : ViewModel() {
     private val _isLoaded = MutableStateFlow(false)
     val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
 
-    fun load(
-        categories: List<String> = emptyList(),
-        experiences: List<String> = emptyList(),
-        sizes: List<String> = emptyList(),
-        deadlineDays: Int = -1,
-    ) {
+    fun load() {
         viewModelScope.launch {
-            runCatching { repository.todayFeed(categories, experiences, sizes, deadlineDays).jobs }
+            runCatching { repository.discoverFeed() }
                 .onSuccess { _jobs.value = it }
             _isLoaded.value = true
         }
