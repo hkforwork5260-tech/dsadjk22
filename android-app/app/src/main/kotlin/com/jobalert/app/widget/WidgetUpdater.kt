@@ -22,20 +22,32 @@ object WidgetUpdater {
                 val cats = prefs.getString("filter_categories", "").orEmpty()   // 관심 직군(콤마)
                 val sizes = prefs.getString("filter_sizes", "").orEmpty()        // 관심 규모(콤마)
                 val deviceId = prefs.getString("device_id", null)
-                val sb = StringBuilder("$BASE?limit=1")
+                // '오늘' 탭과 동일 기준으로 세려면 공고 목록이 필요(안 본 공고 포함). limit=200.
+                val sb = StringBuilder("$BASE?limit=200")
                 if (cats.isNotBlank()) sb.append("&categories=").append(cats)
                 if (sizes.isNotBlank()) sb.append("&sizes=").append(sizes)
                 val conn = (URL(sb.toString()).openConnection() as HttpURLConnection).apply {
                     requestMethod = "GET"
                     connectTimeout = 6000
-                    readTimeout = 8000
+                    readTimeout = 9000
                     deviceId?.let { setRequestProperty("X-Device-Id", it) }
                 }
                 if (conn.responseCode == 200) {
                     val body = conn.inputStream.bufferedReader().use { it.readText() }
-                    val counts = JSONObject(body).optJSONObject("counts")
-                    val newC = counts?.optInt("new", 0) ?: 0
-                    val closing = counts?.optInt("closing", 0) ?: 0
+                    val arr = JSONObject(body).optJSONArray("jobs")
+                    val seen = prefs.getStringSet("seen_job_ids", emptySet()).orEmpty()
+                    var newC = 0
+                    var closing = 0
+                    if (arr != null) {
+                        for (i in 0 until arr.length()) {
+                            val j = arr.getJSONObject(i)
+                            val kind = j.optString("kind")
+                            val id = j.optString("id")
+                            if (kind == "CLOSING") closing++
+                            // 오늘 NEW = 오늘 올라온(NEW) 또는 아직 안 본(마감임박·변경 제외).
+                            else if (kind == "NEW" || (id !in seen && kind != "UPDATE")) newC++
+                        }
+                    }
                     val topJob = prefs.getString("widget_top_job", "").orEmpty()
                     WidgetState.setSummary(context, newC, closing, topJob)
                     JobAlertWidgetProvider.updateAll(context)

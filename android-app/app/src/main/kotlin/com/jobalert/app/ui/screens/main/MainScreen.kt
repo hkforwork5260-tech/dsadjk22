@@ -75,15 +75,15 @@ fun MainScreen(
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
-            // 위젯 = 관심 기준 '오늘 올라온' 새 공고 수(counts.new)와 마감임박(D-3, counts.closing).
-            // 위젯이 스스로도 같은 값을 주기 fetch하므로(JobAlertWidgetUpdater) 기준 통일.
+            // 위젯 = '오늘' 탭과 동일 기준(오늘 올라온 or 아직 안 본 공고 / 마감임박 D-3).
+            // 위젯 자체 fetch(WidgetUpdater)도 같은 계산이라 값이 일치한다.
+            val seenIds = SeenJobs.seenIds
+            val newCount = f.jobs.count {
+                it.kind == JobKind.NEW || (it.id !in seenIds && it.kind != JobKind.CLOSING && it.kind != JobKind.UPDATE)
+            }
+            val closingCount = f.jobs.count { it.kind == JobKind.CLOSING }
             val topJob = f.jobs.firstOrNull()?.let { "${it.company} · ${it.role}" } ?: ""
-            WidgetState.setSummary(
-                context,
-                newCount = f.counts[JobKind.NEW] ?: 0,
-                closingCount = f.counts[JobKind.CLOSING] ?: 0,
-                topJob = topJob,
-            )
+            WidgetState.setSummary(context, newCount, closingCount, topJob)
             JobAlertWidgetProvider.updateAll(context)
         }
     }
