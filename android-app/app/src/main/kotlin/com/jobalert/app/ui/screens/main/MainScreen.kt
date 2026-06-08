@@ -230,6 +230,7 @@ private fun ColumnScope.SuccessContent(
         listOf(JobKind.NEW, JobKind.UPDATE, JobKind.CLOSING).forEach { kind ->
             SectionChip(
                 kind = kind,
+                label = sectionLabel(kind),
                 count = countOf(kind),
                 selected = section == kind,
                 onClick = { onSectionChange(kind) },
@@ -294,9 +295,18 @@ private fun ColumnScope.CenterBox(content: @Composable () -> Unit) {
     ) { content() }
 }
 
+/** 오늘 위 3개 토글 칩 라벨(카드의 kind 배지와 분리). 마감임박 칩은 'Hurry up!'. */
+private fun sectionLabel(kind: JobKind): String = when (kind) {
+    JobKind.NEW -> "NEW"
+    JobKind.UPDATE -> "UPDATE"
+    JobKind.CLOSING -> "Hurry up!"
+    JobKind.ACTIVE -> "진행중"
+}
+
 @Composable
 private fun SectionChip(
     kind: JobKind,
+    label: String,
     count: Int,
     selected: Boolean,
     onClick: () -> Unit,
@@ -314,6 +324,6 @@ private fun SectionChip(
             .padding(vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text("${kind.label()} $count", style = HiFiType.body2.copy(fontSize = 14.sp), color = fg)
+        Text("$label $count", style = HiFiType.body2.copy(fontSize = 14.sp), color = fg)
     }
 }
