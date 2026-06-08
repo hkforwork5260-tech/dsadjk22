@@ -49,7 +49,9 @@ class JobMapper(
             tags = job.tags ?: emptyList(),
             jobCategories = job.jobCategoryCodes ?: emptyList(),
             salary = job.salary,
-            description = job.description,
+            // 목록 응답은 본문 전체가 아니라 미리보기 길이(160자)만 — 200개×문단이면 응답이 수MB라
+            // 무료 박스가 느려지고 502 위험. 전체 본문은 상세(toDetailDto)에서. 찾아보기 4줄 미리보기엔 충분.
+            description = job.description?.take(160),
             isFavorited = isFavorited,
         )
 
