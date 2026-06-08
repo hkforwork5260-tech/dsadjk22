@@ -161,7 +161,10 @@ class JobService(
      * '본 공고' 후순위는 클라이언트가 로컬 SeenJobs로 처리한다.
      */
     fun discover(deviceId: UUID?, limit: Int): JobListResponse {
+        val now = OffsetDateTime.now(clock)
+        // 마감 지난 공고는 찾아보기에서 제외(상시채용=deadline null은 유지).
         val pool = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 3000))
+            .filter { it.deadline == null || !it.deadline!!.isBefore(now) }
         if (pool.isEmpty()) return JobListResponse(jobs = emptyList())
 
         val myCategories = deviceId?.let { dev ->
@@ -178,7 +181,6 @@ class JobService(
         val savedCategories = savedJobs.flatMap { it.jobCategoryCodes ?: emptyList() }.toSet()
         val savedCompanies = savedJobs.map { it.companyId }.toSet()
 
-        val now = OffsetDateTime.now(clock)
         fun score(job: Job): Int {
             var s = 0
             if (job.companyId in myCompanies) s += 5
