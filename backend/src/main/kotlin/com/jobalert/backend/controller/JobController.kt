@@ -27,10 +27,11 @@ class JobController(
         @RequestParam(required = false, defaultValue = "") experiences: List<String>,
         @RequestParam(required = false, defaultValue = "") sizes: List<String>,
         @RequestParam(defaultValue = "30") limit: Int,
+        @RequestParam(required = false) deadlineDays: Int?,
         @RequestHeader(value = "X-Device-Id", required = false) deviceId: String?,
     ): JobsTodayResponse =
         // 피드는 헤더 없이도 동작해야 하므로, 형식이 틀린 기기ID는 무시하고 비개인화로 폴백한다.
-        jobService.today(kind, categories, experiences, sizes, limit, parseDeviceId(deviceId))
+        jobService.today(kind, categories, experiences, sizes, limit, parseDeviceId(deviceId), deadlineDays)
 
     private fun parseDeviceId(raw: String?): UUID? =
         raw?.takeIf { it.isNotBlank() }?.let { runCatching { UUID.fromString(it) }.getOrNull() }

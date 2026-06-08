@@ -41,8 +41,11 @@ fun OnboardingCompanySizeScreen(
         "항공/물류", "교육/공공", "패션/뷰티",
         "기타",
     )
-    var selectedScales by remember { mutableStateOf(setOf(0, 1)) }
-    var selectedSectors by remember { mutableStateOf(setOf(0, 1)) }
+    // 처음엔 빈 상태(직접 고름). 내정보 '규모 수정' 재진입 시 저장된 값(ActiveFilter) 반영.
+    var selectedScales by remember {
+        mutableStateOf(ActiveFilter.sizes.mapNotNull { code -> scaleCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
+    }
+    var selectedSectors by remember { mutableStateOf(emptySet<Int>()) }
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()

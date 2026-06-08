@@ -42,8 +42,6 @@ fun FilterScreen(
     val locAll = listOf("서울", "경기/인천", "대전", "부산", "광주", "대구", "+")
     val ddayAll = listOf("오늘", "내일", "D-3", "D-7", "D-14")
 
-    val resultCount = 17
-
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
@@ -110,7 +108,7 @@ fun FilterScreen(
             Box(Modifier.fillMaxWidth().height(1.dp).background(HiFiColors.Border))
             Box(Modifier.padding(16.dp)) {
                 HiFiButton(
-                    text = "${resultCount}건 결과 보기",
+                    text = "이 조건으로 보기",
                     onClick = {
                         onApply(FilterSelection(jobs, sizes, experience, locations, deadlines))
                     },

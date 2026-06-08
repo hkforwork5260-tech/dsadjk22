@@ -18,8 +18,14 @@ object ActiveFilter {
     private const val KEY_CAT = "filter_categories"
     private const val KEY_EXP = "filter_experiences"
     private const val KEY_SIZE = "filter_sizes"
+    private const val KEY_DDAY = "filter_deadline_days"
+    private const val KEY_ONBOARDED = "onboarding_done"
 
     private var appContext: Context? = null
+
+    /** 온보딩 완료 여부(처음 설치 때 1회만 보이게). 시작 화면 결정에 사용. */
+    var onboardingDone: Boolean = false
+        private set
 
     /** 직군 코드들. 빈 리스트면 전체. */
     var categories by mutableStateOf<List<String>>(emptyList()); private set
@@ -30,11 +36,22 @@ object ActiveFilter {
     /** 회사 규모 코드(large_corp/public/…). 빈 리스트면 전체. */
     var sizes by mutableStateOf<List<String>>(emptyList()); private set
 
+    /** 마감일 필터: N일 이내 마감만(0=오늘·3=D-3…). -1이면 전체(필터 없음). */
+    var deadlineDays by mutableStateOf(-1); private set
+
     fun init(context: Context) {
         appContext = context.applicationContext
         categories = load(KEY_CAT)
         experiences = load(KEY_EXP)
         sizes = load(KEY_SIZE)
+        deadlineDays = prefs()?.getInt(KEY_DDAY, -1) ?: -1
+        onboardingDone = prefs()?.getBoolean(KEY_ONBOARDED, false) ?: false
+    }
+
+    /** 온보딩 1회 완료 표시(영속). 이후 앱 시작 시 메인으로 바로 진입. */
+    fun markOnboardingDone() {
+        onboardingDone = true
+        prefs()?.edit()?.putBoolean(KEY_ONBOARDED, true)?.apply()
     }
 
     /** 필터 설정 + 영속 + 백엔드 재동기화(직군 변경 시 개인화 다이제스트 반영). 미지정 인자는 현재값 유지. */
@@ -42,13 +59,16 @@ object ActiveFilter {
         categories: List<String> = this.categories,
         experiences: List<String> = this.experiences,
         sizes: List<String> = this.sizes,
+        deadlineDays: Int = this.deadlineDays,
     ) {
         this.categories = categories
         this.experiences = experiences
         this.sizes = sizes
+        this.deadlineDays = deadlineDays
         save(KEY_CAT, categories)
         save(KEY_EXP, experiences)
         save(KEY_SIZE, sizes)
+        prefs()?.edit()?.putInt(KEY_DDAY, deadlineDays)?.apply()
         FcmRegistrar.refresh(categories)
     }
 

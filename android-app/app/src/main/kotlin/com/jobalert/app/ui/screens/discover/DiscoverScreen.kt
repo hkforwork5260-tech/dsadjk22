@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,8 +68,10 @@ fun DiscoverScreen(
     val cats = ActiveFilter.categories
     val exps = ActiveFilter.experiences
     val szs = ActiveFilter.sizes
-    LaunchedEffect(cats, exps, szs) { viewModel.load(cats, exps, szs) }
+    val dday = ActiveFilter.deadlineDays
+    LaunchedEffect(cats, exps, szs, dday) { viewModel.load(cats, exps, szs, dday) }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
+    val isLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
     val savedJobIds by viewModel.savedJobIds.collectAsStateWithLifecycle()
     // 이미 본 공고는 뒤로(안 본 것 먼저). 로드 시점 스냅샷이라 보는 도중엔 순서가 안 바뀐다.
@@ -84,33 +87,40 @@ fun DiscoverScreen(
             action = { HiFiIconBtn(Icons.Outlined.Tune, "필터", onClick = onFilter) },
         )
 
-        val flingBehavior = PagerDefaults.flingBehavior(
-            state = pagerState,
-            snapPositionalThreshold = 0.15f,
-            snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioNoBouncy),
-        )
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-            pageSize = PageSize.Fill,
-            flingBehavior = flingBehavior,
-            beyondViewportPageCount = 2,
-        ) { page ->
-            if (page < orderedJobs.size) {
-                val j = orderedJobs[page]
-                ReelsJobCard(
-                    job = j,
-                    isFav = j.companyId != null && j.companyId in favoriteCompanyIds,
-                    isSaved = j.id in savedJobIds,
-                    onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
-                    onToggleSave = { viewModel.toggleSave(j.id) },
-                    onShare = onShare,
-                    onOpenDetail = { SeenJobs.markSeen(j.id); onJobClick(j.id) },
-                    pageIndex = page,
-                    pageTotal = orderedJobs.size,
-                )
-            } else {
-                FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedJobIds.size, onGoMain = onGoMain)
+        if (!isLoaded) {
+            // 로딩 중엔 finish 카드('오늘은 여기까지')가 잠깐 깜빡이지 않게 로딩만 표시.
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = HiFiColors.Brand)
+            }
+        } else {
+            val flingBehavior = PagerDefaults.flingBehavior(
+                state = pagerState,
+                snapPositionalThreshold = 0.15f,
+                snapAnimationSpec = spring(stiffness = Spring.StiffnessMedium, dampingRatio = Spring.DampingRatioNoBouncy),
+            )
+            VerticalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                pageSize = PageSize.Fill,
+                flingBehavior = flingBehavior,
+                beyondViewportPageCount = 2,
+            ) { page ->
+                if (page < orderedJobs.size) {
+                    val j = orderedJobs[page]
+                    ReelsJobCard(
+                        job = j,
+                        isFav = j.companyId != null && j.companyId in favoriteCompanyIds,
+                        isSaved = j.id in savedJobIds,
+                        onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
+                        onToggleSave = { viewModel.toggleSave(j.id) },
+                        onShare = onShare,
+                        onOpenDetail = { SeenJobs.markSeen(j.id); onJobClick(j.id) },
+                        pageIndex = page,
+                        pageTotal = orderedJobs.size,
+                    )
+                } else {
+                    FinishReelsCard(favCount = favoriteCompanyIds.size, savedCount = savedJobIds.size, onGoMain = onGoMain)
+                }
             }
         }
 

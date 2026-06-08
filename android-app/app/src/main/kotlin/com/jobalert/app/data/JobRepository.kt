@@ -34,10 +34,12 @@ class JobRepository(
         categories: List<String> = emptyList(),
         experiences: List<String> = emptyList(),
         sizes: List<String> = emptyList(),
+        deadlineDays: Int = -1,
     ): TodayFeed {
         val res = api.jobsToday(
-            // 카운트(예: 945)에 비해 피드가 너무 적어 보이지 않게 넉넉히. 메인·찾아보기 공용.
-            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 120,
+            // 카운트(예: 945) 대비 다 보이게 넉넉히(사실상 전부). 메인·찾아보기 공용.
+            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 1000,
+            deadlineDays = deadlineDays.takeIf { it >= 0 },   // -1=전체 → null
         )
         return TodayFeed(
             counts = res.counts.entries.associate { (k, v) -> kindOf(k) to v }

@@ -28,11 +28,12 @@ class MainViewModel @JvmOverloads constructor(
         categories: List<String> = emptyList(),
         experiences: List<String> = emptyList(),
         sizes: List<String> = emptyList(),
+        deadlineDays: Int = -1,
     ) {
         _state.value = MainUiState.Loading
         viewModelScope.launch {
             _state.value = try {
-                MainUiState.Success(repository.todayFeed(categories, experiences, sizes))
+                MainUiState.Success(repository.todayFeed(categories, experiences, sizes, deadlineDays))
             } catch (e: Exception) {
                 MainUiState.Error(e.message ?: "공고를 불러오지 못했어요")
             }

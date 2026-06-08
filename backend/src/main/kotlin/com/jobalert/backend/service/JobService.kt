@@ -48,6 +48,7 @@ class JobService(
         sizes: List<String>,
         limit: Int,
         deviceId: UUID? = null,
+        deadlineDays: Int? = null,
     ): JobsTodayResponse {
         val cats = categories.toSet()
         val exps = experiences.toSet()
@@ -74,6 +75,16 @@ class JobService(
             }
         }
 
+        // 마감일 필터: deadlineDays=3이면 "오늘~D-3 이내 마감"만. 상시(마감없음)는 제외.
+        if (deadlineDays != null && deadlineDays >= 0) {
+            val todayKst = OffsetDateTime.now(clock).atZoneSameInstant(kst).toLocalDate()
+            jobs = jobs.filter { job ->
+                job.deadline?.let { dl ->
+                    java.time.temporal.ChronoUnit.DAYS.between(todayKst, dl.atZoneSameInstant(kst).toLocalDate()) in 0..deadlineDays
+                } ?: false
+            }
+        }
+
         // 개인화 신호(기기 기준). 헤더 없으면 빈 집합 → 가점 없이 회사 다양성(interleave)만 적용.
         val myCategories = deviceId?.let { dev ->
             deviceCategoryRepository.findAllByDeviceId(dev).map { it.categoryCode }.toSet()
@@ -84,10 +95,12 @@ class JobService(
 
         val ranked = rankFeed(jobs, myCategories, myCompanies, limit)
 
+        // 카운트는 (필터 적용된) 현재 후보 jobs에서 센다 → 필터 시 헤더·칩 숫자도 같이 바뀐다.
+        // pool(≥3000)이 전체 활성(<2천)을 다 담으므로 jobs엔 매칭 활성 공고가 빠짐없이 있어 정확하다.
         val counts = JobKindCounts(
-            new = jobRepository.countByKindAndIsActiveTrue("NEW").toInt(),
-            update = jobRepository.countByKindAndIsActiveTrue("UPDATE").toInt(),
-            closing = jobRepository.countByKindAndIsActiveTrue("CLOSING").toInt(),
+            new = jobs.count { it.kind == "NEW" },
+            update = jobs.count { it.kind == "UPDATE" },
+            closing = jobs.count { it.kind == "CLOSING" },
         )
         return JobsTodayResponse(
             date = OffsetDateTime.now(clock).atZoneSameInstant(kst).toLocalDate().toString(),
@@ -184,12 +197,13 @@ class JobService(
             catOk && kwOk
         }
         if (kind != null) hits = hits.filter { it.kind == kind }
-        hits = hits.take(limit)
+        val total = hits.size            // 실제 매칭 수(자르기 전) — 화면 "공고(N)"에 정확히 표시
+        val shown = hits.take(limit)     // limit를 넉넉히 주면 사실상 전부 노출
 
         return JobSearchResponse(
             query = q,
-            totalEstimate = hits.size,
-            jobs = toDtos(hits),
+            totalEstimate = total,
+            jobs = toDtos(shown),
             nextCursor = null,
         )
     }

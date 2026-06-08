@@ -33,8 +33,10 @@ fun OnboardingJobCategoryScreen(
     onNext: () -> Unit,
     onSkip: () -> Unit,
 ) {
-    // 초기값: 디자인 프로토타입과 동일하게 IT개발·데이터, 디자인, 마케팅 셋 선택
-    var selected by remember { mutableStateOf(setOf(2, 5, 6)) }
+    // 처음 온보딩이면 빈 상태(직접 고름). 내정보에서 '직군 수정'으로 재진입하면 저장된 값(ActiveFilter)을 반영.
+    var selected by remember {
+        mutableStateOf(ActiveFilter.categories.mapNotNull { code -> JobCategoryCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
+    }
     val count = selected.size
 
     Column(

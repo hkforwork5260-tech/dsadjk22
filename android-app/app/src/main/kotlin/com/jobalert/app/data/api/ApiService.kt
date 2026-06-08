@@ -24,6 +24,7 @@ interface ApiService {
         @Query("experiences") experiences: List<String> = emptyList(),
         @Query("sizes") sizes: List<String> = emptyList(),
         @Query("limit") limit: Int = 30,
+        @Query("deadlineDays") deadlineDays: Int? = null,   // N일 이내 마감만. null=전체
     ): JobsTodayResponse
 
     @GET("api/v1/jobs/{id}")
@@ -37,7 +38,7 @@ interface ApiService {
         @Query("q") query: String = "",
         @Query("categories") categories: List<String> = emptyList(),
         @Query("kind") kind: String? = null,
-        @Query("limit") limit: Int = 50,
+        @Query("limit") limit: Int = 1000,   // 검색·직군 둘러보기 결과를 사실상 전부 노출(놓치는 공고 없게)
     ): JobsSearchResponse
 
     @GET("api/v1/jobs/upcoming")

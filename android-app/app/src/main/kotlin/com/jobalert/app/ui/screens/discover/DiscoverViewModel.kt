@@ -25,14 +25,20 @@ class DiscoverViewModel : ViewModel() {
     private val _savedJobIds = MutableStateFlow<Set<String>>(emptySet())
     val savedJobIds: StateFlow<Set<String>> = _savedJobIds.asStateFlow()
 
+    /** 첫 로드 완료 여부. 로딩 중엔 '오늘은 여기까지' finish 카드를 띄우지 않기 위함. */
+    private val _isLoaded = MutableStateFlow(false)
+    val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
+
     fun load(
         categories: List<String> = emptyList(),
         experiences: List<String> = emptyList(),
         sizes: List<String> = emptyList(),
+        deadlineDays: Int = -1,
     ) {
         viewModelScope.launch {
-            runCatching { repository.todayFeed(categories, experiences, sizes).jobs }
+            runCatching { repository.todayFeed(categories, experiences, sizes, deadlineDays).jobs }
                 .onSuccess { _jobs.value = it }
+            _isLoaded.value = true
         }
         viewModelScope.launch {
             runCatching { repository.favorites().companies.map { it.company.id }.toSet() }

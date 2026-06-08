@@ -84,7 +84,9 @@ fun JobAlertNavHost() {
         runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
     }
 
-    NavHost(navController = nav, startDestination = Routes.Onboarding1) {
+    // 온보딩은 처음 설치 때 1회만. 이후엔 바로 메인으로 진입.
+    val start = if (ActiveFilter.onboardingDone) Routes.Main else Routes.Onboarding1
+    NavHost(navController = nav, startDestination = start) {
         composable(Routes.Onboarding1) {
             OnboardingJobCategoryScreen(
                 onNext = { nav.navigate(Routes.Onboarding2) },
@@ -176,7 +178,13 @@ fun JobAlertNavHost() {
                         else -> listOf("경력")   // 1~3년/3~5년/5년+ → 경력
                     }
                     val sizes = sel.sizes.mapNotNull { sizeCode(it) }
-                    ActiveFilter.set(categories = categories, experiences = experiences, sizes = sizes)
+                    // 마감일: 여러 개 고르면 가장 넉넉한(큰) 값 적용. 없으면 -1(전체).
+                    val ddayMap = mapOf("오늘" to 0, "내일" to 1, "D-3" to 3, "D-7" to 7, "D-14" to 14)
+                    val deadlineDays = sel.deadlines.mapNotNull { ddayMap[it] }.maxOrNull() ?: -1
+                    ActiveFilter.set(
+                        categories = categories, experiences = experiences,
+                        sizes = sizes, deadlineDays = deadlineDays,
+                    )
                     nav.popBackStack()
                 },
             )
@@ -332,6 +340,7 @@ private fun handleTab(
 }
 
 private fun goMain(nav: androidx.navigation.NavHostController) {
+    ActiveFilter.markOnboardingDone()   // 온보딩 종료(완료·건너뛰기) → 다음 실행부터 메인 바로 진입
     nav.navigate(Routes.Main) {
         popUpTo(Routes.Onboarding1) { inclusive = true }
         launchSingleTop = true

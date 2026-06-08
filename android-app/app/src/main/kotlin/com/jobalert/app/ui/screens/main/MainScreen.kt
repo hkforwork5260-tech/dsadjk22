@@ -51,7 +51,8 @@ fun MainScreen(
     val cats = ActiveFilter.categories
     val exps = ActiveFilter.experiences
     val szs = ActiveFilter.sizes
-    LaunchedEffect(cats, exps, szs) { viewModel.load(cats, exps, szs) }
+    val dday = ActiveFilter.deadlineDays
+    LaunchedEffect(cats, exps, szs, dday) { viewModel.load(cats, exps, szs, dday) }
     var section by remember { mutableStateOf(JobKind.NEW) }
 
     // 오늘 새 공고(NEW) 수를 위젯에 반영(꽁이 표정·카운트).
