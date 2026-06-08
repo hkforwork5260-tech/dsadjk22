@@ -31,6 +31,8 @@ data class SeoulResult(
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SeoulJob(
     @JsonProperty("JO_REQST_NO") val joReqstNo: String? = null,
+    // 구인등록번호 = 워크넷/고용24 wantedAuthNo(K1500…). 공고별 원문 직링크 생성에 사용.
+    @JsonProperty("JO_REGIST_NO") val joRegistNo: String? = null,
     @JsonProperty("CMPNY_NM") val cmpnyNm: String? = null,
     @JsonProperty("JO_SJ") val joSj: String? = null,
     @JsonProperty("JOBCODE_NM") val jobcodeNm: String? = null,

@@ -119,9 +119,10 @@ class PublicInstitutionSource(
             experience = job.recrutSeNm,   // 채용구분: 신입/경력/인턴 (구조화 데이터)
             postingDateEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancBgngYmd),
             deadlineEpoch = SourceUtil.yyyymmddToEpochSeconds(job.pbancEndYmd, endOfDay = true),
-            // JOB-ALIO 상세 직링크. 파라미터는 recrutPblntSn이 아니라 idx여야 해당 공고로 바로 간다
-            // (recrutPblntSn은 무시돼 통합 목록으로 빠졌었음). data.go.kr recrutPblntSn == ALIO idx.
-            originalUrl = "https://job.alio.go.kr/recruitview.do?idx=$sn",
+            // JOB-ALIO 모바일 상세 직링크. 데스크톱 recruitview.do?idx= 는 폰에서 모바일 사이트로
+            // 리다이렉트되며 idx를 잃고 검색목록으로 빠진다(실측). mobile2021 경로는 같은 idx로 공고에
+            // 바로 간다(검증 2026-06-08). data.go.kr recrutPblntSn == ALIO idx.
+            originalUrl = "https://job.alio.go.kr/mobile2021/recruit/recruitView.do?idx=$sn",
             keywords = listOfNotNull(job.recrutSeNm, job.hireTypeNmLst).filter { it.isNotBlank() },
             description = detail?.let(::buildDescription),
             education = detail?.acbgCondNmLst?.trim()?.takeIf { it.isNotBlank() },

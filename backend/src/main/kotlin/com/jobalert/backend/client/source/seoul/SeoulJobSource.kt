@@ -119,7 +119,9 @@ class SeoulJobSource(
             experience = job.careerCndNm?.takeIf { it.isNotBlank() },
             postingDateEpoch = SourceUtil.yyyymmddToEpochSeconds(job.joRegDt?.replace("-", "")),
             deadlineEpoch = deadlineEpoch,
-            originalUrl = JOB_PORTAL_SEARCH,
+            // 서울 알선 공고는 실제로 고용24(워크넷)에 올라온 건. 구인등록번호(JO_REGIST_NO=wantedAuthNo)로
+            // 고용24 모바일 상세가 바로 열린다(검증 2026-06-08). 번호 없으면 서울 일자리포털 목록으로 폴백.
+            originalUrl = job.joRegistNo?.takeIf { it.isNotBlank() }?.let { workNetUrl(it) } ?: JOB_PORTAL_SEARCH,
             keywords = listOfNotNull(job.jobcodeNm, job.emplymStle, job.careerCndNm).filter { it.isNotBlank() },
             description = buildDescription(job),
             education = clean(job.acdmcrNm),
@@ -201,6 +203,11 @@ class SeoulJobSource(
         private const val USER_AGENT = "JobAlert/0.1 (job-alert app; contact: lhgdlagusurd@naver.com)"
         private const val JOB_PORTAL_SEARCH = "https://job.seoul.go.kr/hmpg/rmim/rsmg/rsmgListPage.do"
         private val DATE_RE = Regex("""(\d{4})-(\d{2})-(\d{2})""")
+
+        /** 고용24(워크넷) 모바일 채용공고 상세 직링크. wantedAuthNo = 구인등록번호(JO_REGIST_NO). */
+        private fun workNetUrl(wantedAuthNo: String): String =
+            "https://m.work24.go.kr/wk/a/b/1500/empDetailAuthView.do" +
+                "?wantedAuthNo=$wantedAuthNo&infoTypeCd=VALIDATION&infoTypeGroup=tb_workinfoworknet&theWorkYn=Y"
 
         /** 노인·중장년 전용 일자리 제외 키워드(제목/본문). 취준생 타겟과 안 맞는 직무. */
         private val EXCLUDE_KEYWORDS = listOf(

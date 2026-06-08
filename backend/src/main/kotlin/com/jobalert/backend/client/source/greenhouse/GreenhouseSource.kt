@@ -97,7 +97,10 @@ class GreenhouseSource(
             department = job.departments.firstOrNull()?.name?.takeIf { it.isNotBlank() },
             postingDateEpoch = SourceUtil.isoToEpochSeconds(job.first_published ?: job.updated_at),
             deadlineEpoch = SourceUtil.isoToEpochSeconds(job.application_deadline),
-            originalUrl = job.absolute_url,
+            // absolute_url은 회사 채용사이트로 가는데, 당근(about.daangn.com)·쿠팡(coupang.jobs)처럼
+            // 공고 대신 회사 홍보/목록 페이지로 빠지는 곳이 많다. greenhouse 호스팅 직링크(embed)는
+            // 회사 사이트를 우회해 공고 본문+지원양식을 바로 보여준다(전 보드 공통, 실측 검증 2026-06-08).
+            originalUrl = "https://job-boards.greenhouse.io/embed/job_app?for=${board.token}&token=$id",
             description = SourceUtil.htmlToText(job.content),
         )
     }
