@@ -39,6 +39,7 @@ fun MyPageScreen(
     onInterests: () -> Unit,
     onFeedback: () -> Unit,
     onSavedJobs: () -> Unit,
+    onSeenJobs: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
@@ -89,7 +90,12 @@ fun MyPageScreen(
                     Box(Modifier.fillMaxWidth().height(1.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                     Spacer(Modifier.height(14.dp))
                     Row {
-                        StatColumn(value = "${SeenJobs.seenIds.size}", label = "본 공고", color = HiFiColors.Text, modifier = Modifier.weight(1f))
+                        StatColumn(
+                            value = "${SeenJobs.seenIds.size}",
+                            label = "본 공고 ›",
+                            color = HiFiColors.Text,
+                            modifier = Modifier.weight(1f).clickable { onSeenJobs() },
+                        )
                         Box(Modifier.width(1.dp).height(44.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                         StatColumn(
                             value = "🔖",

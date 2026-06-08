@@ -35,7 +35,7 @@ fun OnboardingJobCategoryScreen(
 ) {
     // 처음 온보딩이면 빈 상태(직접 고름). 내정보에서 '직군 수정'으로 재진입하면 저장된 값(ActiveFilter)을 반영.
     var selected by remember {
-        mutableStateOf(ActiveFilter.categories.mapNotNull { code -> JobCategoryCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
+        mutableStateOf(ActiveFilter.interestCategories.mapNotNull { code -> JobCategoryCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
     }
     val count = selected.size
 
@@ -129,7 +129,7 @@ fun OnboardingJobCategoryScreen(
                 text = "다음 ($count 개 선택됨) →",
                 onClick = {
                     // 고른 관심 직군을 저장 → 메인 피드가 이 직군으로 기본 필터됨
-                    ActiveFilter.set(selected.mapNotNull { JobCategoryCodes.getOrNull(it) })
+                    ActiveFilter.setInterest(categories = selected.mapNotNull { JobCategoryCodes.getOrNull(it) })
                     onNext()
                 },
                 variant = if (count > 0) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,

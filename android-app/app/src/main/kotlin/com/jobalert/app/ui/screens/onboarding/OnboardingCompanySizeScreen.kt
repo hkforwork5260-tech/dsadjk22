@@ -43,7 +43,7 @@ fun OnboardingCompanySizeScreen(
     )
     // 처음엔 빈 상태(직접 고름). 내정보 '규모 수정' 재진입 시 저장된 값(ActiveFilter) 반영.
     var selectedScales by remember {
-        mutableStateOf(ActiveFilter.sizes.mapNotNull { code -> scaleCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
+        mutableStateOf(ActiveFilter.interestSizes.mapNotNull { code -> scaleCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
     }
     var selectedSectors by remember { mutableStateOf(emptySet<Int>()) }
 
@@ -122,7 +122,7 @@ fun OnboardingCompanySizeScreen(
                     text = "다음 →",
                     onClick = {
                         // 선택한 규모를 백엔드 코드로 변환해 저장 → 메인 피드 필터에 반영.
-                        ActiveFilter.set(sizes = selectedScales.sorted().mapNotNull { scaleCodes.getOrNull(it) })
+                        ActiveFilter.setInterest(sizes = selectedScales.sorted().mapNotNull { scaleCodes.getOrNull(it) })
                         onNext()
                     },
                     variant = HiFiButtonVariant.Primary,

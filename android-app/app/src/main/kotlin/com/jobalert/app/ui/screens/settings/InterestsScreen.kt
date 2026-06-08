@@ -74,7 +74,7 @@ fun InterestsScreen(
             Spacer(Modifier.height(22.dp))
 
             // 실제 관심 직군(ActiveFilter) 반영 — 온보딩/필터에서 고른 직군.
-            val jobLabels = ActiveFilter.categories.mapNotNull { code ->
+            val jobLabels = ActiveFilter.interestCategories.mapNotNull { code ->
                 JobCategoryCodes.indexOf(code).takeIf { it >= 0 }?.let { JobCategories[it] }
             }
             SectionCard(
@@ -89,7 +89,7 @@ fun InterestsScreen(
             Spacer(Modifier.height(14.dp))
 
             // 회사 규모도 실제 선택값(ActiveFilter) 반영.
-            val sizeLabels = ActiveFilter.sizes.mapNotNull { sizeLabelOf(it) }
+            val sizeLabels = ActiveFilter.interestSizes.mapNotNull { sizeLabelOf(it) }
             SectionCard(
                 title = "회사 규모",
                 count = if (sizeLabels.isEmpty()) "전체" else "${sizeLabels.size}개 선택",

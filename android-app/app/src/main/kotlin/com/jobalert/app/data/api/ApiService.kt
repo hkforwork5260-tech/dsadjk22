@@ -33,6 +33,10 @@ interface ApiService {
     @GET("api/v1/jobs/{id}/similar")
     suspend fun similar(@Path("id") id: String): JobListResponse
 
+    /** 여러 ID로 공고 조회(본 공고 목록 등). 입력 순서 유지. */
+    @GET("api/v1/jobs/by-ids")
+    suspend fun jobsByIds(@Query("ids") ids: List<String>): JobListResponse
+
     @GET("api/v1/jobs/search")
     suspend fun jobsSearch(
         @Query("q") query: String = "",

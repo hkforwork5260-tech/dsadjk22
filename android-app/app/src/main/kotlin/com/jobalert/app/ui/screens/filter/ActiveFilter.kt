@@ -15,10 +15,9 @@ import com.jobalert.app.data.fcm.FcmRegistrar
  */
 object ActiveFilter {
     private const val PREFS = "jobalert_prefs"
+    // prefs 키 문자열은 기존 저장값 호환 위해 유지(이름만 관심으로 의미 변경).
     private const val KEY_CAT = "filter_categories"
-    private const val KEY_EXP = "filter_experiences"
     private const val KEY_SIZE = "filter_sizes"
-    private const val KEY_DDAY = "filter_deadline_days"
     private const val KEY_ONBOARDED = "onboarding_done"
 
     private var appContext: Context? = null
@@ -27,24 +26,31 @@ object ActiveFilter {
     var onboardingDone: Boolean = false
         private set
 
+    // ── 관심(온보딩·내정보) : 영속. 푸시 개인화·피드 기본 조건의 원천. ──
+    /** 관심 직군 코드들(영속). 빈 리스트면 전체. */
+    var interestCategories by mutableStateOf<List<String>>(emptyList()); private set
+    /** 관심 회사 규모 코드들(영속). 빈 리스트면 전체. */
+    var interestSizes by mutableStateOf<List<String>>(emptyList()); private set
+
+    // ── 세션 필터(필터 다이얼로그) : 비영속. 피드가 실제로 쓰는 값. 시작 시 관심으로 초기화. ──
     /** 직군 코드들. 빈 리스트면 전체. */
     var categories by mutableStateOf<List<String>>(emptyList()); private set
-
-    /** 경력 버킷(신입/경력/인턴). 빈 리스트면 전체. */
+    /** 경력 버킷(신입/경력). 빈 리스트면 전체. */
     var experiences by mutableStateOf<List<String>>(emptyList()); private set
-
     /** 회사 규모 코드(large_corp/public/…). 빈 리스트면 전체. */
     var sizes by mutableStateOf<List<String>>(emptyList()); private set
-
     /** 마감일 필터: N일 이내 마감만(0=오늘·3=D-3…). -1이면 전체(필터 없음). */
     var deadlineDays by mutableStateOf(-1); private set
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        categories = load(KEY_CAT)
-        experiences = load(KEY_EXP)
-        sizes = load(KEY_SIZE)
-        deadlineDays = prefs()?.getInt(KEY_DDAY, -1) ?: -1
+        interestCategories = load(KEY_CAT)
+        interestSizes = load(KEY_SIZE)
+        // 세션 필터는 관심으로 시작(경력·마감은 필터 전용이라 비움).
+        categories = interestCategories
+        sizes = interestSizes
+        experiences = emptyList()
+        deadlineDays = -1
         onboardingDone = prefs()?.getBoolean(KEY_ONBOARDED, false) ?: false
     }
 
@@ -54,22 +60,35 @@ object ActiveFilter {
         prefs()?.edit()?.putBoolean(KEY_ONBOARDED, true)?.apply()
     }
 
-    /** 필터 설정 + 영속 + 백엔드 재동기화(직군 변경 시 개인화 다이제스트 반영). 미지정 인자는 현재값 유지. */
-    fun set(
-        categories: List<String> = this.categories,
-        experiences: List<String> = this.experiences,
-        sizes: List<String> = this.sizes,
-        deadlineDays: Int = this.deadlineDays,
+    /**
+     * 관심(온보딩·내정보) 설정 — 영속 + 푸시 재동기화. 피드(세션)의 직군·규모도 새 관심으로 맞춘다.
+     * (필터 다이얼로그의 '일회성' 선택과 달리 기억되는 값.) 미지정 인자는 현재값 유지.
+     */
+    fun setInterest(
+        categories: List<String> = interestCategories,
+        sizes: List<String> = interestSizes,
+    ) {
+        interestCategories = categories
+        interestSizes = sizes
+        save(KEY_CAT, categories)
+        save(KEY_SIZE, sizes)
+        // 필터를 따로 안 걸었다면 피드가 관심대로 보이도록 세션도 갱신.
+        this.categories = categories
+        this.sizes = sizes
+        FcmRegistrar.refresh(categories)
+    }
+
+    /** 필터 다이얼로그 적용 — 세션만(비영속). 관심은 바뀌지 않는다(일회성). */
+    fun setFilter(
+        categories: List<String>,
+        experiences: List<String>,
+        sizes: List<String>,
+        deadlineDays: Int,
     ) {
         this.categories = categories
         this.experiences = experiences
         this.sizes = sizes
         this.deadlineDays = deadlineDays
-        save(KEY_CAT, categories)
-        save(KEY_EXP, experiences)
-        save(KEY_SIZE, sizes)
-        prefs()?.edit()?.putInt(KEY_DDAY, deadlineDays)?.apply()
-        FcmRegistrar.refresh(categories)
     }
 
     private fun load(key: String): List<String> =

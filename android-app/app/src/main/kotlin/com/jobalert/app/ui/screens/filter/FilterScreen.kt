@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jobalert.app.data.model.JobCategories
+import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -30,12 +31,33 @@ fun FilterScreen(
     onClose: () -> Unit,
     onApply: (FilterSelection) -> Unit,
 ) {
-    // 기본은 전체(아무 것도 미선택) — 고른 조건만 적용된다. (이전엔 더미 기본값이 강제 적용돼 필터가 이상하게 동작)
-    var jobs by remember { mutableStateOf(emptySet<Int>()) }
-    var sizes by remember { mutableStateOf(emptySet<String>()) }
-    var experience by remember { mutableStateOf("") }
+    // 현재 세션 필터로 미리 체크(기본은 관심직군·관심규모). 적용은 일회성이라 관심은 안 바뀐다.
+    val sizeLabelByCode = mapOf(
+        "large_corp" to "대기업", "public" to "공기업", "mid_corp" to "중견",
+        "small" to "중소", "foreign" to "외국계", "startup" to "스타트업", "startup_unicorn" to "스타트업",
+    )
+    var jobs by remember {
+        mutableStateOf(ActiveFilter.categories.mapNotNull { c -> JobCategoryCodes.indexOf(c).takeIf { it >= 0 } }.toSet())
+    }
+    var sizes by remember { mutableStateOf(ActiveFilter.sizes.mapNotNull { sizeLabelByCode[it] }.toSet()) }
+    var experience by remember {
+        mutableStateOf(
+            when {
+                "신입" in ActiveFilter.experiences -> "신입"
+                "경력" in ActiveFilter.experiences -> "1~3년"
+                else -> ""
+            },
+        )
+    }
     var locations by remember { mutableStateOf(emptySet<String>()) }
-    var deadlines by remember { mutableStateOf(emptySet<String>()) }
+    var deadlines by remember {
+        mutableStateOf(
+            when (ActiveFilter.deadlineDays) {
+                0 -> setOf("오늘"); 1 -> setOf("내일"); 3 -> setOf("D-3")
+                7 -> setOf("D-7"); 14 -> setOf("D-14"); else -> emptySet()
+            },
+        )
+    }
 
     val sizesAll = listOf("대기업", "공기업", "중견", "중소", "외국계", "스타트업")
     val expAll = listOf("신입", "1~3년", "3~5년", "5년+", "무관")

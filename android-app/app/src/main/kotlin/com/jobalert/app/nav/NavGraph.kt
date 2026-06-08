@@ -24,6 +24,7 @@ import com.jobalert.app.ui.screens.mypage.MyPageScreen
 import com.jobalert.app.ui.screens.notif.NotifHistoryScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingCompanySizeScreen
 import com.jobalert.app.ui.screens.saved.SavedJobsScreen
+import com.jobalert.app.ui.screens.seen.SeenJobsScreen
 import com.jobalert.app.ui.screens.search.SearchResultsScreen
 import com.jobalert.app.ui.screens.search.SearchScreen
 import com.jobalert.app.ui.screens.onboarding.OnboardingJobCategoryScreen
@@ -71,6 +72,7 @@ object Routes {
     const val Interests = "interests"
     const val Feedback = "feedback"
     const val SavedJobs = "savedJobs"
+    const val SeenJobs = "seenJobs"
 }
 
 @Composable
@@ -181,7 +183,8 @@ fun JobAlertNavHost() {
                     // 마감일: 여러 개 고르면 가장 넉넉한(큰) 값 적용. 없으면 -1(전체).
                     val ddayMap = mapOf("오늘" to 0, "내일" to 1, "D-3" to 3, "D-7" to 7, "D-14" to 14)
                     val deadlineDays = sel.deadlines.mapNotNull { ddayMap[it] }.maxOrNull() ?: -1
-                    ActiveFilter.set(
+                    // 필터는 '일회성'(세션) — 관심직군은 안 바뀜.
+                    ActiveFilter.setFilter(
                         categories = categories, experiences = experiences,
                         sizes = sizes, deadlineDays = deadlineDays,
                     )
@@ -220,12 +223,20 @@ fun JobAlertNavHost() {
                 onInterests = { nav.navigate(Routes.Interests) },
                 onFeedback = { nav.navigate(Routes.Feedback) },
                 onSavedJobs = { nav.navigate(Routes.SavedJobs) },
+                onSeenJobs = { nav.navigate(Routes.SeenJobs) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Mypage) },
             )
         }
 
         composable(Routes.SavedJobs) {
             SavedJobsScreen(
+                onBack = { nav.popBackStack() },
+                onJobClick = { id -> nav.navigate(Routes.detail(id)) },
+            )
+        }
+
+        composable(Routes.SeenJobs) {
+            SeenJobsScreen(
                 onBack = { nav.popBackStack() },
                 onJobClick = { id -> nav.navigate(Routes.detail(id)) },
             )

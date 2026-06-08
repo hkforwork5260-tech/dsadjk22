@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
     /** 현재 FCM 토큰 + 관심직군을 백엔드에 등록(이 기기를 개인화 푸시 대상으로). */
     private fun registerFcmToken() {
         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-            FcmRegistrar.register(token, ActiveFilter.categories)
+            FcmRegistrar.register(token, ActiveFilter.interestCategories)
         }
     }
 }

@@ -97,6 +97,10 @@ class JobRepository(
     /** /jobs/{id}/similar — 비슷한 공고(같은 업종). */
     suspend fun similar(id: String): List<Job> = api.similar(id).jobs.map { it.toDomain() }
 
+    /** 본 공고 목록 — 로컬 SeenJobs ID들로 공고 조회. 빈 목록이면 호출 생략. */
+    suspend fun jobsByIds(ids: List<String>): List<Job> =
+        if (ids.isEmpty()) emptyList() else api.jobsByIds(ids).jobs.map { it.toDomain() }
+
     private val kst = ZoneId.of("Asia/Seoul")
 
     // 공고 제목 끝의 상투어("~채용합니다/모집합니다/모집/채용/공고" 등) 제거용.
