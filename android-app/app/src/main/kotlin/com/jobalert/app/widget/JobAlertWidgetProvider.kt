@@ -14,7 +14,7 @@ import com.jobalert.app.R
  * 홈 위젯 — 새 공고 수 + 꽁이(상황별 표정). 미리보기 없이 단순.
  * 데이터는 [WidgetState](앱이 갱신)에서 읽고, 꽁이는 [MascotRenderer]로 Bitmap 렌더.
  */
-class JobAlertWidgetProvider : AppWidgetProvider() {
+open class JobAlertWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
         ids.forEach { updateWidget(context, manager, it) }
     }
