@@ -35,7 +35,7 @@ class MainViewModel @JvmOverloads constructor(
             // 무료 박스 cold start(쉬다 깨어나는 첫 요청)로 타임아웃/502 나면 자동 재시도 — 박스가
             // 깨어나면 다음 시도에서 성공한다. (이래서 '처음 한 번만 안 되던' 문제)
             var lastError: Exception? = null
-            repeat(3) { attempt ->
+            repeat(5) { attempt ->
                 try {
                     _state.value = MainUiState.Success(
                         repository.todayFeed(categories, experiences, sizes, deadlineDays),
@@ -43,7 +43,7 @@ class MainViewModel @JvmOverloads constructor(
                     return@launch
                 } catch (e: Exception) {
                     lastError = e
-                    if (attempt < 2) kotlinx.coroutines.delay(2000)
+                    if (attempt < 4) kotlinx.coroutines.delay((attempt + 1) * 2000L)  // 2·4·6·8초 점증
                 }
             }
             _state.value = MainUiState.Error(lastError?.message ?: "공고를 불러오지 못했어요")
