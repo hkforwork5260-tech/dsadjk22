@@ -37,6 +37,8 @@ fun OnboardingJobCategoryScreen(
     var selected by remember {
         mutableStateOf(ActiveFilter.interestCategories.mapNotNull { code -> JobCategoryCodes.indexOf(code).takeIf { it >= 0 } }.toSet())
     }
+    // '어디든' = 직군 상관없이 전체. 직군 하나라도 고르면 자동 해제.
+    var anyJob by remember { mutableStateOf(false) }
     val count = selected.size
 
     Column(
@@ -99,6 +101,15 @@ fun OnboardingJobCategoryScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                // 맨 위 '어디든' — 직군 상관없이 전체 보기. 선택 시 직군 해제(빈=전체).
+                HiFiButton(
+                    text = "😢 어디든 취업시켜주세요",
+                    onClick = { anyJob = !anyJob; if (anyJob) selected = emptySet() },
+                    variant = if (anyJob) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
+                    size = HiFiButtonSize.Sm,
+                    fullWidth = true,
+                    maxLines = 1,
+                )
                 JobCategories.chunked(2).forEachIndexed { rIdx, row ->
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -110,6 +121,7 @@ fun OnboardingJobCategoryScreen(
                                 text = category,
                                 onClick = {
                                     selected = if (idx in selected) selected - idx else selected + idx
+                                    anyJob = false   // 특정 직군 고르면 '어디든' 해제
                                 },
                                 variant = if (idx in selected) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
                                 size = HiFiButtonSize.Sm,
@@ -126,14 +138,15 @@ fun OnboardingJobCategoryScreen(
             Spacer(Modifier.height(14.dp))
 
             HiFiButton(
-                text = "다음 ($count 개 선택됨) →",
+                text = if (anyJob) "다음 (어디든) →" else "다음 ($count 개 선택됨) →",
                 onClick = {
-                    // 고른 관심 직군을 저장 → 메인 피드가 이 직군으로 기본 필터됨
-                    ActiveFilter.setInterest(categories = selected.mapNotNull { JobCategoryCodes.getOrNull(it) })
+                    // 고른 관심 직군 저장(어디든이면 빈 리스트 = 전체) → 메인 피드 기본 필터
+                    val cats = if (anyJob) emptyList() else selected.mapNotNull { JobCategoryCodes.getOrNull(it) }
+                    ActiveFilter.setInterest(categories = cats)
                     onNext()
                 },
-                variant = if (count > 0) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
-                enabled = count > 0,
+                variant = if (count > 0 || anyJob) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
+                enabled = count > 0 || anyJob,
                 fullWidth = true,
             )
         }
