@@ -62,7 +62,9 @@ object Routes {
     const val Filter = "filter"
     const val NotifHistory = "notifHistory"
     const val Calendar = "calendar"
-    const val ShareSheet = "share"
+    const val ShareSheet = "share?title={title}&url={url}"
+    fun shareSheet(title: String, url: String) =
+        "share?title=${Uri.encode(title)}&url=${Uri.encode(url)}"
     const val Similar = "similar/{jobId}"
     fun similar(jobId: String) = "similar/$jobId"
 
@@ -92,7 +94,8 @@ fun JobAlertNavHost() {
         composable(Routes.Onboarding1) {
             OnboardingJobCategoryScreen(
                 onNext = { nav.navigate(Routes.Onboarding2) },
-                onSkip = { goMain(nav) },
+                // 건너뛰기 = 이 페이지만 건너뜀(직군 선택 안 함 = 전체) → 다음 단계로. 온보딩 전체 종료 아님.
+                onSkip = { nav.navigate(Routes.Onboarding2) },
             )
         }
 
@@ -100,7 +103,8 @@ fun JobAlertNavHost() {
             OnboardingCompanySizeScreen(
                 // 관심회사 고르기(onb3)는 온보딩 흐름에서 제외 — 찾아보기와 겹쳐 바로 위젯 단계로 (사용자 요청 2026-06-06)
                 onNext = { nav.navigate(Routes.Onboarding4) },
-                onSkip = { goMain(nav) },
+                // 건너뛰기 = 이 페이지만 건너뜀(규모 선택 안 함 = 전체) → 위젯 단계로.
+                onSkip = { nav.navigate(Routes.Onboarding4) },
                 onBack = { nav.popBackStack() },
             )
         }
@@ -160,7 +164,7 @@ fun JobAlertNavHost() {
             JobDetailScreen(
                 jobId = jobId,
                 onBack = { nav.popBackStack() },
-                onShare = { nav.navigate(Routes.ShareSheet) },
+                onShare = { title, url -> nav.navigate(Routes.shareSheet(title, url)) },
                 onSimilarTab = { nav.navigate(Routes.similar(jobId)) },
                 onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
                 onApply = { job -> openUrl(job.originalUrl) },
@@ -202,7 +206,7 @@ fun JobAlertNavHost() {
                 companyId = id,
                 onBack = { nav.popBackStack() },
                 onJobClick = { jid -> nav.navigate(Routes.detail(jid)) },
-                onShare = { nav.navigate(Routes.ShareSheet) },
+                onShare = { title, url -> nav.navigate(Routes.shareSheet(title, url)) },
             )
         }
 
@@ -306,8 +310,18 @@ fun JobAlertNavHost() {
             )
         }
 
-        composable(Routes.ShareSheet) {
-            ShareSheetScreen(onClose = { nav.popBackStack() })
+        composable(
+            route = Routes.ShareSheet,
+            arguments = listOf(
+                navArgument("title") { type = NavType.StringType; defaultValue = ""; nullable = true },
+                navArgument("url") { type = NavType.StringType; defaultValue = ""; nullable = true },
+            ),
+        ) { backStackEntry ->
+            ShareSheetScreen(
+                shareTitle = backStackEntry.arguments?.getString("title").orEmpty(),
+                shareUrl = backStackEntry.arguments?.getString("url").orEmpty(),
+                onClose = { nav.popBackStack() },
+            )
         }
 
         composable(
@@ -325,7 +339,7 @@ fun JobAlertNavHost() {
         composable(Routes.Discover) {
             DiscoverScreen(
                 onJobClick = { id -> nav.navigate(Routes.detail(id)) },
-                onShare = { nav.navigate(Routes.ShareSheet) },
+                onShare = { title, url -> nav.navigate(Routes.shareSheet(title, url)) },
                 onFilter = { nav.navigate(Routes.Filter) },
                 onGoMain = { goMain(nav) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Discover) },

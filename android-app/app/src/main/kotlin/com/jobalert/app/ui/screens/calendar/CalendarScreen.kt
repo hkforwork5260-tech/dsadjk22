@@ -11,12 +11,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -72,15 +73,15 @@ fun CalendarScreen(
         if (d in 1..totalDays) d else null
     }
 
-    val todayJobs = byDay[today] ?: emptyList()
-    val thisWeekJobs = (today + 1..today + 7).flatMap { byDay[it] ?: emptyList() }
+    // 선택한 날짜(기본=오늘). 셀을 누르면 그 날짜의 마감 공고를 아래에 보여준다.
+    var selectedDay by remember(monthPrefix) { mutableStateOf(today) }
+    val selectedJobs = byDay[selectedDay] ?: emptyList()
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
             title = "마감 캘린더",
             leading = { HiFiIconBtn(Icons.Outlined.ArrowBack, "뒤로", onClick = onBack) },
-            action = { HiFiIconBtn(Icons.Outlined.Settings, "설정", onClick = { /* TODO */ }) },
         )
 
         Column(
@@ -134,9 +135,10 @@ fun CalendarScreen(
                         CalendarCell(
                             day = d,
                             isToday = d == today,
+                            isSelected = d != null && d == selectedDay,
                             dow = dow,
-                            jobs = if (d != null) byDay[d].orEmpty() else emptyList(),
-                            onClick = { d?.let { _ -> /* TODO: 일 선택 highlight */ } },
+                            count = if (d != null) byDay[d].orEmpty().size else 0,
+                            onClick = { d?.let { selectedDay = it } },
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -144,58 +146,17 @@ fun CalendarScreen(
                 Spacer(Modifier.height(4.dp))
             }
 
-            // 범례
-            Row(
-                Modifier.fillMaxWidth().padding(top = 10.dp),
-                horizontalArrangement = Arrangement.Center,
-            ) {
-                LegendDot(HiFiColors.New, "새공고")
-                Spacer(Modifier.width(12.dp))
-                LegendDot(HiFiColors.Update, "변경")
-                Spacer(Modifier.width(12.dp))
-                LegendDot(HiFiColors.Closing, "마감")
-            }
-
-            // 오늘 마감
+            // 선택한 날짜의 마감 공고 (셀을 누르면 갱신, 기본=오늘)
             Spacer(Modifier.height(22.dp))
-            if (todayJobs.isNotEmpty()) {
-                Box(
-                    Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(HiFiColors.BrandSoft)
-                        .border(2.dp, HiFiColors.Brand, RoundedCornerShape(16.dp))
-                        .padding(14.dp),
-                ) {
-                    Column {
-                        Text("오늘 마감 · ${ym.monthValue}/$today", style = HiFiType.caption, color = HiFiColors.BrandDark)
-                        Spacer(Modifier.height(4.dp))
-                        Text("${todayJobs.size}개 공고", style = HiFiType.h2, color = HiFiColors.Text)
-                        Spacer(Modifier.height(10.dp))
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            todayJobs.forEach { job ->
-                                HiFiJobCard(
-                                    kind = kindOf(job.kind),
-                                    company = job.company.name,
-                                    role = job.title,
-                                    logo = job.company.logo,
-                                    dday = job.dday,
-                                    dateText = "23:59",
-                                    onClick = { onJobClick(job.id) },
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 이번 주 마감
-            if (thisWeekJobs.isNotEmpty()) {
-                Spacer(Modifier.height(22.dp))
-                Text("이번 주 마감 (${thisWeekJobs.size}건)", style = HiFiType.h2, color = HiFiColors.Text)
-                Spacer(Modifier.height(10.dp))
+            Text(
+                "${ym.monthValue}/$selectedDay 마감",
+                style = HiFiType.h2,
+                color = HiFiColors.Text,
+            )
+            Spacer(Modifier.height(10.dp))
+            if (selectedJobs.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    thisWeekJobs.forEach { job ->
+                    selectedJobs.forEach { job ->
                         HiFiJobCard(
                             kind = kindOf(job.kind),
                             company = job.company.name,
@@ -207,6 +168,12 @@ fun CalendarScreen(
                         )
                     }
                 }
+            } else {
+                Text(
+                    "이 날 마감되는 공고가 없어요",
+                    style = HiFiType.body2,
+                    color = HiFiColors.Text2,
+                )
             }
         }
 
@@ -218,21 +185,27 @@ fun CalendarScreen(
 private fun CalendarCell(
     day: Int?,
     isToday: Boolean,
+    isSelected: Boolean,
     dow: Int,
-    jobs: List<JobDto>,
+    count: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val hasJobs = jobs.isNotEmpty()
+    // 선택일은 채운 강조, 오늘은 테두리. 둘 다 아니면 투명.
     val base = modifier
         .aspectRatio(1f / 1.2f)
         .clip(RoundedCornerShape(8.dp))
-        .background(if (hasJobs) HiFiColors.BrandSoft else Color.Transparent)
-    val bordered = if (isToday) base.border(2.dp, HiFiColors.Brand, RoundedCornerShape(8.dp)) else base
+        .background(if (isSelected) HiFiColors.BrandSoft else Color.Transparent)
+    val bordered = when {
+        isSelected -> base.border(2.dp, HiFiColors.Brand, RoundedCornerShape(8.dp))
+        isToday -> base.border(2.dp, HiFiColors.Brand.copy(alpha = 0.4f), RoundedCornerShape(8.dp))
+        else -> base
+    }
     Column(
         bordered
             .clickable(enabled = day != null, onClick = onClick)
             .padding(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         if (day != null) {
@@ -240,10 +213,10 @@ private fun CalendarCell(
                 "$day",
                 style = HiFiType.body2.copy(
                     fontSize = 12.sp,
-                    fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.SemiBold,
+                    fontWeight = if (isToday || isSelected) FontWeight.ExtraBold else FontWeight.SemiBold,
                 ),
                 color = when {
-                    isToday -> HiFiColors.Brand
+                    isToday || isSelected -> HiFiColors.Brand
                     dow == 0 -> HiFiColors.Closing
                     dow == 6 -> HiFiColors.Info
                     else -> HiFiColors.Text
@@ -251,60 +224,24 @@ private fun CalendarCell(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
-            // 최대 2개 라벨 노출
-            jobs.take(2).forEach { job ->
-                CellLabel(job)
-            }
-            if (jobs.size > 2) {
-                Text(
-                    "+${jobs.size - 2}",
-                    style = HiFiType.caption.copy(fontSize = 8.sp, letterSpacing = 0.sp),
-                    color = HiFiColors.Text2,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            // 그날 마감되는 공고 수만 표시(라벨칸 제거). 0이면 안 보임.
+            if (count > 0) {
+                Box(
+                    Modifier
+                        .size(18.dp)
+                        .clip(RoundedCornerShape(9.dp))
+                        .background(HiFiColors.Closing),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        "$count",
+                        style = HiFiType.caption.copy(fontSize = 10.sp, letterSpacing = 0.sp, fontWeight = FontWeight.Bold),
+                        color = Color.White,
+                        maxLines = 1,
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun CellLabel(job: JobDto) {
-    val k = kindOf(job.kind)
-    val bg = when (k) {
-        JobKind.NEW -> HiFiColors.New
-        JobKind.UPDATE -> HiFiColors.Update
-        JobKind.CLOSING -> HiFiColors.Closing
-        JobKind.ACTIVE -> HiFiColors.Text2
-    }
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(4.dp))
-            .background(bg)
-            .padding(horizontal = 3.dp, vertical = 1.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            job.company.logo,
-            style = HiFiType.caption.copy(fontSize = 9.sp, letterSpacing = 0.sp),
-            color = Color.White,
-            maxLines = 1,
-        )
-    }
-}
-
-@Composable
-private fun LegendDot(color: Color, label: String) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier
-                .size(8.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(color),
-        )
-        Spacer(Modifier.width(4.dp))
-        Text(label, style = HiFiType.body2.copy(fontSize = 11.sp), color = HiFiColors.Text2)
     }
 }
 

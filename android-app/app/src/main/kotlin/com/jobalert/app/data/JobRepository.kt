@@ -114,7 +114,8 @@ class JobRepository(
      * 예: "여행사 영업기획 사무원 채용합니다." → "여행사 영업기획 사무원" / 신입이면 "(신입) ..."
      */
     private fun displayRole(rawTitle: String, experience: String): String {
-        val cleaned = rawTitle.trim().replace(titleTail, "").trim().removeSuffix(".").trim()
+        // 내부 줄바꿈·연속 공백을 한 칸으로 정규화(소스 제목이 난잡한 경우 정리). 그 뒤 꼬리표·마침표 제거.
+        val cleaned = rawTitle.replace(Regex("\\s+"), " ").trim().replace(titleTail, "").trim().removeSuffix(".").trim()
         val t = cleaned.ifBlank { rawTitle.trim() }
         val exp = when {
             experience.contains("신입") -> "신입"

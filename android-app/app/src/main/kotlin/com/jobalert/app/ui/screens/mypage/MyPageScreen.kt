@@ -8,18 +8,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jobalert.app.data.AppStats
 import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
@@ -42,15 +44,10 @@ fun MyPageScreen(
     onSeenJobs: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
 ) {
+    val context = LocalContext.current
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(
-            title = "내 정보",
-            action = {
-                // 설정(톱니바퀴)은 미구현이라 제거. 알림 히스토리만 노출.
-                HiFiIconBtn(Icons.Outlined.NotificationsNone, "알림", onClick = onNotifHistory)
-            },
-        )
+        HiFiAppBar(title = "내 정보")
 
         Column(
             Modifier
@@ -80,7 +77,7 @@ fun MyPageScreen(
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                "꽁이가 12일째 챙겨주는 중",
+                                "꽁이가 ${AppStats.daysSinceInstall(context)}일째 챙겨주는 중",
                                 style = HiFiType.body2,
                                 color = HiFiColors.Text2,
                             )
@@ -98,7 +95,8 @@ fun MyPageScreen(
                         )
                         Box(Modifier.width(1.dp).height(44.dp).background(HiFiColors.Brand.copy(alpha = 0.35f)))
                         StatColumn(
-                            value = "🔖",
+                            value = "",
+                            icon = Icons.Outlined.BookmarkBorder,
                             label = "저장한 공고 ›",
                             color = HiFiColors.UpdateShadow,
                             modifier = Modifier.weight(1f).clickable { onSavedJobs() },
@@ -113,7 +111,6 @@ fun MyPageScreen(
             // 부제(세부설명)는 제거 — 제목만 깔끔하게.
             val menu = listOf(
                 MenuItem("🔔", "알림 설정", "", onClick = onNotifSettings),
-                MenuItem("📜", "알림 히스토리", "", onClick = onNotifHistory),
                 MenuItem("📅", "마감 캘린더", "", onClick = onCalendar),
                 MenuItem("📱", "바탕화면 위젯", "", onClick = onWidgetSettings),
                 MenuItem("🎯", "관심", "", onClick = onInterests),
@@ -148,12 +145,20 @@ private fun StatColumn(
     label: String,
     color: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
 ) {
     Column(
         modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(value, style = HiFiType.monoNum.copy(fontSize = 26.sp), color = color)
+        // 숫자 행과 높이를 맞추려고 32dp 박스 안에 숫자 또는 아이콘을 가운데 정렬.
+        Box(Modifier.height(32.dp), contentAlignment = Alignment.Center) {
+            if (icon != null) {
+                Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(28.dp))
+            } else {
+                Text(value, style = HiFiType.monoNum.copy(fontSize = 26.sp), color = color)
+            }
+        }
         Spacer(Modifier.height(2.dp))
         Text(label, style = HiFiType.body2.copy(fontSize = 11.sp), color = HiFiColors.Text2)
     }

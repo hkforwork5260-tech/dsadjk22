@@ -57,12 +57,7 @@ fun FavoritesScreen(
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
-        HiFiAppBar(
-            title = "관심 기업",
-            action = {
-                HiFiIconBtn(Icons.Outlined.Add, "기업 추가", onClick = onAddCompany)
-            },
-        )
+        HiFiAppBar(title = "관심 기업")   // 우상단 + 제거 — 추가는 그리드의 점선 '기업 추가' 카드로
 
         // 상단 요약
         Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
@@ -75,7 +70,7 @@ fun FavoritesScreen(
             }
             Spacer(Modifier.height(2.dp))
             Text(
-                "로고 우상단 빨간 뱃지 = 오늘 새 공고",
+                "카드 우상단 빨간 뱃지 = 오늘 새 공고",
                 style = HiFiType.body2,
                 color = HiFiColors.Text2,
             )
@@ -114,52 +109,28 @@ fun FavoritesScreen(
 private fun FavoriteCard(fav: FavoriteCompanyDto, onClick: () -> Unit) {
     val hasNew = fav.newCount > 0
     val borderColor = if (hasNew) HiFiColors.Brand else HiFiColors.Border
-    val logoBg = if (hasNew) HiFiColors.BrandSoft else HiFiColors.Bg2
 
     Box(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 110.dp)
+            .height(96.dp)   // 모든 칸 높이 고정 → 들쭉날쭉 제거
             .clip(RoundedCornerShape(14.dp))
             .border(2.dp, borderColor, RoundedCornerShape(14.dp))
-            .background(HiFiColors.Bg)
+            .background(if (hasNew) HiFiColors.BrandSoft else HiFiColors.Bg)
             .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
     ) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(
-                Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(logoBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    fav.company.logo,
-                    style = HiFiType.body2.copy(fontWeight = FontWeight.ExtraBold, fontSize = 13.sp),
-                    color = if (hasNew) HiFiColors.BrandDark else HiFiColors.Text,
-                )
-            }
-            Text(
-                fav.company.name,
-                style = HiFiType.body.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
-                color = HiFiColors.Text,
-                textAlign = TextAlign.Center,
-                maxLines = 2,
-            )
-            Text(
-                "공고 ${fav.company.activeJobCount}",
-                style = HiFiType.body2.copy(fontSize = 11.sp),
-                color = HiFiColors.Text2,
-            )
-        }
+        // 로고박스(지역처럼 보이던 약어칸)·'공고 N' 제거 — 회사 이름만 가운데.
+        Text(
+            fav.company.name,
+            style = HiFiType.body.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+            color = HiFiColors.Text,
+            textAlign = TextAlign.Center,
+            maxLines = 2,
+            modifier = Modifier.padding(horizontal = 8.dp),
+        )
 
-        // 우상단 NEW 뱃지
+        // 우상단 NEW 뱃지(오늘 새 공고 수)
         if (hasNew) {
             Box(
                 Modifier
@@ -180,15 +151,6 @@ private fun FavoriteCard(fav: FavoriteCompanyDto, onClick: () -> Unit) {
                 )
             }
         }
-
-        // 좌하단 🔔 알림 표식
-        if (fav.hasAlarm) {
-            Text(
-                "🔔",
-                style = HiFiType.body2.copy(fontSize = 11.sp),
-                modifier = Modifier.align(Alignment.BottomStart).padding(4.dp),
-            )
-        }
     }
 }
 
@@ -197,7 +159,7 @@ private fun AddCompanyCard(onClick: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 110.dp)
+            .height(96.dp)   // 관심기업 카드와 동일 높이
             .clip(RoundedCornerShape(14.dp))
             .dashedBorder(HiFiColors.BorderDark)
             .clickable(onClick = onClick),
@@ -230,19 +192,11 @@ private fun MascotHint() {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Mascot(size = 40.dp, expression = MascotExpression.Default)
             Spacer(Modifier.width(10.dp))
-            Column {
-                Text(
-                    "로고를 누르면 그 회사 공고만 모아볼 수 있어요",
-                    style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
-                    color = HiFiColors.Text,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    "꾹 누르면 알림 끄기 / 삭제",
-                    style = HiFiType.body2.copy(fontSize = 12.sp),
-                    color = HiFiColors.Text2,
-                )
-            }
+            Text(
+                "회사를 누르면 그 회사 공고만 모아볼 수 있어요",
+                style = HiFiType.body.copy(fontWeight = FontWeight.Bold),
+                color = HiFiColors.Text,
+            )
         }
     }
 }

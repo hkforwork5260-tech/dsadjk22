@@ -32,7 +32,10 @@ class DiscoverViewModel : ViewModel() {
     fun load() {
         viewModelScope.launch {
             runCatching { repository.discoverFeed() }
-                .onSuccess { _jobs.value = it }
+                // 탐색 피드는 매번 순서를 바꿔 다양하게(인스타 탐색 느낌). 백엔드도 랜덤 셔플하지만
+                // 점수 가중치로 상위가 고정처럼 보일 수 있어, 받은 목록을 클라에서 한 번 더 셔플한다.
+                // (본 공고 후순위는 화면에서 SeenJobs로 다시 정렬)
+                .onSuccess { _jobs.value = it.shuffled() }
             _isLoaded.value = true
         }
         viewModelScope.launch {

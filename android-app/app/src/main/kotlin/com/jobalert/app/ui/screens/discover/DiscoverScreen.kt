@@ -5,6 +5,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.PageSize
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,7 +61,7 @@ import com.jobalert.app.ui.theme.softColor
 @Composable
 fun DiscoverScreen(
     onJobClick: (String) -> Unit,
-    onShare: () -> Unit,
+    onShare: (title: String, url: String) -> Unit,
     onFilter: () -> Unit,
     onGoMain: () -> Unit,
     onTabClick: (HomeTab) -> Unit,
@@ -108,7 +110,7 @@ fun DiscoverScreen(
                         isSaved = j.id in savedJobIds,
                         onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
                         onToggleSave = { viewModel.toggleSave(j.id) },
-                        onShare = onShare,
+                        onShare = { onShare(j.role, j.originalUrl) },
                         onOpenDetail = { SeenJobs.markSeen(j.id); onJobClick(j.id) },
                         pageIndex = page,
                         pageTotal = orderedJobs.size,
@@ -143,7 +145,11 @@ private fun ReelsJobCard(
             .clip(RoundedCornerShape(24.dp))
             .background(HiFiColors.Bg)
             .border(2.dp, HiFiColors.Border, RoundedCornerShape(24.dp))
-            .clickable(onClick = onOpenDetail),
+            // 카드 아무 데나 탭해도 진입하던 것 제거. 진입은 '자세히 보기' 버튼만.
+            // 인스타처럼 더블탭 = 좋아요(관심기업 토글). (세로 스크롤은 드래그라 그대로 동작)
+            .pointerInput(job.id) {
+                detectTapGestures(onDoubleTap = { onToggleFav() })
+            },
     ) {
         Column(Modifier.fillMaxSize()) {
             // 상단 헤더 (로고 + 회사 + 종류 라벨)

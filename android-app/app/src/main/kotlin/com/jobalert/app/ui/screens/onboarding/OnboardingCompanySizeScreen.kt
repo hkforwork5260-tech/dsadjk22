@@ -87,6 +87,12 @@ fun OnboardingCompanySizeScreen(
             ) {
                 SectionLabel("기업 규모")
                 Spacer(Modifier.height(8.dp))
+                // '어디든' = 규모 상관없이 전체. 선택 시 규모 선택 해제(빈 선택 = 전체 필터). 규모를 하나 고르면 자동 해제.
+                AnyOption(
+                    active = selectedScales.isEmpty(),
+                    onClick = { selectedScales = emptySet() },
+                )
+                Spacer(Modifier.height(8.dp))
                 GridButtons(
                     items = scales,
                     selected = selectedScales,
@@ -98,6 +104,11 @@ fun OnboardingCompanySizeScreen(
 
                 Spacer(Modifier.height(22.dp))
                 SectionLabel("산업군")
+                Spacer(Modifier.height(8.dp))
+                AnyOption(
+                    active = selectedSectors.isEmpty(),
+                    onClick = { selectedSectors = emptySet() },
+                )
                 Spacer(Modifier.height(8.dp))
                 GridButtons(
                     items = sectors,
@@ -133,6 +144,19 @@ fun OnboardingCompanySizeScreen(
         }
         HiFiGestureNav()
     }
+}
+
+/** '어디든 취업시켜주세요' 옵션 — 해당 분류를 신경 안 쓰고 전체를 보겠다는 칸. */
+@Composable
+private fun AnyOption(active: Boolean, onClick: () -> Unit) {
+    HiFiButton(
+        text = "😢 어디든 취업시켜주세요",
+        onClick = onClick,
+        variant = if (active) HiFiButtonVariant.Primary else HiFiButtonVariant.Default,
+        size = HiFiButtonSize.Sm,
+        fullWidth = true,
+        maxLines = 1,
+    )
 }
 
 @Composable

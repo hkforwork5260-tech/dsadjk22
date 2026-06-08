@@ -123,22 +123,6 @@ fun NotifSettingsScreen(onBack: () -> Unit) {
                 enabled = pushEnabled,
                 onCheckedChange = { fullScreenEnabled = it },
             )
-
-            Spacer(Modifier.height(22.dp))
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(HiFiColors.BrandSoft)
-                    .padding(14.dp),
-            ) {
-                Text(
-                    "💡 푸시 알림 시간은 고정이에요.\n" +
-                        "매일 같은 시간에 와야 습관이 만들어진다는 듀오링고 원칙을 적용했어요.",
-                    style = HiFiType.body2.copy(fontSize = 13.sp),
-                    color = HiFiColors.BrandDark,
-                )
-            }
         }
 
         HiFiGestureNav()

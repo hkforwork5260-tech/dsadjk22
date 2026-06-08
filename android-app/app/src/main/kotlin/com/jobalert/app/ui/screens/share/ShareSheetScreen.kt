@@ -30,13 +30,14 @@ import com.jobalert.app.ui.theme.HiFiType
  * 공유 시트. NavGraph 풀스크린 라우트지만 디자인은 BottomSheet.
  * 상단 dim 영역을 누르거나 "취소"를 누르면 닫힘.
  *
- * v0.1: 카카오톡은 Toast(v0.2 예정), 링크 복사는 실제 클립보드 복사,
- * "공유"는 시스템 ACTION_SEND Intent.
+ * 공유 대상(제목·URL)은 호출한 화면이 nav 인자로 넘긴 실제 공고/회사 값.
+ * 카카오톡: com.kakao.talk 패키지를 지정한 ACTION_SEND(설치돼 있으면 카톡으로 바로 공유).
+ *   리치 템플릿(Kakao Link)은 SDK+앱키가 필요해 v0.2. 링크 복사는 클립보드.
  */
 @Composable
 fun ShareSheetScreen(
-    shareTitle: String = "토스 · 백엔드 개발자",
-    shareUrl: String = "https://jobalert.app/job/sample",
+    shareTitle: String = "",
+    shareUrl: String = "",
     onClose: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -78,13 +79,15 @@ fun ShareSheetScreen(
                 )
                 Spacer(Modifier.height(14.dp))
                 Text("공유", style = HiFiType.h2, color = HiFiColors.Text)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    shareTitle,
-                    style = HiFiType.body2,
-                    color = HiFiColors.Text2,
-                    maxLines = 1,
-                )
+                if (shareTitle.isNotBlank()) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        shareTitle,
+                        style = HiFiType.body2,
+                        color = HiFiColors.Text2,
+                        maxLines = 1,
+                    )
+                }
                 Spacer(Modifier.height(18.dp))
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -93,11 +96,8 @@ fun ShareSheetScreen(
                         label = "카카오톡",
                         bg = Color(0xFFFEE500),
                         onClick = {
-                            Toast.makeText(
-                                context,
-                                "카카오톡 공유는 v0.2에서 추가될 예정이에요",
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                            shareToKakao(context, shareTitle, shareUrl)
+                            onClose()
                         },
                     )
                     ShareOption(
@@ -107,15 +107,6 @@ fun ShareSheetScreen(
                         onClick = {
                             copyToClipboard(context, shareUrl)
                             Toast.makeText(context, "링크를 복사했어요", Toast.LENGTH_SHORT).show()
-                            onClose()
-                        },
-                    )
-                    ShareOption(
-                        emoji = "📤",
-                        label = "다른 앱",
-                        bg = HiFiColors.BrandSoft,
-                        onClick = {
-                            shareWithSystem(context, shareTitle, shareUrl)
                             onClose()
                         },
                     )
@@ -172,11 +163,17 @@ private fun copyToClipboard(context: Context, text: String) {
     cm.setPrimaryClip(ClipData.newPlainText("JobAlert link", text))
 }
 
-private fun shareWithSystem(context: Context, title: String, url: String) {
-    val send = Intent(Intent.ACTION_SEND).apply {
+/** 카카오톡으로 바로 공유(설치돼 있으면). 텍스트+링크를 보낸다. 미설치 시 안내. */
+private fun shareToKakao(context: Context, title: String, url: String) {
+    val text = listOf(title, url).filter { it.isNotBlank() }.joinToString("\n")
+        .ifBlank { "채용알리미에서 공고를 확인해보세요" }
+    val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_SUBJECT, title)
-        putExtra(Intent.EXTRA_TEXT, "$title\n$url")
+        putExtra(Intent.EXTRA_TEXT, text)
+        setPackage("com.kakao.talk")
     }
-    context.startActivity(Intent.createChooser(send, "공유"))
+    runCatching { context.startActivity(intent) }
+        .onFailure {
+            Toast.makeText(context, "카카오톡이 설치되어 있지 않아요", Toast.LENGTH_SHORT).show()
+        }
 }

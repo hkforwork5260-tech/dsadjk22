@@ -46,7 +46,7 @@ private enum class DetailTab(val label: String) {
 fun JobDetailScreen(
     jobId: String,
     onBack: () -> Unit,
-    onShare: () -> Unit,
+    onShare: (title: String, url: String) -> Unit,
     onSimilarTab: () -> Unit,
     onCompanyClick: (Int) -> Unit,
     onApply: (Job) -> Unit,
@@ -108,7 +108,7 @@ fun JobDetailScreen(
                         },
                     )
                     Spacer(Modifier.width(8.dp))
-                    HiFiIconBtn(Icons.Outlined.Share, "공유", onClick = onShare)
+                    HiFiIconBtn(Icons.Outlined.Share, "공유", onClick = { onShare(job.role, job.originalUrl) })
                 }
             }
         )
@@ -129,7 +129,22 @@ fun JobDetailScreen(
                 Column(Modifier.weight(1f)) {
                     HiFiLabel(text = job.kind.label(), bg = job.kind.color())
                     Spacer(Modifier.height(6.dp))
-                    Text(job.role, style = HiFiType.title, color = HiFiColors.Text)
+                    // 제목 칸 높이 고정(2줄) + 길이에 따라 글자 크기 자동 축소 → 공고끼리 통일성.
+                    val titleSize = when {
+                        job.role.length <= 14 -> 21.sp
+                        job.role.length <= 24 -> 18.sp
+                        job.role.length <= 36 -> 16.sp
+                        else -> 14.sp
+                    }
+                    Box(Modifier.height(52.dp), contentAlignment = Alignment.CenterStart) {
+                        Text(
+                            job.role,
+                            style = HiFiType.title.copy(fontSize = titleSize, lineHeight = (titleSize.value + 4).sp),
+                            color = HiFiColors.Text,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                     Spacer(Modifier.height(2.dp))
                     Text(
                         "${job.company} · ${job.location}",

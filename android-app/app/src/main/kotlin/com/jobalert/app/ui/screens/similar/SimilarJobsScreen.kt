@@ -96,27 +96,28 @@ fun SimilarJobsScreen(
             }
             Spacer(Modifier.height(12.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                others.forEach { j ->
-                    HiFiJobCard(
-                        kind = j.kind,
-                        company = j.company,
-                        role = j.role,
-                        logo = j.logo,
-                        dday = j.dday,
-                        dateText = j.dateText,
-                        onClick = { onJobClick(j.id) },
-                    )
+            if (others.isEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "비슷한 공고를 아직 못 찾았어요",
+                    style = HiFiType.body2,
+                    color = HiFiColors.Text2,
+                )
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    others.forEach { j ->
+                        HiFiJobCard(
+                            kind = j.kind,
+                            company = j.company,
+                            role = j.role,
+                            logo = j.logo,
+                            dday = j.dday,
+                            dateText = j.dateText,
+                            onClick = { onJobClick(j.id) },
+                        )
+                    }
                 }
             }
-
-            Spacer(Modifier.height(22.dp))
-            Text(
-                "* 공고 출처: 사람인",
-                style = HiFiType.body2.copy(fontSize = 11.sp),
-                color = HiFiColors.Text3,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
         }
 
         HiFiGestureNav()

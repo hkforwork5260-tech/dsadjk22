@@ -23,6 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,7 +47,7 @@ fun CompanyDetailScreen(
     companyId: Int,
     onBack: () -> Unit,
     onJobClick: (String) -> Unit,
-    onShare: () -> Unit,
+    onShare: (title: String, url: String) -> Unit,
 ) {
     // 백엔드 /companies/{id}/page 연결. 로딩·에러 시엔 빈 회사 페이지로 렌더.
     val viewModel: CompanyDetailViewModel = viewModel()
@@ -57,12 +59,24 @@ fun CompanyDetailScreen(
     // 백엔드가 알려준 즐겨찾기 상태로 별표 초기 동기화(로드 완료 시).
     LaunchedEffect(data.company.isFavorited) { starred = data.company.isFavorited }
 
+    // 홈페이지/채용사이트 열기 — 스킴 없으면 https 붙임. 없거나 실패 시 토스트.
+    fun openHomepage() {
+        val raw = data.company.homepageUrl?.trim().orEmpty()
+        if (raw.isBlank()) {
+            Toast.makeText(context, "등록된 홈페이지가 없어요", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val url = if (raw.startsWith("http")) raw else "https://$raw"
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+            .onFailure { Toast.makeText(context, "홈페이지를 열 수 없어요", Toast.LENGTH_SHORT).show() }
+    }
+
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         HiFiAppBar(
             title = "",
             leading = { HiFiIconBtn(Icons.Outlined.ArrowBack, "뒤로", onClick = onBack) },
-            action = { HiFiIconBtn(Icons.Outlined.Share, "공유", onClick = onShare) },
+            action = { HiFiIconBtn(Icons.Outlined.Share, "공유", onClick = { onShare(data.company.name, data.company.homepageUrl ?: "") }) },
         )
 
         Column(
@@ -124,7 +138,7 @@ fun CompanyDetailScreen(
                     )
                     HiFiButton(
                         text = "🔗 홈페이지",
-                        onClick = { /* TODO: 외부 URL */ },
+                        onClick = { openHomepage() },
                         variant = HiFiButtonVariant.Default,
                         size = HiFiButtonSize.Sm,
                     )
@@ -194,7 +208,7 @@ fun CompanyDetailScreen(
                     }
                 }
             } else {
-                EmptyPostingsCard(starred = starred, modifier = Modifier.padding(horizontal = 20.dp))
+                EmptyPostingsCard(starred = starred, onOpenSite = { openHomepage() }, modifier = Modifier.padding(horizontal = 20.dp))
                 Text(
                     "최근 채용 이력",
                     style = HiFiType.h2,
@@ -246,7 +260,7 @@ private fun StatBox(label: String, value: String, color: androidx.compose.ui.gra
 }
 
 @Composable
-private fun EmptyPostingsCard(starred: Boolean, modifier: Modifier = Modifier) {
+private fun EmptyPostingsCard(starred: Boolean, onOpenSite: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier
             .fillMaxWidth()
@@ -272,7 +286,7 @@ private fun EmptyPostingsCard(starred: Boolean, modifier: Modifier = Modifier) {
             Spacer(Modifier.height(14.dp))
             HiFiButton(
                 text = "🔗 채용 사이트 직접 보기",
-                onClick = { /* TODO 외부 URL */ },
+                onClick = onOpenSite,
                 variant = HiFiButtonVariant.Default,
                 size = HiFiButtonSize.Sm,
             )
