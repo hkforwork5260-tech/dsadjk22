@@ -53,6 +53,13 @@ class JobController(
     fun byIds(@RequestParam(required = false, defaultValue = "") ids: List<String>): JobListResponse =
         jobService.byIds(ids)
 
+    // 찾아보기 전용 피드(인스타 탐색 랭킹). '오늘' 필터와 무관. 개인화 위해 X-Device-Id 사용.
+    @GetMapping("/discover")
+    fun discover(
+        @RequestParam(defaultValue = "200") limit: Int,
+        @RequestHeader(value = "X-Device-Id", required = false) deviceId: String?,
+    ): JobListResponse = jobService.discover(parseDeviceId(deviceId), limit)
+
     @GetMapping("/{id}")
     fun detail(
         @PathVariable id: String,

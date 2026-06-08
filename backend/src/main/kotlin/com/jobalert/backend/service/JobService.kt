@@ -154,6 +154,90 @@ class JobService(
         return result
     }
 
+    /**
+     * 찾아보기 전용 랭킹(인스타 탐색 느낌). '오늘' 필터와 무관하게 전체 활성 공고를 섞어 보여준다.
+     * 점수(관심기업+5·관심직군+3·저장취향+2·최신+2/+1·마감임박+1) → 회사 라운드로빈(다양성)
+     * → 관심:발견 3:1 머지(발견 약 25%, 필터버블 방지) → 그룹 random tiebreak로 매번 신선.
+     * '본 공고' 후순위는 클라이언트가 로컬 SeenJobs로 처리한다.
+     */
+    fun discover(deviceId: UUID?, limit: Int): JobListResponse {
+        val pool = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 3000))
+        if (pool.isEmpty()) return JobListResponse(jobs = emptyList())
+
+        val myCategories = deviceId?.let { dev ->
+            deviceCategoryRepository.findAllByDeviceId(dev).map { it.categoryCode }.toSet()
+        } ?: emptySet()
+        val myCompanies = deviceId?.let { dev ->
+            userFavoriteRepository.findAllByDeviceId(dev).map { it.companyId }.toSet()
+        } ?: emptySet()
+        // 저장 공고로 학습한 취향(직군·회사)
+        val savedIds = deviceId?.let { dev ->
+            savedJobRepository.findAllByDeviceIdOrderByCreatedAtDesc(dev).map { it.jobId }
+        } ?: emptyList()
+        val savedJobs = if (savedIds.isEmpty()) emptyList() else jobRepository.findAllById(savedIds).toList()
+        val savedCategories = savedJobs.flatMap { it.jobCategoryCodes ?: emptyList() }.toSet()
+        val savedCompanies = savedJobs.map { it.companyId }.toSet()
+
+        val now = OffsetDateTime.now(clock)
+        fun score(job: Job): Int {
+            var s = 0
+            if (job.companyId in myCompanies) s += 5
+            if (myCategories.isNotEmpty() && job.jobCategoryCodes?.any { it in myCategories } == true) s += 3
+            if (job.companyId in savedCompanies) s += 2
+            if (savedCategories.isNotEmpty() && job.jobCategoryCodes?.any { it in savedCategories } == true) s += 2
+            val age = java.time.temporal.ChronoUnit.DAYS.between(job.firstSeenAt, now)
+            if (age <= 1) s += 2 else if (age <= 3) s += 1
+            job.deadline?.let {
+                if (java.time.temporal.ChronoUnit.DAYS.between(now, it) in 0..7) s += 1
+            }
+            return s
+        }
+        val scoreOf: Map<Job, Int> = pool.associateWith { score(it) }
+        val rnd = java.util.Random()
+
+        // 회사별 그룹 → 그룹 내부 점수 desc → 그룹은 (대표점수 desc, 그룹별 고정난수)로 정렬 → 한 건씩 라운드로빈.
+        fun roundRobin(jobs: List<Job>): List<Job> {
+            if (jobs.isEmpty()) return emptyList()
+            val groups = jobs.groupBy { it.companyId }.values
+                .map { grp -> grp.sortedByDescending { scoreOf[it] ?: 0 } to rnd.nextInt() }
+                .sortedWith(
+                    compareByDescending<Pair<List<Job>, Int>> { it.first.maxOf { j -> scoreOf[j] ?: 0 } }
+                        .thenBy { it.second },
+                )
+                .map { it.first }
+            val queues = groups.map { ArrayDeque(it) }
+            val out = ArrayList<Job>(jobs.size)
+            while (true) {
+                var progressed = false
+                for (q in queues) q.removeFirstOrNull()?.let { out.add(it); progressed = true }
+                if (!progressed) break
+            }
+            return out
+        }
+
+        fun isInterest(job: Job) = job.companyId in myCompanies ||
+            (myCategories.isNotEmpty() && job.jobCategoryCodes?.any { it in myCategories } == true)
+
+        val (interest, discovery) = pool.partition { isInterest(it) }
+        val interestRanked = roundRobin(interest)
+        val discoveryRanked = roundRobin(discovery)
+
+        // 관심:발견 3:1 (4칸 중 1칸은 발견). 한쪽이 비면 다른 쪽으로 채움.
+        val merged = ArrayList<Job>(minOf(limit, pool.size))
+        var i = 0
+        var d = 0
+        while (merged.size < limit && (i < interestRanked.size || d < discoveryRanked.size)) {
+            val takeDiscovery = merged.size % 4 == 3
+            when {
+                takeDiscovery && d < discoveryRanked.size -> merged.add(discoveryRanked[d++])
+                i < interestRanked.size -> merged.add(interestRanked[i++])
+                d < discoveryRanked.size -> merged.add(discoveryRanked[d++])
+                else -> break
+            }
+        }
+        return JobListResponse(jobs = toDtos(merged))
+    }
+
     fun detail(id: String, deviceId: UUID? = null): JobDetailDto {
         val job = jobRepository.findById(id).orElseThrow {
             NotFoundException("JOB_NOT_FOUND", "공고를 찾을 수 없습니다.")
