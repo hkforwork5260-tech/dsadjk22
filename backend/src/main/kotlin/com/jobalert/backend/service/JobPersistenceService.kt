@@ -164,7 +164,7 @@ class JobPersistenceService(
         education = raw.education,
         salary = raw.salary,
         tags = raw.tags.takeIf { it.isNotEmpty() },
-        jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords, raw.description),
+        jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords),
         description = raw.description,
         postingDate = raw.postingDateEpoch?.toUtcOdt(),
         deadline = raw.deadlineEpoch?.toUtcOdt(),
@@ -186,7 +186,9 @@ class JobPersistenceService(
         var etc = 0
         val all = jobRepository.findAll()
         for (job in all) {
-            val newCats = classifier.classify(job.title, null, job.tags ?: emptyList(), job.description)
+            // 부서·키워드는 저장 안 돼 있고, tags/본문은 보일러플레이트(4대보험 등) 오염이 커서 제목만 사용.
+            // 부서까지 반영한 정확 분류는 다음 수집(또는 소스 재수집) 때 자동 적용됨.
+            val newCats = classifier.classify(job.title)
             if (newCats == listOf("etc")) etc++
             if (job.jobCategoryCodes != newCats) {
                 job.jobCategoryCodes = newCats
@@ -225,7 +227,7 @@ class JobPersistenceService(
         }
         job.experience = experienceClassifier.classify(raw.experience, raw.title)
         // 기존 공고도 재분류 — 분류 규칙이 개선되면 다음 수집에서 반영됨.
-        job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords, raw.description)
+        job.jobCategoryCodes = classifier.classify(raw.title, raw.department, raw.keywords)
         raw.postingDateEpoch?.toUtcOdt()?.let { job.postingDate = it }
         job.lastSeenAt = now
         job.updatedAt = now
