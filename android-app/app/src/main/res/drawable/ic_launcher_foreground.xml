@@ -1,39 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 꽁이(고양이) 얼굴. 마스코트 팔레트 통일: 베이지 #FAD9B0 / 핑크귀 #FFB8C2 / 핑크코 #FF8FA3 / 검은 윤곽 #1A1A1A -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
-    <group android:translateX="14" android:translateY="14">
-
-        <!-- 귀 (바깥) -->
-        <path android:pathData="M 20 22 L 16 6 L 31 15 Z"
-            android:fillColor="#FAD9B0" android:strokeColor="#1A1A1A" android:strokeWidth="2.2"/>
-        <path android:pathData="M 60 22 L 64 6 L 49 15 Z"
-            android:fillColor="#FAD9B0" android:strokeColor="#1A1A1A" android:strokeWidth="2.2"/>
-        <!-- 귀 안쪽(핑크) -->
-        <path android:pathData="M 22 20 L 19.5 10 L 28 16 Z" android:fillColor="#FFB8C2"/>
-        <path android:pathData="M 58 20 L 60.5 10 L 52 16 Z" android:fillColor="#FFB8C2"/>
-
-        <!-- 머리 -->
-        <path
-            android:pathData="M40 15 C19 15, 11 32, 11 51 C11 73, 24 81, 40 81 C56 81, 69 73, 69 51 C69 32, 61 15, 40 15 Z"
-            android:fillColor="#FAD9B0" android:strokeColor="#1A1A1A" android:strokeWidth="2.4"/>
-
-        <!-- 볼터치(핑크, 연하게) -->
-        <path android:pathData="M20 62 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z" android:fillColor="#FF8FA3" android:fillAlpha="0.5"/>
-        <path android:pathData="M50 62 a5 5 0 1 0 10 0 a5 5 0 1 0 -10 0 Z" android:fillColor="#FF8FA3" android:fillAlpha="0.5"/>
-
-        <!-- 눈(검정) + 하이라이트(흰) -->
-        <path android:pathData="M24.5 47 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 Z" android:fillColor="#1A1A1A"/>
-        <path android:pathData="M43.5 47 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0 Z" android:fillColor="#1A1A1A"/>
-        <path android:pathData="M28 44.5 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 Z" android:fillColor="#FFFFFF"/>
-        <path android:pathData="M47 44.5 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 Z" android:fillColor="#FFFFFF"/>
-
-        <!-- 코(핑크) + 입 -->
-        <path android:pathData="M36.5 55 L43.5 55 L40 59.5 Z" android:fillColor="#FF8FA3"/>
-        <path android:pathData="M40 59.5 L40 63 M40 63 C37.5 63, 36 61.5, 35.5 60 M40 63 C42.5 63, 44 61.5, 44.5 60"
-            android:strokeColor="#1A1A1A" android:strokeWidth="1.6" android:strokeLineCap="round"/>
-    </group>
-</vector>
+<!-- 마스코트 '단이'(시바) 얼굴을 런처 foreground로. adaptive 안전영역 위해 18% inset. 배경=블루(@color/ic_launcher_background). -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/mascot_calm"
+    android:inset="18%" />

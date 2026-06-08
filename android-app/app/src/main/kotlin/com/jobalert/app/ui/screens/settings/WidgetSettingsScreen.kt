@@ -208,11 +208,12 @@ private fun WidgetContent(size: WidgetSize) {
             Spacer(Modifier.height(8.dp))
             Box(Modifier.fillMaxWidth().height(1.dp).background(HiFiColors.Border))
             Spacer(Modifier.height(8.dp))
-            JobLine("토스 · 백엔드 개발자", "D-3", HiFiColors.Closing)
+            // 위젯 미리보기용 일반 샘플(특정 회사명 없이).
+            JobLine("관심 기업 · 마감 임박 공고", "D-3", HiFiColors.Closing)
             Spacer(Modifier.height(4.dp))
-            JobLine("카카오 · iOS 엔지니어", "D-7", HiFiColors.Update)
+            JobLine("새로 올라온 공고", "D-7", HiFiColors.Update)
             Spacer(Modifier.height(4.dp))
-            JobLine("네이버 · 디자이너", "NEW", HiFiColors.New)
+            JobLine("오늘의 새 공고", "NEW", HiFiColors.New)
         }
     }
 }

@@ -19,7 +19,7 @@
         android:id="@+id/widget_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FF6B35"
+        android:textColor="#4F6EF0"
         android:textStyle="bold"
         android:textSize="12sp"
         android:maxLines="1"

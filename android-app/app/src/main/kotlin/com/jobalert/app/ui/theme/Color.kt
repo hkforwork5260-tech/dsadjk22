@@ -3,48 +3,51 @@ package com.jobalert.app.ui.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * HiFi 디자인 토큰. README "컬러 토큰" 표 그대로.
+ * HiFi 디자인 토큰.
+ * 2026-06-08 리브랜딩: 코랄 → "신뢰의 블루 × 따뜻한 시바 오렌지" (mascot-dan/palette.css 기준).
+ * 60% 웜화이트 배경 · 30% 블루 · 10% 오렌지(+상태색 소량).
+ * 이름은 유지(전 화면이 참조) — 값만 교체.
  */
 object HiFiColors {
-    // Brand (Coral)
-    val Brand = Color(0xFFFF6B35)
-    val BrandHover = Color(0xFFFF5722)
-    val BrandShadow = Color(0xFFD9532A)
-    val BrandDark = Color(0xFFE5522A)
-    val BrandSoft = Color(0xFFFFF0E8)
+    // Brand (Primary 블루 · 신뢰/전문)
+    val Brand = Color(0xFF4F6EF0)
+    val BrandHover = Color(0xFF3D58D6)
+    val BrandShadow = Color(0xFF3A52C9)   // 3D 버튼 그림자
+    val BrandDark = Color(0xFF3D58D6)
+    val BrandSoft = Color(0xFFEAEEFE)
 
-    // NEW (Green - Duolingo)
-    val New = Color(0xFF58CC02)
-    val NewShadow = Color(0xFF4AB801)
-    val NewSoft = Color(0xFFE7F9D6)
+    // NEW (Success 초록)
+    val New = Color(0xFF1FA968)
+    val NewShadow = Color(0xFF178A55)
+    val NewSoft = Color(0xFFE7F6EE)
 
-    // UPDATE (Yellow)
-    val Update = Color(0xFFFFC800)
-    val UpdateShadow = Color(0xFFE0A800)
-    val UpdateSoft = Color(0xFFFFF7D6)
+    // UPDATE (Accent 시바 오렌지)
+    val Update = Color(0xFFE89A4A)
+    val UpdateShadow = Color(0xFFC9803A)
+    val UpdateSoft = Color(0xFFFCEBD6)
 
-    // CLOSING (Red)
-    val Closing = Color(0xFFFF4B4B)
-    val ClosingShadow = Color(0xFFE63D3D)
-    val ClosingSoft = Color(0xFFFFE1E1)
+    // CLOSING (Alert 빨강)
+    val Closing = Color(0xFFF0533A)
+    val ClosingShadow = Color(0xFFD2432D)
+    val ClosingSoft = Color(0xFFFDEAE6)
 
-    // INFO (Blue)
-    val Info = Color(0xFF1CB0F6)
-    val InfoSoft = Color(0xFFE1F3FC)
+    // INFO (Primary 블루 재사용)
+    val Info = Color(0xFF4F6EF0)
+    val InfoSoft = Color(0xFFEAEEFE)
 
-    // Text
-    val Text = Color(0xFF3C3C3C)
-    val Text2 = Color(0xFF777777)
-    val Text3 = Color(0xFFAFAFAF)
+    // Text (ink)
+    val Text = Color(0xFF241F1B)
+    val Text2 = Color(0xFF8A8178)
+    val Text3 = Color(0xFFB5AEA4)
 
-    // Background
-    val Bg = Color(0xFFFFFFFF)
-    val Bg2 = Color(0xFFF7F8FA)
-    val Bg3 = Color(0xFFEFEFF1)
+    // Background (웜화이트 페이지 · 흰 카드 surface · 웜그레이)
+    val Bg = Color(0xFFFAF7F2)
+    val Bg2 = Color(0xFFFFFFFF)
+    val Bg3 = Color(0xFFEFEAE1)
 
     // Border
-    val Border = Color(0xFFE5E5E5)
-    val BorderDark = Color(0xFFD1D1D1)
+    val Border = Color(0xFFECE6DD)
+    val BorderDark = Color(0xFFDCD4C8)
 }
 
 // ACTIVE = 일반 진행중(NEW/UPDATE/CLOSING 아님). 메인 토글엔 안 뜨고 찾아보기·검색에 노출.

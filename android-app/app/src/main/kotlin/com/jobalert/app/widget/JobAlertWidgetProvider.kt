@@ -56,7 +56,7 @@ class JobAlertWidgetProvider : AppWidgetProvider() {
             val count = WidgetState.newCount(context)
             val expression = WidgetState.expression(context)
 
-            views.setImageViewBitmap(R.id.widget_mascot, MascotRenderer.render(expression, 160))
+            views.setImageViewBitmap(R.id.widget_mascot, MascotRenderer.render(context, expression, 160))
             when {
                 tiny -> {
                     views.setTextViewText(R.id.widget_count, if (count > 0) "$count" else "0")
