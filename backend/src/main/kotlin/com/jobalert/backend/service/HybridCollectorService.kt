@@ -34,13 +34,13 @@ class HybridCollectorService(
      * 이미 수집 중이면 false 반환(중복 방지). 시작했으면 true.
      */
     @Async
-    fun runDailyCollectionAsync() {
+    fun runDailyCollectionAsync(sourceFilter: Set<String>? = null) {
         if (!running.compareAndSet(false, true)) {
             log.warn("이미 수집 진행 중 — 비동기 트리거 무시")
             return
         }
         try {
-            runDailyCollection()
+            runDailyCollection(sourceFilter)
         } catch (ex: Exception) {
             log.error("비동기 수집 실패", ex)
         } finally {
@@ -48,13 +48,19 @@ class HybridCollectorService(
         }
     }
 
-    fun runDailyCollection(): CollectionResult {
-        log.info("hybrid collection start. active sources = {}", sources.map { it.sourceId })
+    /**
+     * @param sourceFilter null이면 전체 소스. 지정하면 해당 sourceId만 수집(예: {"seoul"}).
+     *   만료 스윕은 수집한 소스에만 적용되므로(seenBySource 기준) 다른 소스 공고는 건드리지 않는다.
+     *   트라이얼 박스 OOM 회피용 — 가벼운 단일 소스만 빠르게 재수집할 때 쓴다.
+     */
+    fun runDailyCollection(sourceFilter: Set<String>? = null): CollectionResult {
+        val targets = sources.filter { sourceFilter == null || it.sourceId in sourceFilter }
+        log.info("hybrid collection start. target sources = {}", targets.map { it.sourceId })
 
         val perSource = mutableMapOf<String, Int>()
         val all = mutableListOf<RawJobPosting>()
 
-        for (source in sources) {
+        for (source in targets) {
             val srcStart = System.currentTimeMillis()
             val jobs = try {
                 source.fetchAll()

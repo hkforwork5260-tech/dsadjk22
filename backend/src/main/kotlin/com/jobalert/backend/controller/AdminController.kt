@@ -33,14 +33,18 @@ class AdminController(
      * 이미 수집 중이면 409.
      */
     @PostMapping("/collect")
-    fun collect(): ResponseEntity<Map<String, Any>> {
+    fun collect(@RequestParam(required = false) source: String?): ResponseEntity<Map<String, Any>> {
         if (collectorService.isRunning) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(mapOf("status" to "already_running", "message" to "수집이 이미 진행 중입니다."))
         }
-        collectorService.runDailyCollectionAsync()
+        // ?source=seoul 처럼 단일 소스만 수집 가능(쉼표로 여러 개). 미지정이면 전체.
+        // 가벼운 단일 소스 재수집으로 트라이얼 박스 OOM을 피할 때 쓴다.
+        val filter = source?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet()?.takeIf { it.isNotEmpty() }
+        collectorService.runDailyCollectionAsync(filter)
         return ResponseEntity.accepted()
-            .body(mapOf("status" to "started", "message" to "수집을 시작했습니다. 진행 상황은 서버 로그를 확인하세요."))
+            .body(mapOf("status" to "started", "source" to (filter?.joinToString(",") ?: "all"),
+                "message" to "수집을 시작했습니다. 진행 상황은 서버 로그를 확인하세요."))
     }
 
     /**
