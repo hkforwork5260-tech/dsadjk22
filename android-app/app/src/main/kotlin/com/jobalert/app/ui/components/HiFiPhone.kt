@@ -16,43 +16,16 @@ import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
 
 /**
- * 안드로이드 시스템 상태바 영역. 디자인 일관성을 위해 앱 내부에서 30dp 영역을 그림.
- * 프로덕션에서는 시스템 상태바를 그대로 쓰고 이 컴포넌트는 제거 가능.
+ * (프로토타입 잔재) 가짜 시스템 상태바였음 — 실기기에선 OS 상태바를 쓰고,
+ * MainActivity 루트에서 systemBars 인셋을 이미 적용하므로 아무것도 그리지 않는다.
+ * 호출부 23곳을 한 번에 정리하기 위해 시그니처만 유지하고 본문을 비웠다.
  */
 @Composable
 fun HiFiStatusBar(
     modifier: Modifier = Modifier,
     darkText: Boolean = true,
 ) {
-    val color = if (darkText) HiFiColors.Text else Color.White
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(30.dp)
-            .padding(horizontal = 22.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text("9:41", style = HiFiType.caption.copy(fontSize = 13.sp), color = color)
-        Spacer(Modifier.weight(1f))
-        Text("●●●", style = HiFiType.body2.copy(fontSize = 12.sp), color = color)
-        Spacer(Modifier.width(6.dp))
-        Text("📶", style = HiFiType.body2.copy(fontSize = 12.sp))
-        Spacer(Modifier.width(6.dp))
-        Box(
-            Modifier
-                .width(22.dp)
-                .height(11.dp)
-                .border(1.4f.dp, color, RoundedCornerShape(2.dp))
-                .padding(1.dp),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxHeight()
-                    .fillMaxWidth(0.8f)
-                    .background(color)
-            )
-        }
-    }
+    // no-op
 }
 
 /**
@@ -89,25 +62,13 @@ fun HiFiAppBar(
 }
 
 /**
- * 안드로이드 제스처 nav pill (화면 하단 가로선).
+ * (프로토타입 잔재) 가짜 하단 제스처 막대였음 — 실기기 OS 제스처바를 쓰고 루트 인셋으로
+ * 처리되므로 아무것도 그리지 않는다. 시그니처만 유지하고 본문을 비웠다.
  */
 @Composable
 fun HiFiGestureNav(
     modifier: Modifier = Modifier,
     light: Boolean = false,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(22.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            Modifier
-                .width(120.dp)
-                .height(4.dp)
-                .clip(RoundedCornerShape(2.dp))
-                .background(if (light) Color.White.copy(alpha = 0.8f) else HiFiColors.Text)
-        )
-    }
+    // no-op
 }

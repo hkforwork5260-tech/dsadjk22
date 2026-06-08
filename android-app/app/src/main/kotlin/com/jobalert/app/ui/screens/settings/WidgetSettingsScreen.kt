@@ -15,10 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -26,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
+import com.jobalert.app.widget.requestPinJobAlertWidget
 
 private enum class WidgetSize(val label: String, val widthRatio: Float, val heightDp: Dp) {
     Small("Small (2×1)", 0.45f, 80.dp),
@@ -35,11 +38,12 @@ private enum class WidgetSize(val label: String, val widthRatio: Float, val heig
 
 /**
  * 바탕화면 위젯 설정.
- * v0.1: 미리보기 + 크기 선택 UI만. 실제 AppWidgetProvider 등록은 v0.2.
+ * 미리보기 + 크기 선택 + "지금 추가하기"(requestPinAppWidget 한 번 탭 추가). 미지원 런처는 수동 안내.
  */
 @Composable
 fun WidgetSettingsScreen(onBack: () -> Unit) {
     var size by remember { mutableStateOf(WidgetSize.Medium) }
+    val context = LocalContext.current
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -131,14 +135,23 @@ fun WidgetSettingsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(22.dp))
             HiFiButton(
                 text = "지금 추가하기",
-                onClick = { /* v0.2 — AppWidgetManager.requestPinAppWidget */ },
+                onClick = {
+                    val requested = context.requestPinJobAlertWidget()
+                    if (!requested) {
+                        Toast.makeText(
+                            context,
+                            "이 홈 화면(런처)은 한 번 탭 추가를 지원하지 않아요. 위 안내처럼 홈 화면을 길게 눌러 추가해주세요.",
+                            Toast.LENGTH_LONG,
+                        ).show()
+                    }
+                },
                 variant = HiFiButtonVariant.Primary,
                 size = HiFiButtonSize.Lg,
                 fullWidth = true,
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                "* v0.2에서 한 번 탭으로 추가 가능해질 예정이에요",
+                "* 지원하는 홈 화면에선 팝업 '추가' 한 번으로 끝나요. 안 되면 위 3단계로 추가하세요.",
                 style = HiFiType.body2.copy(fontSize = 11.sp),
                 color = HiFiColors.Text3,
                 modifier = Modifier.align(Alignment.CenterHorizontally),

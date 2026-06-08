@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
+import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
@@ -62,7 +63,11 @@ fun DiscoverScreen(
     onTabClick: (HomeTab) -> Unit,
 ) {
     val viewModel: DiscoverViewModel = viewModel()
-    LaunchedEffect(Unit) { viewModel.load() }
+    // 메인과 동일하게 ActiveFilter(직군·경력·규모)를 구독해 변경 시 재조회. (이전엔 필터 무시)
+    val cats = ActiveFilter.categories
+    val exps = ActiveFilter.experiences
+    val szs = ActiveFilter.sizes
+    LaunchedEffect(cats, exps, szs) { viewModel.load(cats, exps, szs) }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
     val savedJobIds by viewModel.savedJobIds.collectAsStateWithLifecycle()
@@ -70,11 +75,7 @@ fun DiscoverScreen(
     val orderedJobs = remember(jobs) { jobs.sortedBy { it.id in SeenJobs.seenIds } }
     val pageCount = orderedJobs.size + 1
     val pagerState = rememberPagerState(pageCount = { pageCount })
-    // 현재 페이지 공고를 '본 것'으로 기록 → 다음 진입 시 후순위.
-    LaunchedEffect(pagerState.currentPage, orderedJobs) {
-        val p = pagerState.currentPage
-        if (p < orderedJobs.size) SeenJobs.markSeen(orderedJobs[p].id)
-    }
+    // '본 것' 기록은 스크롤이 아니라 '자세히 보기'로 실제 진입했을 때만(onOpenDetail). → 직접 본 공고만 후순위.
 
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
@@ -104,7 +105,7 @@ fun DiscoverScreen(
                     onToggleFav = { j.companyId?.let { viewModel.toggleFavorite(it) } },
                     onToggleSave = { viewModel.toggleSave(j.id) },
                     onShare = onShare,
-                    onOpenDetail = { onJobClick(j.id) },
+                    onOpenDetail = { SeenJobs.markSeen(j.id); onJobClick(j.id) },
                     pageIndex = page,
                     pageTotal = orderedJobs.size,
                 )
@@ -169,12 +170,14 @@ private fun ReelsJobCard(
                 }
             }
 
-            // 직무 + D-day
-            Column(Modifier.padding(horizontal = 20.dp)) {
+            // 직무 + D-day. 우측 액션버튼 영역(약 72dp)을 비워 글자가 버튼 밑으로 안 파고들게.
+            Column(Modifier.padding(start = 20.dp, end = 72.dp)) {
                 Text(
                     job.role,
-                    style = HiFiType.display.copy(fontSize = 26.sp, lineHeight = 30.sp),
+                    style = HiFiType.display.copy(fontSize = 20.sp, lineHeight = 25.sp),
                     color = HiFiColors.Text,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(Modifier.height(10.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -205,7 +208,7 @@ private fun ReelsJobCard(
             val hScroll = rememberScrollState()
             Row(
                 Modifier
-                    .padding(horizontal = 20.dp)
+                    .padding(start = 20.dp, end = 72.dp)
                     .horizontalScroll(hScroll),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
@@ -222,7 +225,7 @@ private fun ReelsJobCard(
                 Spacer(Modifier.height(16.dp))
                 Text(
                     job.description,
-                    modifier = Modifier.padding(horizontal = 20.dp),
+                    modifier = Modifier.padding(start = 20.dp, end = 72.dp),
                     style = HiFiType.body2.copy(fontSize = 14.sp, lineHeight = 21.sp),
                     color = HiFiColors.Text2,
                     maxLines = 4,

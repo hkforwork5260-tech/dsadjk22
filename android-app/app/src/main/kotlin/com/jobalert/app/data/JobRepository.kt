@@ -36,7 +36,8 @@ class JobRepository(
         sizes: List<String> = emptyList(),
     ): TodayFeed {
         val res = api.jobsToday(
-            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 50,
+            // 카운트(예: 945)에 비해 피드가 너무 적어 보이지 않게 넉넉히. 메인·찾아보기 공용.
+            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 120,
         )
         return TodayFeed(
             counts = res.counts.entries.associate { (k, v) -> kindOf(k) to v }

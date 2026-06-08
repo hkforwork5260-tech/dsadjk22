@@ -30,10 +30,11 @@ fun FilterScreen(
     onClose: () -> Unit,
     onApply: (FilterSelection) -> Unit,
 ) {
-    var jobs by remember { mutableStateOf(setOf(5, 6)) }
-    var sizes by remember { mutableStateOf(setOf("대기업", "공기업")) }
-    var experience by remember { mutableStateOf("신입") }
-    var locations by remember { mutableStateOf(setOf("서울", "경기/인천")) }
+    // 기본은 전체(아무 것도 미선택) — 고른 조건만 적용된다. (이전엔 더미 기본값이 강제 적용돼 필터가 이상하게 동작)
+    var jobs by remember { mutableStateOf(emptySet<Int>()) }
+    var sizes by remember { mutableStateOf(emptySet<String>()) }
+    var experience by remember { mutableStateOf("") }
+    var locations by remember { mutableStateOf(emptySet<String>()) }
     var deadlines by remember { mutableStateOf(emptySet<String>()) }
 
     val sizesAll = listOf("대기업", "공기업", "중견", "중소", "외국계", "스타트업")

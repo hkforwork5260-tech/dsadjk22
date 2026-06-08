@@ -14,12 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
 import com.jobalert.app.ui.theme.HiFiType
+import com.jobalert.app.widget.requestPinJobAlertWidget
 
 /**
  * 온보딩 ④ 위젯·알림 권한.
@@ -30,6 +32,7 @@ fun OnboardingWidgetScreen(
     onAllow: () -> Unit,
     onLater: () -> Unit,
 ) {
+    val context = LocalContext.current
     Column(Modifier.fillMaxSize().background(HiFiColors.Bg)) {
         HiFiStatusBar()
         Column(
@@ -94,7 +97,11 @@ fun OnboardingWidgetScreen(
 
             HiFiButton(
                 text = "알림 허용하고 위젯 추가",
-                onClick = onAllow,
+                onClick = {
+                    // 홈 화면 위젯 "한 번 탭 추가" 시스템 팝업 요청(런처 지원 시).
+                    context.requestPinJobAlertWidget()
+                    onAllow()
+                },
                 variant = HiFiButtonVariant.Primary,
                 size = HiFiButtonSize.Lg,
                 fullWidth = true,

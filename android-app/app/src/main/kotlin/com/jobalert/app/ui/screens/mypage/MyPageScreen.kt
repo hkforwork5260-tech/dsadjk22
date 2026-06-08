@@ -45,11 +45,8 @@ fun MyPageScreen(
         HiFiAppBar(
             title = "내 정보",
             action = {
-                Row {
-                    HiFiIconBtn(Icons.Outlined.NotificationsNone, "알림", onClick = onNotifHistory)
-                    Spacer(Modifier.width(6.dp))
-                    HiFiIconBtn(Icons.Outlined.Settings, "설정", onClick = { /* TODO */ })
-                }
+                // 설정(톱니바퀴)은 미구현이라 제거. 알림 히스토리만 노출.
+                HiFiIconBtn(Icons.Outlined.NotificationsNone, "알림", onClick = onNotifHistory)
             },
         )
 

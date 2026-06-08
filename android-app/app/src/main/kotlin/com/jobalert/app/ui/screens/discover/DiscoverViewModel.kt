@@ -25,9 +25,14 @@ class DiscoverViewModel : ViewModel() {
     private val _savedJobIds = MutableStateFlow<Set<String>>(emptySet())
     val savedJobIds: StateFlow<Set<String>> = _savedJobIds.asStateFlow()
 
-    fun load() {
+    fun load(
+        categories: List<String> = emptyList(),
+        experiences: List<String> = emptyList(),
+        sizes: List<String> = emptyList(),
+    ) {
         viewModelScope.launch {
-            runCatching { repository.todayFeed().jobs }.onSuccess { _jobs.value = it }
+            runCatching { repository.todayFeed(categories, experiences, sizes).jobs }
+                .onSuccess { _jobs.value = it }
         }
         viewModelScope.launch {
             runCatching { repository.favorites().companies.map { it.company.id }.toSet() }
