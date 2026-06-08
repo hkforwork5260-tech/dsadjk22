@@ -64,6 +64,11 @@ class JobService(
             jobRepository.findAllByKindAndIsActiveTrue(kind, pool)
         }
 
+        // 마감 지난 공고 제외(상시=null은 유지). 진입 시각(now) 기준이라, 오전엔 열려 있던 게
+        // 오후엔 마감됐으면 자동으로 빠진다. (앱이 진입할 때마다 today를 다시 호출)
+        val nowOdt = OffsetDateTime.now(clock)
+        jobs = jobs.filter { it.deadline == null || !it.deadline!!.isBefore(nowOdt) }
+
         // 회사 정보: 규모 필터·회사 다양성에 모두 필요하므로 한 번에 로드(N+1 회피).
         val companies = loadCompanies(jobs)
 
@@ -293,7 +298,7 @@ class JobService(
         if (firstSeen == todayKst) return "NEW"
         job.deadline?.atZoneSameInstant(kst)?.toLocalDate()?.let { dl ->
             val d = java.time.temporal.ChronoUnit.DAYS.between(todayKst, dl)
-            if (d in 0..7) return "CLOSING"
+            if (d in 0..3) return "CLOSING"   // 마감임박 = D-3 이내
         }
         return if (job.kind == "UPDATE") "UPDATE" else "ACTIVE"
     }
