@@ -23,13 +23,29 @@ class MainViewModel @JvmOverloads constructor(
     private val _state = MutableStateFlow<MainUiState>(MainUiState.Loading)
     val state: StateFlow<MainUiState> = _state.asStateFlow()
 
-    // 화면이 LaunchedEffect(필터)로 load를 호출한다(진입·필터변경 시).
+    // 마지막 성공 응답의 필터 키 + 시각. 같은 필터로 TTL 이내 재진입이면 재요청을 생략(즉시 표시).
+    private data class FeedKey(
+        val cats: List<String>, val exps: List<String>, val szs: List<String>, val deadlineDays: Int,
+    )
+    private var cachedKey: FeedKey? = null
+    private var cachedAt: Long = 0L
+
+    /**
+     * 화면이 LaunchedEffect(필터)·ON_RESUME으로 호출. 같은 필터 & 이미 Success & TTL 이내면 재요청 생략
+     * → 탭 왕복·잠깐 복귀 시 네트워크 0(즉시). 필터가 바뀌면 키가 달라져 자동 재조회(캐시 무효화).
+     * [force]=true(명시적 '다시 시도')면 캐시 무시.
+     */
     fun load(
         categories: List<String> = emptyList(),
         experiences: List<String> = emptyList(),
         sizes: List<String> = emptyList(),
         deadlineDays: Int = -1,
+        force: Boolean = false,
     ) {
+        val key = FeedKey(categories, experiences, sizes, deadlineDays)
+        val fresh = System.currentTimeMillis() - cachedAt < TTL_MS
+        if (!force && key == cachedKey && _state.value is MainUiState.Success && fresh) return
+
         _state.value = MainUiState.Loading
         viewModelScope.launch {
             // 무료 박스 cold start(쉬다 깨어나는 첫 요청)로 타임아웃/502 나면 자동 재시도 — 박스가
@@ -40,6 +56,8 @@ class MainViewModel @JvmOverloads constructor(
                     _state.value = MainUiState.Success(
                         repository.todayFeed(categories, experiences, sizes, deadlineDays),
                     )
+                    cachedKey = key
+                    cachedAt = System.currentTimeMillis()
                     return@launch
                 } catch (e: Exception) {
                     lastError = e
@@ -48,6 +66,10 @@ class MainViewModel @JvmOverloads constructor(
             }
             _state.value = MainUiState.Error(lastError?.message ?: "공고를 불러오지 못했어요")
         }
+    }
+
+    companion object {
+        private const val TTL_MS = 5 * 60 * 1000L  // 5분: 그 이내 재진입은 캐시, 지나면 ON_RESUME이 재조회(마감 반영)
     }
 }
 

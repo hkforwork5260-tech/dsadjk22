@@ -29,7 +29,12 @@ class DiscoverViewModel : ViewModel() {
     private val _isLoaded = MutableStateFlow(false)
     val isLoaded: StateFlow<Boolean> = _isLoaded.asStateFlow()
 
-    fun load() {
+    /**
+     * 찾아보기 피드 로드. 이미 로드됐으면(세션 내 재진입) 재요청 생략 → 탭 왕복 시 즉시 표시.
+     * [force]=true면 새로 받아 셔플(명시적 새로고침용).
+     */
+    fun load(force: Boolean = false) {
+        if (!force && _isLoaded.value && _jobs.value.isNotEmpty()) return
         viewModelScope.launch {
             runCatching { repository.discoverFeed() }
                 // 탐색 피드는 매번 순서를 바꿔 다양하게(인스타 탐색 느낌). 백엔드도 랜덤 셔플하지만

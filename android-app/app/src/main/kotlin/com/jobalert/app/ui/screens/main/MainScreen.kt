@@ -131,7 +131,7 @@ fun MainScreen(
                         color = HiFiColors.Brand,
                         modifier = Modifier
                             .clip(CircleShape)
-                            .clickable { viewModel.load() }
+                            .clickable { viewModel.load(cats, exps, szs, dday, force = true) }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
