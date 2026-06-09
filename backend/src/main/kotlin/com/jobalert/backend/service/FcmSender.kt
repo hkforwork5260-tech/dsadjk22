@@ -9,18 +9,24 @@ import com.google.firebase.messaging.Notification
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.io.InputStream
 
 /**
- * FCM 푸시 발송기. 서비스 계정 키(jobalert.fcm.credentials-path)가 있고 enabled일 때만 초기화.
+ * FCM 푸시 발송기. 서비스 계정 키가 있고 enabled일 때만 초기화.
  *
  * 키 없거나 비활성이면 [isEnabled]=false, [sendToToken]은 no-op(null). → 키 준비 전에도 앱은 정상 동작.
- * 활성화: FCM_ENABLED=true + FCM_CREDENTIALS_PATH(기본 secrets/fcm-service-account.json).
+ * 활성화: FCM_ENABLED=true + 아래 둘 중 하나로 키 제공.
+ *  - 클라우드(Railway 등): FCM_CREDENTIALS_JSON 에 서비스계정 JSON 통째를 넣음(파일 못 올리는 환경용).
+ *  - 로컬: FCM_CREDENTIALS_PATH(기본 secrets/fcm-service-account.json) 파일 경로.
+ * 둘 다 있으면 JSON 우선.
  */
 @Component
 class FcmSender(
     @Value("\${jobalert.fcm.enabled:false}") private val enabled: Boolean,
     @Value("\${jobalert.fcm.credentials-path:secrets/fcm-service-account.json}") private val credentialsPath: String,
+    @Value("\${jobalert.fcm.credentials-json:}") private val credentialsJson: String,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val app: FirebaseApp? = initApp()
@@ -32,14 +38,23 @@ class FcmSender(
             log.info("FCM 비활성(jobalert.fcm.enabled=false). 푸시 발송 생략.")
             return null
         }
-        val file = File(credentialsPath)
-        if (!file.exists()) {
-            log.warn("FCM 키 없음: {} — 푸시 발송 생략.", credentialsPath)
-            return null
+        val credentialStream: InputStream = when {
+            credentialsJson.isNotBlank() -> {
+                log.info("FCM 키 소스: 환경변수 JSON(FCM_CREDENTIALS_JSON)")
+                ByteArrayInputStream(credentialsJson.toByteArray(Charsets.UTF_8))
+            }
+            File(credentialsPath).exists() -> {
+                log.info("FCM 키 소스: 파일({})", credentialsPath)
+                File(credentialsPath).inputStream()
+            }
+            else -> {
+                log.warn("FCM 키 없음(FCM_CREDENTIALS_JSON 비었고 파일 {} 없음) — 푸시 발송 생략.", credentialsPath)
+                return null
+            }
         }
         return try {
             val options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(file.inputStream()))
+                .setCredentials(GoogleCredentials.fromStream(credentialStream))
                 .build()
             val app = if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options)

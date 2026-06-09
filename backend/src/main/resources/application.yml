@@ -68,9 +68,11 @@ jobalert:
     evening-cron: "0 0 12 * * *"  # 12:00 UTC = 21:00 KST
     enabled: ${PUSH_ENABLED:false}
   fcm:
-    # FCM 푸시 발송. 서비스 계정 키 필요(secrets/, gitignore). 활성화: FCM_ENABLED=true
+    # FCM 푸시 발송. 활성화: FCM_ENABLED=true
+    # 키 제공: 클라우드는 FCM_CREDENTIALS_JSON(서비스계정 JSON 통째), 로컬은 FCM_CREDENTIALS_PATH(파일). JSON 우선.
     enabled: ${FCM_ENABLED:false}
     credentials-path: ${FCM_CREDENTIALS_PATH:secrets/fcm-service-account.json}
+    credentials-json: ${FCM_CREDENTIALS_JSON:}
   admin:
     # /api/v1/admin/* 보호 토큰. 설정하면 X-Admin-Token 헤더 일치를 요구(불일치 401).
     # 빈값(미설정)이면 무인증 개방 — 로컬 개발용. 프로덕션(Railway)은 반드시 ADMIN_TOKEN 설정.
