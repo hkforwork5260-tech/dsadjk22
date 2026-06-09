@@ -103,6 +103,13 @@
 ## 현재 상태
 
 ### ✅ 완료
+- **★★ FCM 푸시 가동 + 수집 OOM 무료해결 + NEW 규칙 재설계 (2026-06-09 v2)** — 상세 `memory/session_end_2026-06-09_v2_push_collect.md`. 핵심:
+  - **FCM 푸시 완전 가동**: `FcmSender`에 **`FCM_CREDENTIALS_JSON`**(서비스계정 JSON 통째) 환경변수 주입 추가(클라우드는 파일 못 올림). Railway에 `PUSH_ENABLED=true`·`FCM_ENABLED=true`·`FCM_CREDENTIALS_JSON` 설정 → **테스트 푸시 폰 실제 도착**. 진단 `GET /admin/push-status`(fcmEnabled·기기수·pushEnabled). digest-all `@Async`(202).
+  - **수집 OOM 무료해결(페이지 스트리밍)**: 공공기관(목록500+본문)을 한 번에 메모리 적재→OOM이던 것을 **페이지(100건) 받고-적재-비우기**로. `JobSource.fetchInBatches`(기본 통째, 공공기관 override 페이지emit) + `persist(sweep=false)` 배치적재 + 소스 끝나면 `sweepExpiredForSource` **만료 분리**. 완전다운(0/18)→회복가능(13/20). 중간 502는 새벽수집이라 무관·백그라운드 완료.
+  - **수집 06·18시 이동 + 소스 분리**: `cron-light`(greenhouse·seoul 06/18시) + `cron-heavy`(공공기관 30분뒤 단독). 아침9시 알림에 그날 첫등장 담기게.
+  - **오늘 탭 NEW 재설계(안드)**: 관심 설정 **당일=조건 맞는 전체**(스냅샷)·**다음날부터=신규만**. 공고별 seen 기록 X, **"관심 설정일" 날짜 하나만** 저장(`ActiveFilter.showAllToday`). 알림은 항상 신규(서버는 seen 모름). 알림 직군+규모 개인화는 **이미 완성**돼 있던 것 확인.
+  - **함정**: ①**Railway 변수 표시 false여도 실제는 true**일 수 있음→`/admin/push-status`로 확인 ②공공기관 소스ID=**`public-institution`**(`pubinst` 아님) ③무료박스는 무거운 조회(limit3000)도 502.
+  - 커밋(백엔드): `1cabbaf`·`8e9cf42`·`e1e88a5`·`800b216`·`ff3ab3d`·`69cae74`. 안드 NEW `b29faab`·`8a9664b`(push됨; 폰 반영은 APK 설치 필요).
 - **★★ 리브랜딩 + UX 40여건 + 분류91% + 502대응 + keep-alive (2026-06-09)** — 상세는 `memory/session_end_2026-06-09.md` + 저장소 루트 `PROJECT_HISTORY.md`(제작 전 과정 기록). 핵심:
   - **리브랜딩**: 코랄+고양이'꽁이' → **블루(#4F6EF0)+시바'단이'**. HiFiColors 전면 교체, 마스코트 Canvas→PNG 6표정(`res/drawable-nodpi/mascot_*`), 앱아이콘, 텍스트 '꽁이'→'단이'(안드+백엔드).
   - **원문 직링크 3소스 수정**: greenhouse embed(`job-boards.greenhouse.io/embed/job_app?for=토큰&token=id`), ALIO `mobile2021/recruit/recruitView.do?idx=`, 서울→고용24 `m.work24.go.kr ...wantedAuthNo=JO_REGIST_NO`. 기존행 Flyway V4.
