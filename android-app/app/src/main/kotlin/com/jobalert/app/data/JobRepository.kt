@@ -37,9 +37,9 @@ class JobRepository(
         deadlineDays: Int = -1,
     ): TodayFeed {
         val res = api.jobsToday(
-            // limit=1000은 '어디든(전체)'일 때 응답이 너무 커 무료 박스가 OOM/502 → 200으로 축소.
-            // (스크롤 피드라 200이면 충분. 헤더·칩 카운트는 백엔드가 전체 후보에서 세므로 정확함.)
-            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 200,
+            // 전체를 반환해 NEW·마감임박이 모두 담기게 한다(200 캡이면 회사 다양성 정렬에서 마감임박이
+            // 밀려 누락됐음). 본문 160자로 잘린 덕에 1500개도 ~793KB·3초로 502 없이 응답(실측 2026-06-09).
+            kind = null, categories = categories, experiences = experiences, sizes = sizes, limit = 1500,
             deadlineDays = deadlineDays.takeIf { it >= 0 },   // -1=전체 → null
         )
         return TodayFeed(

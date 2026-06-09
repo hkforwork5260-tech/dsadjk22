@@ -22,8 +22,8 @@ object WidgetUpdater {
                 val cats = prefs.getString("filter_categories", "").orEmpty()   // 관심 직군(콤마)
                 val sizes = prefs.getString("filter_sizes", "").orEmpty()        // 관심 규모(콤마)
                 val deviceId = prefs.getString("device_id", null)
-                // '오늘' 탭과 동일 기준으로 세려면 공고 목록이 필요(안 본 공고 포함). limit=200.
-                val sb = StringBuilder("$BASE?limit=200")
+                // '오늘' 탭과 동일 기준(전체 반환)으로 세야 숫자가 일치. limit=1500(전체, 502 없음·실측).
+                val sb = StringBuilder("$BASE?limit=1500")
                 if (cats.isNotBlank()) sb.append("&categories=").append(cats)
                 if (sizes.isNotBlank()) sb.append("&sizes=").append(sizes)
                 val conn = (URL(sb.toString()).openConnection() as HttpURLConnection).apply {
