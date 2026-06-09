@@ -103,6 +103,11 @@
 ## 현재 상태
 
 ### ✅ 완료
+- **★★ 로딩 속도 개선 + 서버 크래시 복구 (2026-06-10)** — 상세 `memory/session_end_2026-06-10_loading_cache.md`. 핵심:
+  - **목록 경량화**(`9ed0aa9`): today limit 1500(전체)로 응답↑→로딩↑ 대응. `JobMapper.DtoScope`(FULL/TODAY/SEARCH) — 홈·검색은 본문·태그·급여·학력·직군 제거(지역명·신입접두 위해 location·experience만), 찾아보기 풀 유지. **today 790KB→431KB·0.93초**. 앱 무수정(coerceInputValues).
+  - **앱 캐시**: 메모리 캐시(`b069c13`, MainVM 필터키+TTL 5분 → 탭 왕복 즉시) + **영속 캐시 ⭐**(`bcda1ec`, `FeedCache`+stale-while-revalidate, `Job`·`JobKind`·`TodayFeed` @Serializable → **서버가 죽어도 마지막 화면 즉시 표시** 후 백그라운드 갱신).
+  - **서버 크래시 복구**: 검증 부하+재배포로 OOM 4회 크래시 루프(health 000) → Railway **Restart**로 복구(코드 문제 아님, OOM 잔여).
+  - **★ 교훈**: ①keep-alive(UptimeRobot)는 **sleep 방지지 OOM 방지 아님** ②무료 박스는 무거운 호출 연속·부팅 직후에 약함(검증도 가볍게) ③**영속 캐시가 박스 불안정의 실질 방어**(박스 죽어도 앱 빈 화면 X) ④출시 시 박스 유료화로 근본 해결.
 - **★★ FCM 푸시 가동 + 수집 OOM 무료해결 + NEW 규칙 재설계 (2026-06-09 v2)** — 상세 `memory/session_end_2026-06-09_v2_push_collect.md`. 핵심:
   - **FCM 푸시 완전 가동**: `FcmSender`에 **`FCM_CREDENTIALS_JSON`**(서비스계정 JSON 통째) 환경변수 주입 추가(클라우드는 파일 못 올림). Railway에 `PUSH_ENABLED=true`·`FCM_ENABLED=true`·`FCM_CREDENTIALS_JSON` 설정 → **테스트 푸시 폰 실제 도착**. 진단 `GET /admin/push-status`(fcmEnabled·기기수·pushEnabled). digest-all `@Async`(202).
   - **수집 OOM 무료해결(페이지 스트리밍)**: 공공기관(목록500+본문)을 한 번에 메모리 적재→OOM이던 것을 **페이지(100건) 받고-적재-비우기**로. `JobSource.fetchInBatches`(기본 통째, 공공기관 override 페이지emit) + `persist(sweep=false)` 배치적재 + 소스 끝나면 `sweepExpiredForSource` **만료 분리**. 완전다운(0/18)→회복가능(13/20). 중간 502는 새벽수집이라 무관·백그라운드 완료.
