@@ -60,9 +60,9 @@ jobalert:
       service-key: ${JOBALERT_SEOUL_KEY:sample}
       max-rows: ${SEOUL_MAX_ROWS:1000}
   collector:
-    # Daily 08:00 KST = 23:00 UTC. cron zone=UTC(스케줄러에 명시).
-    # 아침 9시 다이제스트(morning=오늘 첫등장)에 그날 수집분이 담기도록 알림 1시간 전에 수집.
-    cron: "0 0 23 * * *"
+    # 하루 2회: 06:00 KST(=21:00 UTC) + 18:00 KST(=09:00 UTC). cron zone=UTC(스케줄러에 명시).
+    # 06시 수집 → 09시 아침 알림에 그날 첫등장 담김. 18시 수집 → 오후 신규를 '오늘 첫등장'에 추가.
+    cron: "0 0 9,21 * * *"
     enabled: ${COLLECTOR_ENABLED:false}
   push:
     morning-cron: "0 0 0 * * *"   # 00:00 UTC = 09:00 KST
