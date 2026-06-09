@@ -19,4 +19,13 @@ interface JobSource {
 
     /** 이 소스가 커버하는 모든 회사의 공고를 가져온다. */
     fun fetchAll(): List<RawJobPosting>
+
+    /**
+     * 배치 단위로 공고를 흘려보낸다(메모리 피크 분산). 기본 구현은 [fetchAll]을 한 배치로 emit.
+     * 본문까지 받아 무거운 소스(공공기관)는 override해서 페이지마다 emit → 적재 후 비우기로 OOM 회피.
+     * onBatch는 받은 배치를 즉시 적재(만료 스윕 없이)하는 콜백.
+     */
+    fun fetchInBatches(onBatch: (List<RawJobPosting>) -> Unit) {
+        onBatch(fetchAll())
+    }
 }

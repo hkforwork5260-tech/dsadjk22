@@ -19,10 +19,17 @@ class CollectorScheduler(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @Scheduled(cron = "\${jobalert.collector.cron}", zone = "UTC")
-    fun runDaily() {
-        log.info("CollectorScheduler.runDaily 트리거 — per-source 순차 수집")
-        // 전체를 한 번에 받으면 무료 박스 OOM → 소스별 순차(메모리 피크 분산)로 수집.
-        collectorService.runDailyCollectionPerSourceAsync()
+    // 가벼운 소스(greenhouse, seoul)는 06·18시에 순차 수집.
+    @Scheduled(cron = "\${jobalert.collector.cron-light}", zone = "UTC")
+    fun runLightSources() {
+        log.info("수집 트리거 — 가벼운 소스(greenhouse, seoul) 순차")
+        collectorService.runDailyCollectionPerSourceAsync(setOf("greenhouse", "seoul"))
+    }
+
+    // 무거운 공공기관(상세 500호출)은 30분 뒤 단독 수집 — 다른 소스 메모리 누적 없는 깨끗한 상태에서.
+    @Scheduled(cron = "\${jobalert.collector.cron-heavy}", zone = "UTC")
+    fun runHeavySource() {
+        log.info("수집 트리거 — 공공기관(public-institution) 단독")
+        collectorService.runDailyCollectionAsync(setOf("public-institution"))
     }
 }

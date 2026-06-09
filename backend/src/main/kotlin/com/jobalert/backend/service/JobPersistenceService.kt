@@ -46,7 +46,12 @@ class JobPersistenceService(
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Transactional
-    fun persist(postings: List<RawJobPosting>): PersistResult {
+    /**
+     * @param sweep true면 이번에 안 본 공고를 만료 처리(단일 호출 완결 수집용). false면 만료 스윕을 건너뛴다
+     *   — 페이지 단위 스트리밍 수집에서 배치마다 부를 때 사용(아직 다 안 받았으니 만료시키면 안 됨).
+     *   이 경우 모든 배치 후 [sweepExpiredForSource]를 한 번 호출해 만료를 처리한다.
+     */
+    fun persist(postings: List<RawJobPosting>, sweep: Boolean = true): PersistResult {
         val now = OffsetDateTime.now(clock)
 
         // 같은 배치 안에서 동일 회사를 두 번 INSERT 하지 않도록 정규화명 → companyId 캐시.
@@ -83,7 +88,7 @@ class JobPersistenceService(
             }
         }
 
-        val expired = sweepExpired(seenBySource, now)
+        val expired = if (sweep) sweepExpired(seenBySource, now) else 0
 
         val result = PersistResult(
             inserted = inserted,
@@ -245,6 +250,19 @@ class JobPersistenceService(
             DiffOutcome.UNCHANGED -> "ACTIVE"
         }
         return outcome
+    }
+
+    /**
+     * 단일 소스의 만료 스윕 — 페이지 스트리밍 수집에서 모든 배치 적재 후 한 번 호출.
+     * [seenExternalIds]는 이번 수집에서 그 소스로 받은 전체 externalId. 비어 있으면(0건) 스윕 안 함(안전장치).
+     */
+    @org.springframework.transaction.annotation.Transactional
+    fun sweepExpiredForSource(source: String, seenExternalIds: Set<String>): Int {
+        if (seenExternalIds.isEmpty()) {
+            log.info("sweepExpiredForSource: source={} 0건 — 만료 스윕 생략(안전장치)", source)
+            return 0
+        }
+        return sweepExpired(mapOf(source to seenExternalIds), OffsetDateTime.now(clock))
     }
 
     /** 이번 수집에서 데이터를 준 소스에 한해, 더 이상 안 보이는 active 공고를 닫는다. */

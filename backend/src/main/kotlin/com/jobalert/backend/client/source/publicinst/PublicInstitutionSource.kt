@@ -63,6 +63,27 @@ class PublicInstitutionSource(
         return all
     }
 
+    /**
+     * 페이지(100건)마다 본문까지 받아 emit → 호출측이 즉시 적재하고 비운다. 메모리 피크를
+     * '500건 전체'가 아니라 '100건'으로 낮춰 무료 박스 OOM을 회피한다. (전체 한 번에 들면 박스가 죽음.)
+     */
+    override fun fetchInBatches(onBatch: (List<RawJobPosting>) -> Unit) {
+        if (serviceKey.isBlank()) {
+            log.warn("public-institution serviceKey 미설정 — 수집 건너뜀.")
+            return
+        }
+        for (page in 1..maxPages) {
+            val batch = fetchPage(page) ?: break
+            val raws = batch.mapNotNull(::toRawJob) // 이 페이지의 본문 포함 — 적재 후 GC 대상
+            if (raws.isNotEmpty()) {
+                log.info("public-institution page={} → onBatch {}건", page, raws.size)
+                onBatch(raws)
+            }
+            if (batch.size < pageSize) break // 마지막 페이지
+        }
+        log.info("public-institution.fetchInBatches 완료")
+    }
+
     private fun fetchPage(page: Int): List<PublicInstitutionJob>? {
         // serviceKey는 hex(특수문자 없음)라 추가 인코딩 불필요. build(true)로 이중 인코딩 방지.
         val uri = UriComponentsBuilder.fromUriString(baseUrl)

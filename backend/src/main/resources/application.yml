@@ -60,9 +60,10 @@ jobalert:
       service-key: ${JOBALERT_SEOUL_KEY:sample}
       max-rows: ${SEOUL_MAX_ROWS:1000}
   collector:
-    # 하루 2회: 06:00 KST(=21:00 UTC) + 18:00 KST(=09:00 UTC). cron zone=UTC(스케줄러에 명시).
-    # 06시 수집 → 09시 아침 알림에 그날 첫등장 담김. 18시 수집 → 오후 신규를 '오늘 첫등장'에 추가.
-    cron: "0 0 9,21 * * *"
+    # 무료 박스 OOM 회피: 가벼운 소스와 무거운 공공기관을 다른 시각에 분리 수집.
+    # cron zone=UTC. 06·18시 KST에 가벼운 소스, 그 30분 뒤 공공기관 단독(깨끗한 메모리 상태).
+    cron-light: "0 0 9,21 * * *"    # 06:00·18:00 KST — greenhouse, seoul (순차)
+    cron-heavy: "0 30 9,21 * * *"   # 06:30·18:30 KST — pubinst 단독(제일 무거움)
     enabled: ${COLLECTOR_ENABLED:false}
   push:
     morning-cron: "0 0 0 * * *"   # 00:00 UTC = 09:00 KST

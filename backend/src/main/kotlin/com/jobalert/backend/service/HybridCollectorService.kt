@@ -30,7 +30,7 @@ class HybridCollectorService(
 
     companion object {
         /** per-source 순차 수집에서 소스 간 대기(ms). 메모리/GC 회복으로 OOM 피크 분산. */
-        private const val SOURCE_GAP_MS = 30_000L
+        private const val SOURCE_GAP_MS = 60_000L
     }
 
     /**
@@ -60,13 +60,13 @@ class HybridCollectorService(
      * 한 소스가 실패해도 다음 소스는 계속.
      */
     @Async
-    fun runDailyCollectionPerSourceAsync() {
+    fun runDailyCollectionPerSourceAsync(sourceFilter: Set<String>? = null) {
         if (!running.compareAndSet(false, true)) {
             log.warn("이미 수집 진행 중 — per-source 트리거 무시")
             return
         }
         try {
-            val ids = sources.map { it.sourceId }
+            val ids = sources.map { it.sourceId }.filter { sourceFilter == null || it in sourceFilter }
             log.info("per-source 순차 수집 시작: {}", ids)
             for (sid in ids) {
                 try {
@@ -104,40 +104,47 @@ class HybridCollectorService(
         log.info("hybrid collection start. target sources = {}", targets.map { it.sourceId })
 
         val perSource = mutableMapOf<String, Int>()
-        val all = mutableListOf<RawJobPosting>()
+        var totalFetched = 0
+        var inserted = 0; var updated = 0; var closing = 0; var unchanged = 0
+        var expired = 0; var companiesCreated = 0; var skippedNoCompany = 0
 
         for (source in targets) {
             val srcStart = System.currentTimeMillis()
-            val jobs = try {
-                source.fetchAll()
+            val seen = HashSet<String>()   // 이 소스에서 이번에 본 externalId 전체 → 끝나고 만료 스윕에 사용
+            var count = 0
+            try {
+                // 배치(소스가 페이지 단위로 흘려보냄)마다 즉시 적재하고 비운다 — 메모리 피크를 한 배치치로.
+                // sweep=false: 아직 다 안 받았으니 만료 스윕은 미루고, 소스 끝난 뒤 한 번만 처리.
+                source.fetchInBatches { batch ->
+                    count += batch.size
+                    batch.forEach { seen.add(it.externalId) }
+                    val r = persistenceService.persist(batch, sweep = false)
+                    inserted += r.inserted; updated += r.updated; closing += r.closing
+                    unchanged += r.unchanged; companiesCreated += r.companiesCreated
+                    skippedNoCompany += r.skippedNoCompany
+                }
             } catch (ex: Exception) {
                 // best-effort: 한 소스가 통째로 터져도 나머지는 계속.
-                log.error("source={} 전체 실패(스킵)", source.sourceId, ex)
-                emptyList()
+                log.error("source={} 수집 실패(스킵)", source.sourceId, ex)
             }
-            perSource[source.sourceId] = jobs.size
-            all += jobs
-            log.info("source={} collected={} ({}ms)", source.sourceId, jobs.size, System.currentTimeMillis() - srcStart)
+            // 모든 배치 적재 후 이 소스만 만료 스윕(0건이면 내부에서 생략 — API 장애로 전체 닫는 사고 방지).
+            expired += persistenceService.sweepExpiredForSource(source.sourceId, seen)
+            perSource[source.sourceId] = count
+            totalFetched += count
+            log.info("source={} collected={} ({}ms)", source.sourceId, count, System.currentTimeMillis() - srcStart)
         }
 
-        // 소스 간 중복 제거 (같은 공고가 여러 소스에 잡히는 경우 대비). externalId는 소스 prefix 포함이라
-        // 보통 안 겹치지만, 향후 회사명+제목 기반 cross-source dedup은 Phase 3 정규화에서.
-        val deduped = all.distinctBy { it.externalId }
-
-        // 메모리까지 가져온 공고를 DB에 적재 + 어제 대비 diff 라벨링.
-        log.info("적재 시작: {}건 (DB upsert+diff)", deduped.size)
-        val persistStart = System.currentTimeMillis()
-        val persist = persistenceService.persist(deduped)
-        log.info("적재 완료: {}건 ({}ms)", deduped.size, System.currentTimeMillis() - persistStart)
-
-        log.info(
-            "hybrid collection end. perSource={} total={} deduped={} persist={}",
-            perSource, all.size, deduped.size, persist,
+        val persist = JobPersistenceService.PersistResult(
+            inserted = inserted, updated = updated, closing = closing, unchanged = unchanged,
+            expired = expired, companiesCreated = companiesCreated, skippedNoCompany = skippedNoCompany,
         )
+        log.info("hybrid collection end. perSource={} total={} persist={}", perSource, totalFetched, persist)
         return CollectionResult(
             perSourceCounts = perSource.toMap(),
-            totalFetched = all.size,
-            dedupedCount = deduped.size,
+            totalFetched = totalFetched,
+            // 배치 스트리밍은 소스 간 dedup을 생략(externalId는 소스 prefix 포함이라 충돌 거의 없고,
+            // 충돌해도 persist의 externalId upsert가 같은 row를 갱신해 흡수).
+            dedupedCount = totalFetched,
             persist = persist,
         )
     }
