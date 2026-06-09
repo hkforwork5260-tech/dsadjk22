@@ -35,17 +35,15 @@ object WidgetUpdater {
                 if (conn.responseCode == 200) {
                     val body = conn.inputStream.bufferedReader().use { it.readText() }
                     val arr = JSONObject(body).optJSONArray("jobs")
-                    val seen = prefs.getStringSet("seen_job_ids", emptySet()).orEmpty()
                     var newC = 0
                     var closing = 0
                     if (arr != null) {
                         for (i in 0 until arr.length()) {
                             val j = arr.getJSONObject(i)
                             val kind = j.optString("kind")
-                            val id = j.optString("id")
                             if (kind == "CLOSING") closing++
-                            // 오늘 NEW = 오늘 올라온(NEW) 또는 아직 안 본(마감임박·변경 제외).
-                            else if (kind == "NEW" || (id !in seen && kind != "UPDATE")) newC++
+                            // 새 공고 = 오늘(KST) 처음 올라온 것(NEW)만. 오늘·알림과 동일 기준(셋이 같은 숫자).
+                            else if (kind == "NEW") newC++
                         }
                     }
                     val topJob = prefs.getString("widget_top_job", "").orEmpty()

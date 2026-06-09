@@ -33,7 +33,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.jobalert.app.data.HelpState
 import com.jobalert.app.data.JobRepository
-import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.regionShort
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.screens.filter.ActiveFilter
@@ -75,12 +74,9 @@ fun MainScreen(
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
-            // 위젯 = '오늘' 탭과 동일 기준(오늘 올라온 or 아직 안 본 공고 / 마감임박 D-3).
-            // 위젯 자체 fetch(WidgetUpdater)도 같은 계산이라 값이 일치한다.
-            val seenIds = SeenJobs.seenIds
-            val newCount = f.jobs.count {
-                it.kind == JobKind.NEW || (it.id !in seenIds && it.kind != JobKind.CLOSING && it.kind != JobKind.UPDATE)
-            }
+            // 위젯·오늘·알림 통일 기준: '오늘(KST) 처음 올라온 공고'(서버 kind=NEW)만 센다.
+            // '안 본 공고'는 서버(알림)가 알 수 없어 셋을 못 맞추므로 새 공고 정의에서 제외.
+            val newCount = f.jobs.count { it.kind == JobKind.NEW }
             val closingCount = f.jobs.count { it.kind == JobKind.CLOSING }
             val topJob = f.jobs.firstOrNull()?.let { "${it.company} · ${it.role}" } ?: ""
             WidgetState.setSummary(context, newCount, closingCount, topJob)
@@ -99,7 +95,7 @@ fun MainScreen(
             lines = listOf(
                 "'관심'(직군·회사 규모)에 맞는 새 공고를 매일 모아줘요.",
                 "필터는 1회성이에요 — 앱을 닫으면 풀려요. 매일 받아보려면 마이페이지 '관심'에서 바꿔주세요.",
-                "NEW = 오늘 올라왔거나 아직 안 본 공고 · 마감임박 = 마감 3일 이내.",
+                "NEW = 오늘 새로 올라온 공고 · 마감임박 = 마감 3일 이내.",
             ),
             onDismiss = { showHelp = false },
         )
@@ -162,12 +158,9 @@ private fun ColumnScope.SuccessContent(
     onSectionChange: (JobKind) -> Unit,
     onJobClick: (String) -> Unit,
 ) {
-    // NEW = 오늘 올라온(서버 kind=NEW) 또는 아직 안 본 공고('새로 보이는' — 필터·관심 바꾸면 새 매칭이 여기로).
-    //   오늘 올라온 건 봐도 유지. 마감임박·변경은 NEW에서 제외(각 칸에서 봄).
-    val seen = SeenJobs.seenIds
-    val newList = feed.jobs.filter {
-        it.kind == JobKind.NEW || (it.id !in seen && it.kind != JobKind.CLOSING && it.kind != JobKind.UPDATE)
-    }
+    // NEW = 오늘(KST) 처음 올라온 공고(서버 kind=NEW)만. 위젯·알림과 동일 기준(셋이 같은 숫자).
+    //   오늘 올라온 건 봐도 하루 유지. 마감임박·변경은 각 칸에서 봄.
+    val newList = feed.jobs.filter { it.kind == JobKind.NEW }
     val updateList = feed.jobs.filter { it.kind == JobKind.UPDATE }
     // 마감임박은 마감 이른 순 정렬.
     val closingList = feed.jobs.filter { it.kind == JobKind.CLOSING }.sortedBy { j -> ddayNum(j.dday) }
