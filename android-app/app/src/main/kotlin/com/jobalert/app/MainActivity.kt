@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         DeviceId.init(applicationContext)      // 관심기업 등 기기ID 헤더 준비
         ActiveFilter.init(applicationContext)  // 저장된 관심 직군 필터 로드
         SeenJobs.init(applicationContext)      // 찾아보기 본 공고 기록(후순위 정렬)
+        com.jobalert.app.data.FeedCache.init(applicationContext)  // 오늘 피드 영속 캐시(서버 다운 시 즉시 표시)
         WidgetState.markVisited(applicationContext)  // 위젯 단이 표정용 방문 기록
         warmUpServer()   // 무료 박스가 잠들어 있을 수 있어, 온보딩/첫 화면 보는 동안 미리 깨운다.
         requestNotificationPermission()

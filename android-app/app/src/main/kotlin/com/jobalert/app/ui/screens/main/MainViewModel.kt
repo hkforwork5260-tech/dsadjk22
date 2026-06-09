@@ -2,6 +2,7 @@ package com.jobalert.app.ui.screens.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jobalert.app.data.FeedCache
 import com.jobalert.app.data.JobRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,25 +47,34 @@ class MainViewModel @JvmOverloads constructor(
         val fresh = System.currentTimeMillis() - cachedAt < TTL_MS
         if (!force && key == cachedKey && _state.value is MainUiState.Success && fresh) return
 
-        _state.value = MainUiState.Loading
+        // 화면이 아직 비어있으면(첫 진입·앱 재시작) 영속 캐시를 '즉시' 표시 → 서버를 안 기다림(무료 박스가
+        // cold/OOM이어도 빈 화면 X). 그 뒤 아래에서 백그라운드로 최신 갱신(stale-while-revalidate).
+        if (_state.value !is MainUiState.Success) {
+            val cached = FeedCache.loadToday()
+            _state.value = if (cached != null) MainUiState.Success(cached) else MainUiState.Loading
+        }
+
         viewModelScope.launch {
             // 무료 박스 cold start(쉬다 깨어나는 첫 요청)로 타임아웃/502 나면 자동 재시도 — 박스가
             // 깨어나면 다음 시도에서 성공한다. (이래서 '처음 한 번만 안 되던' 문제)
             var lastError: Exception? = null
             repeat(5) { attempt ->
                 try {
-                    _state.value = MainUiState.Success(
-                        repository.todayFeed(categories, experiences, sizes, deadlineDays),
-                    )
+                    val feed = repository.todayFeed(categories, experiences, sizes, deadlineDays)
+                    _state.value = MainUiState.Success(feed)
                     cachedKey = key
                     cachedAt = System.currentTimeMillis()
+                    FeedCache.saveToday(feed)   // 다음 cold start 때 즉시 보여줄 수 있게 영속 저장
                     return@launch
                 } catch (e: Exception) {
                     lastError = e
                     if (attempt < 4) kotlinx.coroutines.delay((attempt + 1) * 2000L)  // 2·4·6·8초 점증
                 }
             }
-            _state.value = MainUiState.Error(lastError?.message ?: "공고를 불러오지 못했어요")
+            // 네트워크 다 실패: 이미 캐시로 Success 표시 중이면 그대로 유지(에러 안 띄움). 캐시도 없으면 Error.
+            if (_state.value !is MainUiState.Success) {
+                _state.value = MainUiState.Error(lastError?.message ?: "공고를 불러오지 못했어요")
+            }
         }
     }
 

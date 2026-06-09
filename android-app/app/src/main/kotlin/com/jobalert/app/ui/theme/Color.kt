@@ -1,6 +1,7 @@
 package com.jobalert.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.Serializable
 
 /**
  * HiFi 디자인 토큰.
@@ -51,6 +52,7 @@ object HiFiColors {
 }
 
 // ACTIVE = 일반 진행중(NEW/UPDATE/CLOSING 아님). 메인 토글엔 안 뜨고 찾아보기·검색에 노출.
+@Serializable
 enum class JobKind { NEW, UPDATE, CLOSING, ACTIVE }
 
 fun JobKind.color(): Color = when (this) {

@@ -50,6 +50,7 @@ class JobRepository(
         )
     }
 
+    @kotlinx.serialization.Serializable
     data class TodayFeed(
         val counts: Map<JobKind, Int>,
         val jobs: List<Job>,

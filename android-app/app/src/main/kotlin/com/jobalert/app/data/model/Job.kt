@@ -1,10 +1,12 @@
 package com.jobalert.app.data.model
 
 import com.jobalert.app.ui.theme.JobKind
+import kotlinx.serialization.Serializable
 
 /**
  * 공고 모델. 백엔드 스펙 나오면 fromDto/toEntity 추가.
  */
+@Serializable
 data class Job(
     val id: String,
     val company: String,
