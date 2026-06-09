@@ -42,11 +42,15 @@ class AdminController(
                 .body(mapOf("status" to "already_running", "message" to "수집이 이미 진행 중입니다."))
         }
         // ?source=seoul 처럼 단일 소스만 수집 가능(쉼표로 여러 개). 미지정이면 전체.
-        // 가벼운 단일 소스 재수집으로 트라이얼 박스 OOM을 피할 때 쓴다.
         val filter = source?.split(",")?.map { it.trim() }?.filter { it.isNotEmpty() }?.toSet()?.takeIf { it.isNotEmpty() }
-        collectorService.runDailyCollectionAsync(filter)
+        if (filter == null) {
+            // 전체 수집은 소스별 순차(메모리 피크 분산)로 — 한 번에 받으면 무료 박스 OOM.
+            collectorService.runDailyCollectionPerSourceAsync()
+        } else {
+            collectorService.runDailyCollectionAsync(filter)
+        }
         return ResponseEntity.accepted()
-            .body(mapOf("status" to "started", "source" to (filter?.joinToString(",") ?: "all"),
+            .body(mapOf("status" to "started", "source" to (filter?.joinToString(",") ?: "all(per-source)"),
                 "message" to "수집을 시작했습니다. 진행 상황은 서버 로그를 확인하세요."))
     }
 

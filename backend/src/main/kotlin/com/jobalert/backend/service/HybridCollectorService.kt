@@ -28,6 +28,11 @@ class HybridCollectorService(
 
     val isRunning: Boolean get() = running.get()
 
+    companion object {
+        /** per-source 순차 수집에서 소스 간 대기(ms). 메모리/GC 회복으로 OOM 피크 분산. */
+        private const val SOURCE_GAP_MS = 30_000L
+    }
+
     /**
      * 수동 트리거용 비동기 수집. 즉시 반환하고 별도 스레드에서 [runDailyCollection] 실행.
      * 클라우드(Railway) 프록시는 동기 응답이 오래 걸리면 502를 내므로, HTTP는 바로 끊고 작업은 뒤에서 돌린다.
@@ -43,6 +48,37 @@ class HybridCollectorService(
             runDailyCollection(sourceFilter)
         } catch (ex: Exception) {
             log.error("비동기 수집 실패", ex)
+        } finally {
+            running.set(false)
+        }
+    }
+
+    /**
+     * 소스를 '하나씩' 순차로 수집한다(각 소스 사이 메모리 회복 대기). 무료 박스 OOM 회피용.
+     * 전체를 한 번에 메모리에 올리면(runDailyCollection(null)) OOM으로 박스가 죽으므로,
+     * 단독 수집(greenhouse·seoul·pubinst 각각 502 없이 버티는 게 실측됨)을 순서대로 돈다.
+     * 한 소스가 실패해도 다음 소스는 계속.
+     */
+    @Async
+    fun runDailyCollectionPerSourceAsync() {
+        if (!running.compareAndSet(false, true)) {
+            log.warn("이미 수집 진행 중 — per-source 트리거 무시")
+            return
+        }
+        try {
+            val ids = sources.map { it.sourceId }
+            log.info("per-source 순차 수집 시작: {}", ids)
+            for (sid in ids) {
+                try {
+                    runDailyCollection(setOf(sid))
+                } catch (ex: Exception) {
+                    log.error("source={} 수집 실패 — 다음 소스 계속", sid, ex)
+                }
+                Thread.sleep(SOURCE_GAP_MS) // 소스 간 메모리/GC 회복(피크 분산)
+            }
+            log.info("per-source 순차 수집 완료")
+        } catch (ex: Exception) {
+            log.error("per-source 수집 실패", ex)
         } finally {
             running.set(false)
         }

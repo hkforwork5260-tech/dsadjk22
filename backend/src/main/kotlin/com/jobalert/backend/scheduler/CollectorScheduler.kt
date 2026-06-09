@@ -21,7 +21,8 @@ class CollectorScheduler(
 
     @Scheduled(cron = "\${jobalert.collector.cron}", zone = "UTC")
     fun runDaily() {
-        log.info("CollectorScheduler.runDaily 트리거")
-        collectorService.runDailyCollection()
+        log.info("CollectorScheduler.runDaily 트리거 — per-source 순차 수집")
+        // 전체를 한 번에 받으면 무료 박스 OOM → 소스별 순차(메모리 피크 분산)로 수집.
+        collectorService.runDailyCollectionPerSourceAsync()
     }
 }
