@@ -26,6 +26,8 @@ import java.util.UUID
 class AdminController(
     private val collectorService: HybridCollectorService,
     private val notificationService: NotificationService,
+    @org.springframework.beans.factory.annotation.Value("\${jobalert.push.enabled:false}")
+    private val pushEnabled: Boolean,
 ) {
     /**
      * 수집을 백그라운드로 시작하고 즉시 202 반환.
@@ -80,8 +82,11 @@ class AdminController(
                 "message" to "발송을 시작했습니다. 폰 알림/서버 로그를 확인하세요."))
     }
 
-    /** 푸시 진단: FCM 활성 여부 + 기기 등록 현황. "알림이 왜 안 오나" 디버깅용. */
+    /**
+     * 푸시 진단: FCM 활성 + 기기 등록 현황 + 자동발송(PUSH_ENABLED) 여부. "알림이 왜 안 오나" 디버깅용.
+     * pushEnabled=true 라야 매일 9시·21시 스케줄러가 동작. 수동 /digest-all 은 이 값과 무관하게 발송됨.
+     */
     @GetMapping("/push-status")
-    fun pushStatus(): Map<String, Any> = notificationService.pushStatus()
+    fun pushStatus(): Map<String, Any> = notificationService.pushStatus() + ("pushEnabled" to pushEnabled)
 }
 
