@@ -35,6 +35,10 @@ object WidgetUpdater {
                 if (conn.responseCode == 200) {
                     val body = conn.inputStream.bufferedReader().use { it.readText() }
                     val arr = JSONObject(body).optJSONArray("jobs")
+                    // 오늘 탭과 동일: 관심 설정 당일이면 조건 맞는 공고 전체, 아니면 신규(kind=NEW)만.
+                    val setDay = prefs.getLong("interest_set_epochday", -1L)
+                    val todayKst = (System.currentTimeMillis() + 9L * 3600 * 1000) / (24L * 3600 * 1000)
+                    val showAll = setDay == todayKst
                     var newC = 0
                     var closing = 0
                     if (arr != null) {
@@ -42,8 +46,7 @@ object WidgetUpdater {
                             val j = arr.getJSONObject(i)
                             val kind = j.optString("kind")
                             if (kind == "CLOSING") closing++
-                            // 새 공고 = 오늘(KST) 처음 올라온 것(NEW)만. 오늘·알림과 동일 기준(셋이 같은 숫자).
-                            else if (kind == "NEW") newC++
+                            if (showAll || kind == "NEW") newC++
                         }
                     }
                     val topJob = prefs.getString("widget_top_job", "").orEmpty()

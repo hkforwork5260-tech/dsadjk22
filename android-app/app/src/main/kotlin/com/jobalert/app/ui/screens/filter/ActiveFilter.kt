@@ -19,6 +19,9 @@ object ActiveFilter {
     private const val KEY_CAT = "filter_categories"
     private const val KEY_SIZE = "filter_sizes"
     private const val KEY_ONBOARDED = "onboarding_done"
+    // 관심을 마지막으로 설정/변경한 날(KST epochDay). 이 날 = 조건 맞는 공고 '전체' 노출,
+    // 다음날부터 = '전날 대비 신규(kind=NEW)'만. 공고별 기록이 아니라 날짜 하나만 저장.
+    private const val KEY_INTEREST_DATE = "interest_set_epochday"
 
     private var appContext: Context? = null
 
@@ -42,6 +45,11 @@ object ActiveFilter {
     /** 마감일 필터: N일 이내 마감만(0=오늘·3=D-3…). -1이면 전체(필터 없음). */
     var deadlineDays by mutableStateOf(-1); private set
 
+    /** 관심 마지막 설정일(KST epochDay). -1이면 미설정. */
+    var interestSetEpochDay by mutableStateOf(-1L); private set
+    /** 세션 필터가 적용된 상태인지(일회성). 필터 적용 동안은 '전체' 노출. init/관심설정 시 false. */
+    var filterActive by mutableStateOf(false); private set
+
     fun init(context: Context) {
         appContext = context.applicationContext
         interestCategories = load(KEY_CAT)
@@ -51,8 +59,20 @@ object ActiveFilter {
         sizes = interestSizes
         experiences = emptyList()
         deadlineDays = -1
+        filterActive = false
+        interestSetEpochDay = prefs()?.getLong(KEY_INTEREST_DATE, -1L) ?: -1L
         onboardingDone = prefs()?.getBoolean(KEY_ONBOARDED, false) ?: false
     }
+
+    /** 오늘(KST) epochDay. java.time 없이 millis로 계산(안드 구버전 호환). */
+    private fun todayEpochDayKst(): Long =
+        (System.currentTimeMillis() + 9L * 3600 * 1000) / (24L * 3600 * 1000)
+
+    /**
+     * 오늘 '전체 노출' 모드인가 — 관심을 오늘 설정했거나(첫설치/관심변경 당일) 필터가 걸린 상태.
+     * true면 오늘 탭 NEW = 조건 맞는 공고 전체, false면 = 전날 대비 신규(kind=NEW)만.
+     */
+    fun showAllToday(): Boolean = filterActive || (interestSetEpochDay == todayEpochDayKst())
 
     /** 온보딩 1회 완료 표시(영속). 이후 앱 시작 시 메인으로 바로 진입. */
     fun markOnboardingDone() {
@@ -72,6 +92,10 @@ object ActiveFilter {
         interestSizes = sizes
         save(KEY_CAT, categories)
         save(KEY_SIZE, sizes)
+        // 관심을 바꾼 '오늘'을 설정일로 기록 → 오늘은 전체 노출, 내일부터 신규만. 필터 모드는 해제.
+        interestSetEpochDay = todayEpochDayKst()
+        prefs()?.edit()?.putLong(KEY_INTEREST_DATE, interestSetEpochDay)?.apply()
+        filterActive = false
         // 필터를 따로 안 걸었다면 피드가 관심대로 보이도록 세션도 갱신.
         this.categories = categories
         this.sizes = sizes
@@ -89,6 +113,8 @@ object ActiveFilter {
         this.experiences = experiences
         this.sizes = sizes
         this.deadlineDays = deadlineDays
+        // 필터 적용 동안은 그 조건에 맞는 공고 '전체' 노출(일회성). 앱 재시작 시 init에서 해제.
+        filterActive = true
     }
 
     private fun load(key: String): List<String> =

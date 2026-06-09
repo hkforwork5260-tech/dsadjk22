@@ -74,9 +74,9 @@ fun MainScreen(
     val context = LocalContext.current
     LaunchedEffect(state) {
         (state as? MainUiState.Success)?.feed?.let { f ->
-            // 위젯·오늘·알림 통일 기준: '오늘(KST) 처음 올라온 공고'(서버 kind=NEW)만 센다.
-            // '안 본 공고'는 서버(알림)가 알 수 없어 셋을 못 맞추므로 새 공고 정의에서 제외.
-            val newCount = f.jobs.count { it.kind == JobKind.NEW }
+            // 위젯 새 공고 수 = 오늘 탭 NEW와 동일 기준: 설정 당일/필터 중이면 전체, 아니면 신규(kind=NEW)만.
+            val newCount = if (ActiveFilter.showAllToday()) f.jobs.size
+                           else f.jobs.count { it.kind == JobKind.NEW }
             val closingCount = f.jobs.count { it.kind == JobKind.CLOSING }
             val topJob = f.jobs.firstOrNull()?.let { "${it.company} · ${it.role}" } ?: ""
             WidgetState.setSummary(context, newCount, closingCount, topJob)
@@ -158,9 +158,11 @@ private fun ColumnScope.SuccessContent(
     onSectionChange: (JobKind) -> Unit,
     onJobClick: (String) -> Unit,
 ) {
-    // NEW = 오늘(KST) 처음 올라온 공고(서버 kind=NEW)만. 위젯·알림과 동일 기준(셋이 같은 숫자).
-    //   오늘 올라온 건 봐도 하루 유지. 마감임박·변경은 각 칸에서 봄.
-    val newList = feed.jobs.filter { it.kind == JobKind.NEW }
+    // NEW 탭:
+    //  - 관심 설정한 당일(첫설치·관심변경) 또는 필터 적용 중 → 조건 맞는 마감 전 공고 '전체'(스냅샷).
+    //  - 그 다음날부터 → 전날 대비 새로 올라온 것(서버 kind=NEW)만.
+    val newList = if (ActiveFilter.showAllToday()) feed.jobs
+                  else feed.jobs.filter { it.kind == JobKind.NEW }
     val updateList = feed.jobs.filter { it.kind == JobKind.UPDATE }
     // 마감임박은 마감 이른 순 정렬.
     val closingList = feed.jobs.filter { it.kind == JobKind.CLOSING }.sortedBy { j -> ddayNum(j.dday) }
