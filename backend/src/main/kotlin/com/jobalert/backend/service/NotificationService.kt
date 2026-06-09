@@ -51,6 +51,29 @@ class NotificationService(
         return targets.size
     }
 
+    /**
+     * 위와 동일하나 별도 스레드에서 실행(202 즉시 반환용). 무료 박스에서 동기 응답이 프록시 502를 내므로
+     * 수동 테스트 발송은 이걸 쓴다. 결과(발송 수)는 서버 로그로 확인.
+     */
+    @org.springframework.scheduling.annotation.Async
+    fun sendDailyDigestToAllAsync(kind: String) {
+        sendDailyDigestToAll(kind)
+    }
+
+    /** 푸시 진단: FCM 활성 여부 + 기기 등록 현황. "왜 안 오는지"를 한눈에 보기 위한 운영용. */
+    @Transactional(readOnly = true)
+    fun pushStatus(): Map<String, Any> {
+        val all = deviceRepository.findAll()
+        val withToken = all.filter { !it.fcmToken.isNullOrBlank() }
+        return mapOf(
+            "fcmEnabled" to fcmSender.isEnabled,
+            "totalDevices" to all.size,
+            "devicesWithFcmToken" to withToken.size,
+            "morningOptIn" to withToken.count { it.pushMorning },
+            "eveningOptIn" to withToken.count { it.pushEvening },
+        )
+    }
+
     @Transactional(readOnly = true)
     fun history(deviceId: UUID, limit: Int): NotificationHistoryResponse {
         val list = notificationRepository

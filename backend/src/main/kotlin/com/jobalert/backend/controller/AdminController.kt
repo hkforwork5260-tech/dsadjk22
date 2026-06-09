@@ -5,6 +5,7 @@ import com.jobalert.backend.service.HybridCollectorService
 import com.jobalert.backend.service.NotificationService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -67,9 +68,20 @@ class AdminController(
         @RequestParam(defaultValue = "morning_digest") kind: String,
     ): NotificationDto = notificationService.generateDigest(UUID.fromString(deviceId), kind)
 
-    /** 매일 스케줄과 동일하게 등록된 전체 기기에 다이제스트 발송(테스트용). 발송 대상 기기 수 반환. */
+    /**
+     * 매일 스케줄과 동일하게 등록된 전체 기기에 다이제스트 발송(테스트용). 비동기(202) — 무료 박스 502 회피.
+     * 실제 발송 수는 서버 로그(daily digest 발송 …)로 확인. PUSH_ENABLED와 무관하게 즉시 발송한다.
+     */
     @PostMapping("/digest-all")
-    fun digestAll(@RequestParam(defaultValue = "morning_digest") kind: String): Map<String, Any> =
-        mapOf("kind" to kind, "sentToDevices" to notificationService.sendDailyDigestToAll(kind))
+    fun digestAll(@RequestParam(defaultValue = "morning_digest") kind: String): ResponseEntity<Map<String, Any>> {
+        notificationService.sendDailyDigestToAllAsync(kind)
+        return ResponseEntity.accepted()
+            .body(mapOf("status" to "started", "kind" to kind,
+                "message" to "발송을 시작했습니다. 폰 알림/서버 로그를 확인하세요."))
+    }
+
+    /** 푸시 진단: FCM 활성 여부 + 기기 등록 현황. "알림이 왜 안 오나" 디버깅용. */
+    @GetMapping("/push-status")
+    fun pushStatus(): Map<String, Any> = notificationService.pushStatus()
 }
 
