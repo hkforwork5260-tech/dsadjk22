@@ -116,7 +116,7 @@ class JobService(
         return JobsTodayResponse(
             date = OffsetDateTime.now(clock).atZoneSameInstant(kst).toLocalDate().toString(),
             counts = counts,
-            jobs = toDtos(ranked),
+            jobs = toDtos(ranked, JobMapper.DtoScope.TODAY),
             nextCursor = null,
         )
     }
@@ -362,7 +362,7 @@ class JobService(
         return JobSearchResponse(
             query = q,
             totalEstimate = total,
-            jobs = toDtos(shown),
+            jobs = toDtos(shown, JobMapper.DtoScope.SEARCH),
             nextCursor = null,
         )
     }
@@ -379,10 +379,10 @@ class JobService(
     }
 
     /** 공고 목록을 DTO로. 회사를 companyId 묶음으로 한 번에 로드해 N+1 회피. */
-    private fun toDtos(jobs: List<Job>): List<JobDto> {
+    private fun toDtos(jobs: List<Job>, scope: JobMapper.DtoScope = JobMapper.DtoScope.FULL): List<JobDto> {
         if (jobs.isEmpty()) return emptyList()
         val companies = loadCompanies(jobs)
-        return jobs.map { mapper.toDto(it, companies[it.companyId]) }
+        return jobs.map { mapper.toDto(it, companies[it.companyId], scope = scope) }
     }
 
     private fun loadCompanies(jobs: List<Job>): Map<Long, Company> {

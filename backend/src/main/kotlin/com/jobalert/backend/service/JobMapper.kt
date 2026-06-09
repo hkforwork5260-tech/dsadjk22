@@ -35,25 +35,38 @@ class JobMapper(
             size = company?.size,
         )
 
-    fun toDto(job: Job, company: Company?, isFavorited: Boolean = false): JobDto =
-        JobDto(
+    /**
+     * 목록 응답 경량화 범위. 화면 카드가 안 쓰는 무거운 필드를 비워 응답 크기를 줄인다(전체를 빠짐없이
+     * 받아도 빠르게). 상세는 항상 [toDetailDto]로 전문을 받으므로 목록 경량화와 무관.
+     *  - FULL  : 모든 필드(찾아보기 reels 카드는 본문·급여·태그·학력 다 씀 → 풀 필드 필수)
+     *  - TODAY : 홈 카드는 회사·제목·D-day + 지역명(location)·신입접두(experience)만 씀 → 본문·태그·직군·급여·학력 제거
+     *  - SEARCH: 검색 카드는 회사·제목·D-day만 → 위 + location·experience까지 제거
+     */
+    enum class DtoScope { FULL, TODAY, SEARCH }
+
+    fun toDto(job: Job, company: Company?, isFavorited: Boolean = false, scope: DtoScope = DtoScope.FULL): JobDto {
+        val light = scope != DtoScope.FULL
+        return JobDto(
             id = job.id,
             company = toCompanyEmbed(job.companyId, company),
             title = job.title,
             kind = job.kind,
             dday = dday(job.deadline),
             deadline = job.deadline,
-            location = job.location,
-            experience = job.experience,
-            education = job.education,
-            tags = job.tags ?: emptyList(),
-            jobCategories = job.jobCategoryCodes ?: emptyList(),
-            salary = job.salary,
-            // 목록 응답은 본문 전체가 아니라 미리보기 길이(160자)만 — 200개×문단이면 응답이 수MB라
-            // 무료 박스가 느려지고 502 위험. 전체 본문은 상세(toDetailDto)에서. 찾아보기 4줄 미리보기엔 충분.
-            description = job.description?.take(160),
+            // 홈은 로고 자리 지역명(regionShort)에 location 사용 → TODAY는 유지, SEARCH는 제거.
+            location = if (scope == DtoScope.SEARCH) null else job.location,
+            // 홈은 제목 "(신입)" 접두(displayRole)에 experience 사용 → TODAY 유지, SEARCH 제거.
+            experience = if (scope == DtoScope.SEARCH) null else job.experience,
+            education = if (light) null else job.education,
+            tags = if (light) emptyList() else (job.tags ?: emptyList()),
+            jobCategories = if (light) emptyList() else (job.jobCategoryCodes ?: emptyList()),
+            salary = if (light) null else job.salary,
+            // 본문은 찾아보기(FULL)만 미리보기(160자) 필요. 홈·검색 목록 카드는 본문을 안 써 제거 → 응답 대폭 경량화.
+            // 전체 본문은 상세(toDetailDto)에서 별도로 받는다.
+            description = if (light) null else job.description?.take(160),
             isFavorited = isFavorited,
         )
+    }
 
     fun toDetailDto(job: Job, company: Company?, isFavorited: Boolean = false, isSaved: Boolean = false): JobDetailDto =
         JobDetailDto(
