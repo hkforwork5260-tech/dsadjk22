@@ -46,6 +46,9 @@ jobalert:
   sources:
     greenhouse:
       enabled: ${GREENHOUSE_ENABLED:true}   # 공개 API, 키 불필요
+      # content=true면 공고 본문(HTML)+부서까지 받아 응답이 수십 배 커짐. 무료 박스에선 OOM이라 false였음.
+      # Hobby(8GB) 전환 후 켜기: Railway 변수 GREENHOUSE_CONTENT=true → 빅테크 공고 상세·직군분류 충실.
+      content: ${GREENHOUSE_CONTENT:false}
     lever:
       enabled: ${LEVER_ENABLED:true}        # 공개 API, 키 불필요
     public-institution:
