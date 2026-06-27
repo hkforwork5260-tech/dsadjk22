@@ -61,6 +61,23 @@ object SourceUtil {
 
     private val ZONE_KST = ZoneId.of("Asia/Seoul")
     private val YYYYMMDD = DateTimeFormatter.ofPattern("yyyyMMdd")
+    private val YYYY_DOT_MM_DD = DateTimeFormatter.ofPattern("yyyy.MM.dd")
+
+    /**
+     * "yyyy.MM.dd"(예: "2026.07.13", 삼성 채용 period)을 KST 기준 epoch seconds로.
+     * @param endOfDay true면 그날 23:59:59(마감일용), false면 00:00:00(등록일용).
+     * 앞뒤 공백 허용. 파싱 실패 시 null.
+     */
+    fun dottedDateToEpochSeconds(s: String?, endOfDay: Boolean = false): Long? {
+        if (s.isNullOrBlank()) return null
+        return try {
+            val date = LocalDate.parse(s.trim(), YYYY_DOT_MM_DD)
+            val dateTime = if (endOfDay) date.atTime(23, 59, 59) else date.atStartOfDay()
+            dateTime.atZone(ZONE_KST).toEpochSecond()
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    }
 
     /**
      * "yyyyMMdd"(예: "20260619")을 KST 기준 epoch seconds로.
