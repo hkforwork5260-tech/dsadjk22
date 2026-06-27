@@ -73,7 +73,7 @@ fun DiscoverScreen(
     // + 회사 라운드로빈(다양성)으로 인스타 탐색처럼 섞여 나온다. (관심은 기기 등록값으로 서버가 반영)
     LaunchedEffect(Unit) { viewModel.load() }
     val jobs by viewModel.jobs.collectAsStateWithLifecycle()
-    val isLoaded by viewModel.isLoaded.collectAsStateWithLifecycle()
+    val status by viewModel.status.collectAsStateWithLifecycle()
     val favoriteCompanyIds by viewModel.favoriteCompanyIds.collectAsStateWithLifecycle()
     val savedJobIds by viewModel.savedJobIds.collectAsStateWithLifecycle()
     // 이미 본 공고는 뒤로(안 본 것 먼저). 로드 시점 스냅샷이라 보는 도중엔 순서가 안 바뀐다.
@@ -106,10 +106,15 @@ fun DiscoverScreen(
             action = { HelpIconButton(onClick = { showHelp = true }) },
         )
 
-        if (!isLoaded) {
+        if (status == DiscoverStatus.Loading) {
             // 로딩 중엔 finish 카드('오늘은 여기까지')가 잠깐 깜빡이지 않게 로딩만 표시.
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = HiFiColors.Brand)
+            }
+        } else if (status == DiscoverStatus.Error) {
+            // 로드 실패(서버 일시 다운 등) — '오늘은 여기까지'로 오인시키지 않고 재시도를 제공.
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                LoadFailedCard(onRetry = { viewModel.load(force = true) })
             }
         } else {
             val flingBehavior = PagerDefaults.flingBehavior(
@@ -413,6 +418,35 @@ private fun FinishReelsCard(favCount: Int, savedCount: Int, onGoMain: () -> Unit
                 fullWidth = true,
             )
         }
+    }
+}
+
+/** 로드 실패 시 — 재시도 카드. 서버 일시 다운 등에서 '오늘은 여기까지' 대신 표시. */
+@Composable
+private fun LoadFailedCard(onRetry: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.padding(28.dp),
+    ) {
+        Mascot(size = 110.dp, expression = MascotExpression.Sad)
+        Spacer(Modifier.height(14.dp))
+        Text(
+            "공고를 불러오지 못했어요",
+            style = HiFiType.title,
+            color = HiFiColors.Text,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "잠시 후 다시 시도해 주세요",
+            style = HiFiType.body2,
+            color = HiFiColors.Text2,
+        )
+        Spacer(Modifier.height(22.dp))
+        HiFiButton(
+            text = "다시 시도",
+            onClick = onRetry,
+            variant = HiFiButtonVariant.Primary,
+        )
     }
 }
 
