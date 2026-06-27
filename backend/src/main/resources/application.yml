@@ -67,6 +67,12 @@ jobalert:
       # 삼성전자·전기·SDI·E&A·제일기획·에스원 등 계열사 공고가 한 곳에 섞여 나옴(공채시즌 삼성전자 신입).
       enabled: ${SAMSUNG_ENABLED:true}
       max-pages: ${SAMSUNG_MAX_PAGES:10}
+    recruiter:
+      # recruiter.co.kr(MIDAS jobflex) 공유 ATS. 인증불필요. tenant 목록=SourceRegistry.recruiterTenants
+      # (KT·현대모비스·HL그룹·DB그룹·SPC·NH투자증권 등 ~49개사, prefix 헤더만 교체).
+      enabled: ${RECRUITER_ENABLED:true}
+      page-size: ${RECRUITER_PAGE_SIZE:100}
+      max-pages: ${RECRUITER_MAX_PAGES:20}
   collector:
     # 무료 박스 OOM 회피: 가벼운 소스와 무거운 공공기관을 다른 시각에 분리 수집.
     # cron zone=UTC. 06·18시 KST에 가벼운 소스, 그 30분 뒤 공공기관 단독(깨끗한 메모리 상태).

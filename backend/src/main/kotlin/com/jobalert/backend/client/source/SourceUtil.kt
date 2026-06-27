@@ -3,6 +3,7 @@ package com.jobalert.backend.client.source
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -61,6 +62,22 @@ object SourceUtil {
 
     private val ZONE_KST = ZoneId.of("Asia/Seoul")
     private val YYYYMMDD = DateTimeFormatter.ofPattern("yyyyMMdd")
+
+    /**
+     * 타임존 없는 ISO LocalDateTime(예: "2026-07-05T23:59:59", recruiter jobflex)을 **KST로 간주**해
+     * epoch seconds로. 날짜만("2026-07-05") 와도 자정으로 처리. 파싱 실패 시 null.
+     */
+    fun localKstToEpochSeconds(iso: String?): Long? {
+        if (iso.isNullOrBlank()) return null
+        val s = iso.trim()
+        return try {
+            val ldt = if (s.contains('T')) LocalDateTime.parse(s)
+            else LocalDate.parse(s).atStartOfDay()
+            ldt.atZone(ZONE_KST).toEpochSecond()
+        } catch (_: DateTimeParseException) {
+            null
+        }
+    }
     private val YYYY_DOT_MM_DD = DateTimeFormatter.ofPattern("yyyy.MM.dd")
 
     /**
