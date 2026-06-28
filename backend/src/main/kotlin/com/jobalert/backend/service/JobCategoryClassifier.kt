@@ -54,8 +54,9 @@ class JobCategoryClassifier {
             "design" to listOf("디자인", "디자이너", " ux", " ui", " bx", "그래픽", "편집디자인", "모션그래",
                 "이미지 편집", "포토리터처", "리터칭", "designer", "graphic", "product design", "brand design",
                 "motion design", "illustrat", "retouch"),
+            // "architect"는 SW Architect(IT)를 건설로 오분류해 제거 — 한국어 "건축"이 건설을 커버.
             "construction" to listOf("건설", "건축", "토목", "시공", "감리", "현장소장", "전기공사", "플랜트설치",
-                "건축설계", "토목설계", "조경설계", "construction", "civil engineer", "architect"),
+                "건축설계", "토목설계", "조경설계", "construction", "civil engineer", "건축사"),
             "production" to listOf("생산", "제조", "공정", "설비", "품질", " qc", "정비", "기능직", "설치공",
                 "조립", "용접", "노무원", "특별인부", "플랜트", "기계설치", "운전원", "오퍼레이터", "포장", "작업보조",
                 "사출", "프레스", "선반", "절단", "제관", "성형", "금형", "기구설계", "기계설계", "캐드", "cad", " cam",
@@ -65,7 +66,7 @@ class JobCategoryClassifier {
                 "생명보험", "펀드매니저", "계리", "actuary", "investment analyst", "banking", "underwrit"),
             "accounting_finance" to listOf("회계", "세무", "재무", "자금", "경리", "결산", "예산", "공시", "주주총회",
                 "accounting", "accountant", "financial analyst", "financial planning", "controller", "fp&a",
-                "treasury", " tax ", "auditor", "investor relations", " ir "),
+                "treasury", " tax ", "auditor", "investor relations", " ir ", "finance manager", "corporate finance"),
             "hr_hrd" to listOf("인사", "노무", "hrd", "채용담당", "인사관리", "교육담당", "보상 담당",
                 "recruiter", "recruiting", "talent acquisition", "talent network", "people operations", "people team",
                 "human resources", "hrbp", "compensation"),
@@ -95,9 +96,9 @@ class JobCategoryClassifier {
             "admin_legal" to listOf("총무", "법무", "법률", "변호사", "비서", "사무보조", "사무직", "서무", "행정",
                 "일반사무", "경영지원", "사무원", "legal", "compliance", "paralegal", "office manager",
                 "executive assistant", "administrative assistant"),
-            "service" to listOf("미화", "청소", "경비", "시설관리", "조리", "주방", "매장관리", "접객", "안내데스크",
-                "환경미화", "조경", "주차관리", "관리소장", "진열", "마트업무", "현장관리", "골프장", "호텔",
-                "barista", "facility", "housekeeping", "security guard"),
+            "service" to listOf("미화", "청소", "경비", "시설관리", "조리", "주방", "매장관리", "매장 ", "점장",
+                "접객", "안내데스크", "환경미화", "조경", "주차관리", "관리소장", "진열", "마트업무", "현장관리",
+                "골프장", "호텔", "barista", "facility", "housekeeping", "security guard", "store manager"),
         )
     }
 }

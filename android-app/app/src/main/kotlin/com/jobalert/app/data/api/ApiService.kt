@@ -55,6 +55,13 @@ interface ApiService {
     @GET("api/v1/companies/{id}/page")
     suspend fun companyPage(@Path("id") id: Int): CompanyDetailResponse
 
+    /** 회사명 검색 — 관심기업 추가 화면. 진행중 공고 있는 회사만, 활성 공고수 많은 순. */
+    @GET("api/v1/companies/search")
+    suspend fun companySearch(
+        @Query("query") query: String,
+        @Query("limit") limit: Int = 20,
+    ): List<CompanyDto>
+
     @GET("api/v1/onboarding/popular-companies")
     suspend fun popularCompanies(): PopularCompaniesResponse
 

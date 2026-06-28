@@ -76,6 +76,9 @@ class JobRepository(
     suspend fun addFavorite(companyId: Int) = api.addFavorite(companyId)
     suspend fun removeFavorite(companyId: Int) = api.removeFavorite(companyId)
 
+    /** 회사명 검색 (관심기업 추가용). */
+    suspend fun companySearch(query: String) = api.companySearch(query)
+
     /** 저장한 공고 목록(현재 기기, 최신순). */
     suspend fun savedJobs(): List<Job> = api.savedJobs().jobs.map { it.toDomain() }
 

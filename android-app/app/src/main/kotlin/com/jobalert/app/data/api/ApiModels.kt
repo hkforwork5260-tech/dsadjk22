@@ -18,7 +18,7 @@ import kotlinx.serialization.Serializable
 data class CompanyDto(
     val id: Int,
     val name: String,
-    val logo: String,                    // 로고용 짧은 텍스트 ("삼성")
+    val logo: String = "",               // 로고용 짧은 텍스트 ("삼성"). 회사검색 응답엔 없어 기본값(앱에서 name 폴백).
     val logoUrl: String? = null,         // Clearbit URL
     val industry: String = "",
     val group: String = "",

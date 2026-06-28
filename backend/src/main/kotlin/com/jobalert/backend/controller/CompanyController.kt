@@ -1,6 +1,7 @@
 package com.jobalert.backend.controller
 
 import com.jobalert.backend.dto.CompanyDetailDto
+import com.jobalert.backend.dto.CompanyDto
 import com.jobalert.backend.dto.CompanyJobsResponse
 import com.jobalert.backend.dto.CompanyPageResponse
 import com.jobalert.backend.service.CompanyService
@@ -17,6 +18,17 @@ import java.util.UUID
 class CompanyController(
     private val companyService: CompanyService,
 ) {
+
+    /** 회사명 검색 — 관심기업 추가 화면. 진행중 공고 있는 회사만, 활성 공고수 많은 순. */
+    @GetMapping("/search")
+    fun search(
+        @RequestParam query: String,
+        @RequestParam(defaultValue = "20") limit: Int,
+        @RequestHeader("X-Device-Id", required = false) deviceId: String?,
+    ): List<CompanyDto> {
+        val device = deviceId?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+        return companyService.search(query, device, limit)
+    }
 
     @GetMapping("/{id}")
     fun detail(@PathVariable id: Long): CompanyDetailDto = companyService.detail(id)

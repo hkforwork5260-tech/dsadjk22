@@ -40,8 +40,8 @@ class JobCategoryClassifierTest {
     }
 
     @Test
-    fun `단서 없으면 빈 리스트(미분류)`() {
-        assertEquals(emptyList(), classifier.classify("ㅁㄴㅇㄹ 자스러운 무언가"))
-        assertEquals(emptyList(), classifier.classify(null))
+    fun `단서 없으면 기타(etc) 폴백 — 미분류로 사라지지 않게`() {
+        assertEquals(listOf("etc"), classifier.classify("ㅁㄴㅇㄹ 자스러운 무언가"))
+        assertEquals(listOf("etc"), classifier.classify(null))
     }
 }

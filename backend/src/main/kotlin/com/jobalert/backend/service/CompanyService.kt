@@ -1,6 +1,7 @@
 package com.jobalert.backend.service
 
 import com.jobalert.backend.dto.CompanyDetailDto
+import com.jobalert.backend.dto.CompanyDto
 import com.jobalert.backend.dto.CompanyJobsResponse
 import com.jobalert.backend.dto.CompanyPageCompany
 import com.jobalert.backend.dto.CompanyPageResponse
@@ -49,6 +50,35 @@ class CompanyService(
             // 통계는 실데이터 누적 후 산출 — 우선 활성 공고 수 기반 근사. 정식 집계는 후속.
             stats = CompanyStatsDto(totalPostings30d = activeCount, avgPostingsPerWeek = 0.0),
         )
+    }
+
+    /**
+     * 회사명 검색 — 관심기업 추가 화면용. 진행중 공고 있는 회사만, 활성 공고수 많은 순.
+     * deviceId 있으면 이미 관심기업인지(isFavorited) 반영.
+     */
+    fun search(query: String, deviceId: UUID? = null, limit: Int = 20): List<CompanyDto> {
+        val q = query.trim()
+        if (q.isBlank()) return emptyList()
+        val favoriteIds = deviceId?.let { dev -> favoriteRepository.findAllByDeviceId(dev).map { it.companyId }.toSet() } ?: emptySet()
+        return companyRepository.searchByName(q, PageRequest.of(0, 60))
+            .map { c ->
+                val cnt = jobRepository.countByCompanyIdAndIsActiveTrue(c.id!!).toInt()
+                CompanyDto(
+                    id = c.id!!,
+                    name = c.name,
+                    nameNormalized = c.nameNormalized,
+                    logoUrl = c.logoUrl,
+                    industry = c.industry,
+                    group = c.groupName,
+                    size = c.size,
+                    homepageUrl = c.homepageUrl,
+                    careersUrl = c.careersUrl,
+                    activeJobCount = cnt,
+                    isFavorited = c.id in favoriteIds,
+                )
+            }
+            .sortedByDescending { it.activeJobCount }
+            .take(limit)
     }
 
     fun jobs(id: Long, kind: String?, limit: Int): CompanyJobsResponse {

@@ -14,6 +14,7 @@ import com.jobalert.app.ui.screens.calendar.CalendarScreen
 import com.jobalert.app.ui.screens.company.CompanyDetailScreen
 import com.jobalert.app.ui.screens.detail.JobDetailScreen
 import com.jobalert.app.ui.screens.discover.DiscoverScreen
+import com.jobalert.app.ui.screens.companysearch.CompanySearchScreen
 import com.jobalert.app.ui.screens.favorites.FavoritesScreen
 import com.jobalert.app.data.model.JobCategoryCodes
 import com.jobalert.app.ui.screens.filter.ActiveFilter
@@ -58,6 +59,7 @@ object Routes {
 
     const val Discover = "discover"
     const val Favorites = "favorites"
+    const val CompanySearch = "companySearch"
     const val Mypage = "mypage"
     const val Filter = "filter"
     const val NotifHistory = "notifHistory"
@@ -235,9 +237,13 @@ fun JobAlertNavHost() {
         composable(Routes.Favorites) {
             FavoritesScreen(
                 onCompanyClick = { cid -> nav.navigate(Routes.company(cid)) },
-                onAddCompany = { nav.navigate(Routes.Search) },
+                onAddCompany = { nav.navigate(Routes.CompanySearch) },
                 onTabClick = { tab -> handleTab(nav, tab, currentRoute = Routes.Favorites) },
             )
+        }
+
+        composable(Routes.CompanySearch) {
+            CompanySearchScreen(onBack = { nav.popBackStack() })
         }
 
         composable(Routes.Mypage) {
