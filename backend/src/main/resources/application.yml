@@ -79,6 +79,20 @@ jobalert:
       enabled: ${GREETING_ENABLED:true}
       page-size: ${GREETING_PAGE_SIZE:100}
       max-pages: ${GREETING_MAX_PAGES:20}
+    toss:
+      # 토스(비바리퍼블리카) 공개 API. 인증불필요. 1콜로 그룹사(토스뱅크·토스증권 등) 통합. Greenhouse 기반.
+      enabled: ${TOSS_ENABLED:true}
+    naver:
+      # 네이버 채용 공개 API(recruit.navercorp.com). 인증불필요. NAVER+계열사(웹툰 등) 1콜.
+      enabled: ${NAVER_ENABLED:true}
+      max-rows: ${NAVER_MAX_ROWS:500}
+    lg:
+      # LG 통합 채용 API(api.careers.lg.com). 인증불필요. 빈필터 1콜로 LG그룹 14개 계열사 통합.
+      enabled: ${LG_ENABLED:true}
+    cj:
+      # CJ 그룹 통합 채용포털(recruit.cj.net). 인증불필요. form POST 1콜로 CJ그룹 전 계열사 통합.
+      enabled: ${CJ_ENABLED:true}
+      page-size: ${CJ_PAGE_SIZE:2000}
   collector:
     # 무료 박스 OOM 회피: 가벼운 소스와 무거운 공공기관을 다른 시각에 분리 수집.
     # cron zone=UTC. 06·18시 KST에 가벼운 소스, 그 30분 뒤 공공기관 단독(깨끗한 메모리 상태).
