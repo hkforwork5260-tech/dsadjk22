@@ -135,4 +135,12 @@ class SourceRegistry {
         GreetingWorkspace("oci", 2252, "OCI", homepage = "oci.co.kr"),
         GreetingWorkspace("phcgroup", 10553, "평화정공", homepage = "phc.co.kr"),
     )
+
+    /**
+     * Workday(CXS) 테넌트. 인증 불필요 공개 API. host·cxsTenant·site는 회사 채용사이트 URL로 직접 확인.
+     * 2026-06-28 라이브 검증: 대웅제약(61건). 더 추가하려면 회사별 myworkdayjobs 호스트/사이트 확인.
+     */
+    val workdayTenants: List<WorkdayTenant> = listOf(
+        WorkdayTenant("daewoong.impl-wd102", "daewoong", "External", "대웅제약", homepage = "daewoong.com"),
+    )
 }

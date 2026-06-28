@@ -93,6 +93,14 @@ jobalert:
       # CJ 그룹 통합 채용포털(recruit.cj.net). 인증불필요. form POST 1콜로 CJ그룹 전 계열사 통합.
       enabled: ${CJ_ENABLED:true}
       page-size: ${CJ_PAGE_SIZE:2000}
+    workday:
+      # Workday CXS 공개 API. 인증불필요. tenant 목록=SourceRegistry.workdayTenants(대웅제약 등).
+      enabled: ${WORKDAY_ENABLED:true}
+      page-size: ${WORKDAY_PAGE_SIZE:20}
+      max-pages: ${WORKDAY_MAX_PAGES:25}
+    lx:
+      # LX 그룹 통합 채용(apply.lxcareers.com). 인증불필요. 1콜로 하우시스·세미콘·인터내셔널·판토스 통합(HTML).
+      enabled: ${LX_ENABLED:true}
   collector:
     # 무료 박스 OOM 회피: 가벼운 소스와 무거운 공공기관을 다른 시각에 분리 수집.
     # cron zone=UTC. 06·18시 KST에 가벼운 소스, 그 30분 뒤 공공기관 단독(깨끗한 메모리 상태).

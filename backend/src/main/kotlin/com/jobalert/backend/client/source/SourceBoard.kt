@@ -59,3 +59,22 @@ data class GreetingWorkspace(
      */
     val originHost: String? = null,
 )
+
+/**
+ * Workday(CXS) 채용 테넌트 설정.
+ *   - 목록 API: https://{host}.myworkdayjobs.com/wday/cxs/{cxsTenant}/{site}/jobs (POST 빈 검색)
+ *   - 원문 링크: https://{host}.myworkdayjobs.com/{site}{externalPath}
+ * 한 어댑터가 테넌트만 바꿔 다사 커버(대웅제약 등). host·cxsTenant·site는 회사별로 직접 확인.
+ */
+data class WorkdayTenant(
+    /** 전체 서브도메인(데이터센터 포함). 예: "daewoong.impl-wd102". */
+    val host: String,
+    /** cxs 경로의 테넌트 식별자. 예: "daewoong". */
+    val cxsTenant: String,
+    /** 채용 사이트명. 예: "External". */
+    val site: String,
+    /** 앱에 노출할 회사명. */
+    val displayName: String,
+    /** 회사 홈페이지(로고·매칭). 없으면 null. */
+    val homepage: String? = null,
+)
