@@ -60,7 +60,7 @@ object RecruiterMapper {
             experience = experience,
             postingDateEpoch = SourceUtil.localKstToEpochSeconds(p.startDateTime),
             deadlineEpoch = SourceUtil.localKstToEpochSeconds(p.endDateTime),
-            originalUrl = "https://${tenant.tenant}.recruiter.co.kr/career/home?positionSn=$sn",
+            originalUrl = "https://${tenant.tenant}.recruiter.co.kr/career/jobs/$sn",
             keywords = p.tagList.mapNotNull { it.tagName?.trim() }.filter { it.isNotBlank() },
         )
     }

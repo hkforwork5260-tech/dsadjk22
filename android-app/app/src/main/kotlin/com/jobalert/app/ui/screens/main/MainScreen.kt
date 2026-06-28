@@ -33,7 +33,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.jobalert.app.data.HelpState
 import com.jobalert.app.data.JobRepository
-import com.jobalert.app.data.model.regionShort
+import com.jobalert.app.data.model.experienceBucket
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.theme.*
@@ -250,7 +250,7 @@ private fun ColumnScope.SuccessContent(
                 kind = job.kind,
                 company = job.company,
                 role = job.role,
-                logo = job.regionShort,   // 로고 자리에 근무지역
+                logo = job.experienceBucket,   // 로고 자리에 경력 구분(신입/경력/신입·경력)
                 dday = job.dday,
                 dateText = job.dateText,
                 onClick = { onJobClick(job.id) },

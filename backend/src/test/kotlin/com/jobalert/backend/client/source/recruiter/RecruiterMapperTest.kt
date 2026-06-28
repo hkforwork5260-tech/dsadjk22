@@ -31,7 +31,7 @@ class RecruiterMapperTest {
         assertEquals("recruiter-kt-120012", raw.externalId)
         assertEquals("KT", raw.companyName)
         assertEquals("경력", raw.experience)
-        assertEquals("https://kt.recruiter.co.kr/career/home?positionSn=120012", raw.originalUrl)
+        assertEquals("https://kt.recruiter.co.kr/career/jobs/120012", raw.originalUrl)
         assertEquals("한국", raw.location)
         assertNotNull(raw.postingDateEpoch)
         assertNotNull(raw.deadlineEpoch)

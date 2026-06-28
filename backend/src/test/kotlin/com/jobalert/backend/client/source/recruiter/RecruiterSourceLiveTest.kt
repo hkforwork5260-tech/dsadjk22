@@ -40,7 +40,7 @@ class RecruiterSourceLiveTest {
 
         assertTrue(jobs.isNotEmpty(), "0건 — API/매핑 점검 필요")
         assertTrue(jobs.all { it.externalId.startsWith("recruiter-") })
-        assertTrue(jobs.all { it.originalUrl?.contains("recruiter.co.kr/career/home?positionSn=") == true })
+        assertTrue(jobs.all { it.originalUrl?.contains("recruiter.co.kr/career/jobs/") == true })
         // 여러 tenant가 살아있어야 함(최소 5개사 이상 응답 기대).
         assertTrue(byCompany.size >= 5, "응답 회사 ${byCompany.size}곳 — 너무 적음")
     }

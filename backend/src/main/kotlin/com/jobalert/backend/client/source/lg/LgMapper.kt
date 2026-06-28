@@ -25,7 +25,7 @@ object LgMapper {
             department = n.jobGroupName?.trim()?.takeIf { it.isNotBlank() },
             experience = n.careerTypeName?.trim()?.takeIf { it.isNotBlank() },
             deadlineEpoch = SourceUtil.dottedDateToEpochSeconds(datePart(n.recEndDateTime), endOfDay = true),
-            originalUrl = "https://careers.lg.com/app/careers/recruit/notice/detail/$id",
+            originalUrl = "https://careers.lg.com/apply/detail?id=$id",
             keywords = listOfNotNull(n.jobGroupName?.trim()?.takeIf { it.isNotBlank() }),
         )
     }

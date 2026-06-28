@@ -118,7 +118,7 @@ class BigTechMappersTest {
         assertEquals("경력", raw.experience)
         assertEquals("연구/개발", raw.department)
         assertNotNull(raw.deadlineEpoch)
-        assertEquals("https://careers.lg.com/app/careers/recruit/notice/detail/1001327", raw.originalUrl)
+        assertEquals("https://careers.lg.com/apply/detail?id=1001327", raw.originalUrl)
     }
 
     @Test

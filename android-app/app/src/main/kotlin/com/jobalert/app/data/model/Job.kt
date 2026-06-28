@@ -55,6 +55,31 @@ val Job.regionShort: String
     }
 
 /**
+ * 카드 로고 자리에 표시할 경력 구분 — 신입 / 경력 / 신입·경력 3분류로 정규화.
+ *
+ * 백엔드 [experience] 원시값이 소스마다 제각각("신입", "경력", "신입·경력", "신입/경력",
+ * "경력무관", "인턴", "산학장학생", 빈값 등)이라 딱 3개 버킷으로 묶는다.
+ *  - 신입·경력 둘 다 언급 / "무관" → "신입·경력" (둘 다 지원 가능)
+ *  - "신입"만 / "인턴"(신입 트랙) → "신입"
+ *  - "경력"만 → "경력"
+ *  - 정보 없음/기타 → "신입·경력" (포괄, 오해 최소)
+ */
+val Job.experienceBucket: String
+    get() {
+        val e = experience
+        val hasNew = e.contains("신입")
+        val hasExp = e.contains("경력")
+        return when {
+            hasNew && hasExp -> "신입·경력"
+            e.contains("무관") -> "신입·경력"
+            hasNew -> "신입"
+            e.contains("인턴") -> "신입"
+            hasExp -> "경력"
+            else -> "신입·경력"
+        }
+    }
+
+/**
  * 22개 직군. README 21개 + "기타" 추가.
  */
 val JobCategories: List<String> = listOf(

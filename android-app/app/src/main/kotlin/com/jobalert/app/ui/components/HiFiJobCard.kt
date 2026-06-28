@@ -48,10 +48,17 @@ fun HiFiJobCard(
                 .background(HiFiColors.Bg2),
             contentAlignment = Alignment.Center,
         ) {
+            // 짧은 라벨(서울·N)은 14sp, "신입·경력"처럼 긴 라벨은 작게+2줄 허용해 48dp 박스에 맞춤.
             Text(
                 logo,
-                style = HiFiType.body2.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold, fontSize = 14.sp),
+                style = HiFiType.body2.copy(
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                    fontSize = if (logo.length >= 4) 10.sp else 14.sp,
+                    lineHeight = if (logo.length >= 4) 12.sp else 16.sp,
+                ),
                 color = HiFiColors.Text,
+                maxLines = 2,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
         }
         Spacer(Modifier.width(12.dp))
