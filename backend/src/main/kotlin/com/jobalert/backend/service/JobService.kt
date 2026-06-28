@@ -76,7 +76,7 @@ class JobService(
         if (hasFilter) {
             jobs = jobs.filter { job ->
                 (cats.isEmpty() || job.jobCategoryCodes?.any { it in cats } == true) &&
-                    (exps.isEmpty() || job.experience in exps) &&
+                    (exps.isEmpty() || experienceMatches(job.experience, exps)) &&
                     (szs.isEmpty() || companies[job.companyId]?.size in szs)
             }
         }
@@ -119,6 +119,37 @@ class JobService(
             jobs = toDtos(ranked, JobMapper.DtoScope.TODAY),
             nextCursor = null,
         )
+    }
+
+    /**
+     * 경력 필터 매칭(버킷 인식). 원시 experience 값을 신입/경력/신입·경력 버킷으로 보고,
+     * "신입" 필터엔 신입·경력무관·신입·경력 공고까지(신입이 지원 가능한 전부), "경력" 필터엔
+     * 경력·무관·신입·경력을 포함시킨다. 정확매칭이면 "무관" 462건을 놓쳐 신입 취준생이 볼 게 6분의1로 줄어듦.
+     */
+    private fun experienceMatches(raw: String?, filters: Set<String>): Boolean {
+        val bucket = experienceBucket(raw)
+        return filters.any { f ->
+            when (f) {
+                "신입" -> bucket == "신입" || bucket == "신입·경력"
+                "경력" -> bucket == "경력" || bucket == "신입·경력"
+                else -> bucket == f
+            }
+        }
+    }
+
+    /** 소스마다 제각각인 experience 원시값을 신입/경력/신입·경력 3버킷으로(앱 Job.experienceBucket과 동일 규칙). */
+    private fun experienceBucket(raw: String?): String {
+        val e = raw ?: ""
+        val hasNew = e.contains("신입")
+        val hasExp = e.contains("경력")
+        return when {
+            hasNew && hasExp -> "신입·경력"
+            e.contains("무관") -> "신입·경력"
+            hasNew -> "신입"
+            e.contains("인턴") -> "신입"
+            hasExp -> "경력"
+            else -> "신입·경력"
+        }
     }
 
     /**
