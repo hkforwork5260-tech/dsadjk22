@@ -59,6 +59,16 @@ class CompanyService(
     fun search(query: String, deviceId: UUID? = null, limit: Int = 20): List<CompanyDto> {
         val q = query.trim()
         if (q.isBlank()) return emptyList()
+        val ql = q.lowercase()
+        // 이름 관련도 가중치: 정확일치 > 접두일치 > 부분일치. "삼성"→삼성전자가 르노삼성보다 위로.
+        fun nameScore(name: String): Int {
+            val n = name.lowercase()
+            return when {
+                n == ql -> 3
+                n.startsWith(ql) -> 2
+                else -> 1
+            }
+        }
         val favoriteIds = deviceId?.let { dev -> favoriteRepository.findAllByDeviceId(dev).map { it.companyId }.toSet() } ?: emptySet()
         return companyRepository.searchByName(q, PageRequest.of(0, 60))
             .map { c ->
@@ -77,7 +87,8 @@ class CompanyService(
                     isFavorited = c.id in favoriteIds,
                 )
             }
-            .sortedByDescending { it.activeJobCount }
+            // 이름 관련도 우선, 동점이면 진행중 공고 많은 순.
+            .sortedWith(compareByDescending<CompanyDto> { nameScore(it.name) }.thenByDescending { it.activeJobCount })
             .take(limit)
     }
 

@@ -104,7 +104,7 @@ class JobService(
             userFavoriteRepository.findAllByDeviceId(dev).map { it.companyId }.toSet()
         } ?: emptySet()
 
-        val ranked = rankFeed(jobs, myCategories, myCompanies, limit)
+        val ranked = rankToday(jobs, myCategories, myCompanies, limit)
 
         // 카운트는 (필터 적용된) 현재 후보 jobs에서 센다 → 필터 시 헤더·칩 숫자도 같이 바뀐다.
         // pool(≥3000)이 전체 활성(<2천)을 다 담으므로 jobs엔 매칭 활성 공고가 빠짐없이 있어 정확하다.
@@ -119,6 +119,31 @@ class JobService(
             jobs = toDtos(ranked, JobMapper.DtoScope.TODAY),
             nextCursor = null,
         )
+    }
+
+    /**
+     * 홈(오늘) 피드 정렬 — 마감 임박 순.
+     *  - 마감일 있는 공고: 마감 빠른 순(D-day 작은 것 먼저). 같은 마감이면 개인화 가점(관심기업·직군) desc.
+     *  - 상시(마감 없음) 공고: 맨 아래. 회사 라운드로빈으로 다양성 유지(한 회사 독식 방지).
+     * "마감 임박 공고를 위에, 상시는 맨밑" 요구 반영.
+     */
+    private fun rankToday(
+        jobs: List<Job>,
+        myCategories: Set<String>,
+        myCompanies: Set<Long>,
+        limit: Int,
+    ): List<Job> {
+        if (jobs.isEmpty()) return emptyList()
+        fun score(job: Job): Int {
+            var s = 0
+            if (job.companyId in myCompanies) s += 2
+            if (myCategories.isNotEmpty() && job.jobCategoryCodes?.any { it in myCategories } == true) s += 1
+            return s
+        }
+        val dated = jobs.filter { it.deadline != null }
+            .sortedWith(compareBy<Job> { it.deadline!! }.thenByDescending { score(it) })
+        val evergreen = rankFeed(jobs.filter { it.deadline == null }, myCategories, myCompanies, limit)
+        return (dated + evergreen).take(limit)
     }
 
     /**
