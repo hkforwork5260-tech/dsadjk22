@@ -19,11 +19,11 @@ class CollectorScheduler(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    // 가벼운 소스(greenhouse, seoul, samsung, recruiter)는 06·18시에 순차 수집.
+    // 가벼운 소스(greenhouse, seoul, samsung, recruiter, greeting)는 06·18시에 순차 수집.
     @Scheduled(cron = "\${jobalert.collector.cron-light}", zone = "UTC")
     fun runLightSources() {
-        log.info("수집 트리거 — 가벼운 소스(greenhouse, seoul, samsung, recruiter) 순차")
-        collectorService.runDailyCollectionPerSourceAsync(setOf("greenhouse", "seoul", "samsung", "recruiter"))
+        log.info("수집 트리거 — 가벼운 소스(greenhouse, seoul, samsung, recruiter, greeting) 순차")
+        collectorService.runDailyCollectionPerSourceAsync(setOf("greenhouse", "seoul", "samsung", "recruiter", "greeting"))
     }
 
     // 무거운 공공기관(상세 500호출)은 30분 뒤 단독 수집 — 다른 소스 메모리 누적 없는 깨끗한 상태에서.

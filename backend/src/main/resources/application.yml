@@ -73,6 +73,12 @@ jobalert:
       enabled: ${RECRUITER_ENABLED:true}
       page-size: ${RECRUITER_PAGE_SIZE:100}
       max-pages: ${RECRUITER_MAX_PAGES:20}
+    greeting:
+      # 그리팅(greetinghr.com) 공개 채용 API. 인증불필요. workspace 목록=SourceRegistry.greetingWorkspaces
+      # (무신사·컬리·HYBE·CJ올리브영·현대오토에버·카카오모빌리티 등, workspaceId만 교체).
+      enabled: ${GREETING_ENABLED:true}
+      page-size: ${GREETING_PAGE_SIZE:100}
+      max-pages: ${GREETING_MAX_PAGES:20}
   collector:
     # 무료 박스 OOM 회피: 가벼운 소스와 무거운 공공기관을 다른 시각에 분리 수집.
     # cron zone=UTC. 06·18시 KST에 가벼운 소스, 그 30분 뒤 공공기관 단독(깨끗한 메모리 상태).

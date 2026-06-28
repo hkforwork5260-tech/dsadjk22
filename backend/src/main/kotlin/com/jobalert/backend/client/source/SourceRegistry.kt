@@ -106,4 +106,33 @@ class SourceRegistry {
         RecruiterTenant("webzen", "웹젠"),
         RecruiterTenant("yg-entertainment", "YG엔터테인먼트"),
     )
+
+    /**
+     * 그리팅(greetinghr.com) 워크스페이스. 인증 불필요 공개 API.
+     * 아래는 2026-06-28 라이브에서 **openings API가 200+공고로 실동작 확인된 워크스페이스**만.
+     * (workspaceId는 직접 검증함 — 서브도메인과 값이 다를 수 있어 추측 금지.)
+     * 더 추가하려면: `{subdomain}.career.greetinghr.com/ko/home`의 임베드 JSON에서 workspaceId를
+     *   뽑아 openings API로 검증 후 등록. group.name은 노이즈가 많아 displayName을 직접 지정.
+     */
+    val greetingWorkspaces: List<GreetingWorkspace> = listOf(
+        GreetingWorkspace("oliveyoung", 10501, "CJ올리브영", homepage = "oliveyoung.co.kr"),
+        GreetingWorkspace("hybe", 10002, "HYBE", homepage = "hybecorp.com"),
+        GreetingWorkspace("musinsa", 1455, "무신사", homepage = "musinsa.com"),
+        GreetingWorkspace("kurly", 6012, "컬리", homepage = "kurly.com"),
+        GreetingWorkspace("hyundai-autoever", 13782, "현대오토에버", homepage = "hyundai-autoever.com"),
+        GreetingWorkspace("kakaomobility", 14346, "카카오모빌리티", homepage = "kakaomobility.com"),
+        GreetingWorkspace("teamsparta", 2450, "팀스파르타", homepage = "teamsparta.co"),
+        GreetingWorkspace("wadiz", 2855, "와디즈", homepage = "wadiz.kr"),
+        GreetingWorkspace("lf", 7797, "LF", homepage = "lf.co.kr"),
+        GreetingWorkspace("zigbang", 1724, "직방", homepage = "zigbang.com"),
+        GreetingWorkspace("finda", 3037, "핀다", homepage = "finda.co.kr"),
+        // 2026-06-28 2차 발굴(정찰 확정 ID + boot API로 원문 호스트 검증)
+        GreetingWorkspace("jype", 12286, "JYP엔터테인먼트", homepage = "jype.com", originHost = "recruit.jype.com"),
+        GreetingWorkspace("hugel", 3623, "휴젤", homepage = "hugel.co.kr"),
+        GreetingWorkspace("gccompany", 3017, "여기어때", homepage = "goodchoice.kr"),
+        GreetingWorkspace("sment", 11325, "SM엔터테인먼트", homepage = "smentertainment.com"),
+        GreetingWorkspace("pulmuone", 16624, "풀무원", homepage = "pulmuone.co.kr"),
+        GreetingWorkspace("oci", 2252, "OCI", homepage = "oci.co.kr"),
+        GreetingWorkspace("phcgroup", 10553, "평화정공", homepage = "phc.co.kr"),
+    )
 }

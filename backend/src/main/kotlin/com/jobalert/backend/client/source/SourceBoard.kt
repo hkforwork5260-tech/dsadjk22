@@ -37,3 +37,25 @@ data class RecruiterTenant(
     /** 회사 홈페이지(로고·매칭). 없으면 null. */
     val homepage: String? = null,
 )
+
+/**
+ * 그리팅(greetinghr.com) 워크스페이스 설정.
+ * API는 경로 workspaceId로 공고를 조회하고, 원문 링크는 서브도메인을 쓴다(둘이 별개라 따로 보관).
+ *   - openings API: api.greetinghr.com/ats/v1.1/career/workspaces/{workspaceId}/openings
+ *   - 원문 링크: https://{subdomain}.career.greetinghr.com/o/{openingId}
+ */
+data class GreetingWorkspace(
+    /** 그리팅 서브도메인. 예: "oliveyoung" → oliveyoung.career.greetinghr.com (원문 링크 호스트). */
+    val subdomain: String,
+    /** openings API 경로의 워크스페이스 ID(서브도메인과 값이 다를 수 있음 — 직접 검증 필수). */
+    val workspaceId: Long,
+    /** 앱에 노출할 회사명(응답 group.name은 "컬리 채용(Kurly Talent)" 등 노이즈가 많아 이 값을 우선). */
+    val displayName: String,
+    /** 회사 홈페이지(로고·매칭). 없으면 null. */
+    val homepage: String? = null,
+    /**
+     * 원문 링크용 커스텀 도메인. 그리팅 서브도메인 대신 회사 자체 채용 도메인을 쓰는 경우만 지정
+     * (예: JYP → "recruit.jype.com"). null이면 `{subdomain}.career.greetinghr.com`를 사용.
+     */
+    val originHost: String? = null,
+)
