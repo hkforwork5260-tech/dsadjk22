@@ -46,7 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.jobalert.app.data.HelpState
 import com.jobalert.app.data.SeenJobs
 import com.jobalert.app.data.model.Job
-import com.jobalert.app.data.model.regionShort
+import com.jobalert.app.data.model.experienceBucket
 import com.jobalert.app.ui.screens.filter.ActiveFilter
 import com.jobalert.app.ui.components.*
 import com.jobalert.app.ui.theme.HiFiColors
@@ -191,16 +191,26 @@ private fun ReelsJobCard(
                         .background(HiFiColors.BrandSoft),
                     contentAlignment = Alignment.Center,
                 ) {
-                    // 로고 자리에 근무지역 표시(회사 위치 아닌 근무지). 지역 없으면 회사 이니셜.
-                    Text(job.regionShort, style = HiFiType.h2.copy(fontSize = 20.sp), color = HiFiColors.Brand)
+                    // 로고 자리에 경력 구분(신입/경력/신입·경력). 긴 라벨은 작게+2줄로 64dp 박스에 맞춤.
+                    Text(
+                        job.experienceBucket,
+                        style = HiFiType.h2.copy(
+                            fontSize = if (job.experienceBucket.length >= 4) 13.sp else 20.sp,
+                            lineHeight = if (job.experienceBucket.length >= 4) 15.sp else 22.sp,
+                        ),
+                        color = HiFiColors.Brand,
+                        maxLines = 2,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
                 }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     // 찾아보기는 전부 진행중이라 NEW/CLOSING 라벨 제거.
                     Text(job.company, style = HiFiType.title, color = HiFiColors.Text)
-                    if (job.location.isNotBlank()) {
+                    // 근무지는 구체적인 지역일 때만 표시("한국" 같은 전국 단위는 노이즈라 숨김).
+                    if (job.location.isNotBlank() && job.location.trim() != "한국") {
                         Text(
-                            "📍 ${job.location}",
+                            job.location,
                             style = HiFiType.body2.copy(fontSize = 12.sp),
                             color = HiFiColors.Text2,
                         )
@@ -249,7 +259,7 @@ private fun ReelsJobCard(
 
             Spacer(Modifier.height(18.dp))
 
-            // 칩 (가로 스크롤) — 채워진 정보만 노출(경력·회사규모·직군·학력·태그 순)
+            // 칩 (가로 스크롤) — 채워진 정보만 노출. 이모지 아이콘 없이 깔끔하게(경력은 로고 자리로 이동).
             val hScroll = rememberScrollState()
             Row(
                 Modifier
@@ -257,11 +267,10 @@ private fun ReelsJobCard(
                     .horizontalScroll(hScroll),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                if (job.salary.isNotBlank()) HiFiChip("💰 ${job.salary}", small = true, variant = HiFiChipVariant.Outline)
-                if (job.experience.isNotBlank()) HiFiChip("💼 ${job.experience}", small = true, variant = HiFiChipVariant.Outline)
-                companySizeLabel(job.companySize)?.let { HiFiChip("🏢 $it", small = true, variant = HiFiChipVariant.Outline) }
+                if (job.salary.isNotBlank()) HiFiChip(job.salary, small = true, variant = HiFiChipVariant.Outline)
+                companySizeLabel(job.companySize)?.let { HiFiChip(it, small = true, variant = HiFiChipVariant.Outline) }
                 job.categories.take(2).forEach { HiFiChip(it, small = true) }
-                if (job.education.isNotBlank()) HiFiChip("🎓 ${job.education}", small = true, variant = HiFiChipVariant.Outline)
+                if (job.education.isNotBlank()) HiFiChip(job.education, small = true, variant = HiFiChipVariant.Outline)
                 job.tags.forEach { HiFiChip("#$it", small = true) }
             }
 

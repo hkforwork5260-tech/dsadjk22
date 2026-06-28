@@ -153,7 +153,10 @@ class JobPersistenceService(
     private fun inferSize(source: String): String? = when (source) {
         "public-institution" -> "public"
         "seoul" -> "small"
-        "greenhouse", "lever" -> "large_corp"
+        // 대기업 ATS 어댑터들 — 전부 대기업/중견(삼성·LG·CJ·KT·현대계열·토스·네이버·무신사·컬리 등).
+        // 이게 null이면 "대기업" 규모 필터에 안 잡혀 정작 대기업이 안 보이는 버그가 됨.
+        "greenhouse", "lever", "recruiter", "greeting", "samsung",
+        "toss", "naver", "lg", "cj", "workday", "lx" -> "large_corp"
         else -> null
     }
 

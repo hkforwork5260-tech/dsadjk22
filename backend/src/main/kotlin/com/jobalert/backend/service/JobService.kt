@@ -343,15 +343,24 @@ class JobService(
      */
     fun search(q: String, kind: String?, categories: List<String>, limit: Int): JobSearchResponse {
         val cats = categories.toSet()
-        val pool = jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 2000))
-        val companies = loadCompanies(pool)
         val tokens = q.trim().lowercase().split(Regex("\\s+")).filter { it.isNotBlank() }
+
+        // 검색어가 있으면 DB 레벨로 전체 스캔(2000 캡 없이) — 공고가 수천 건이라 최신 2000 풀만 보면
+        // 오래된 대기업 공고가 검색에서 누락됨. 첫 토큰으로 DB를 좁히고 나머지 토큰은 in-memory AND.
+        // 검색어가 없으면(직군 둘러보기) 최신 2000 풀.
+        val pool = if (tokens.isEmpty()) {
+            jobRepository.findAllByIsActiveTrueOrderByFirstSeenAtDesc(PageRequest.of(0, 2000))
+        } else {
+            jobRepository.searchByKeyword(tokens.first(), PageRequest.of(0, 3000))
+        }
+        val companies = loadCompanies(pool)
 
         var hits = pool.filter { job ->
             val catOk = cats.isEmpty() || job.jobCategoryCodes?.any { it in cats } == true
+            // 멀티토큰은 전부 포함(AND) — "삼성 디자인"이 둘 다 든 공고만(관련도↑).
             val kwOk = tokens.isEmpty() || run {
                 val hay = (job.title + " " + (companies[job.companyId]?.name ?: "")).lowercase()
-                tokens.any { hay.contains(it) }
+                tokens.all { hay.contains(it) }
             }
             catOk && kwOk
         }
